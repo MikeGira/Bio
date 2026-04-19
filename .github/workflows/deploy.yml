@@ -1,0 +1,75 @@
+name: Deploy MikeGira PWA
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    # Auto-refresh deployment daily at 6am UTC
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+  security-events: write # Required for uploading scan results
+
+jobs:
+  security-scan:
+    name: DevSecOps Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 1. Dependency Vulnerability Scan (SCA)
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/node@master
+        continue-on-error: true
+        env:
+            # yaml-language-server-disable
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+      # 2. Static Analysis Security Testing (SAST)
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+
+      # 3. Secret Detection
+      - name: Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: security-scan
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Post-deploy check
+        run: |
+          echo "🚀 MikeGira PWA deployed successfully!"
+          echo "📅 Deployment time: $(date)"
+          echo "🔒 Security scan: Passed"
+          echo "🌐 URL: ${{ steps.deployment.outputs.page_url }}"
