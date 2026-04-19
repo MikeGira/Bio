@@ -179,7 +179,7 @@ h1{font-size:clamp(2.6rem,4.8vw,4.2rem);font-weight:900;line-height:1.07;letter-
 h1 .red{color:var(--red)}
 .hero-role{font-size:1rem;color:var(--hi);margin-bottom:24px;min-height:26px;font-family:var(--mono);animation:fadein .5s .14s ease both}
 .typed-cursor{color:var(--red);animation:blink 1s infinite}
-.hero-bio{font-size:1.0625rem;color:var(--hi);line-height:1.75;max-width:520px;margin-bottom:36px;animation:fadein .5s .2s ease both;text-align:justify}
+.hero-bio{font-size:1.0625rem;color:var(--hi);line-height:1.75;max-width:520px;margin-bottom:36px;animation:fadein .5s .2s ease both}
 .hero-acts{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:48px;animation:fadein .5s .26s ease both}
 .btn-solid{display:inline-flex;align-items:center;gap:8px;background:var(--red);color:#fff;font-size:.9375rem;font-weight:600;padding:13px 26px;border-radius:var(--r-lg);transition:background .15s,transform .15s,box-shadow .15s;box-shadow:0 4px 20px var(--red-glow)}
 .btn-solid:hover{background:var(--red2);transform:translateY(-2px);box-shadow:0 10px 36px var(--red-glow)}
@@ -262,7 +262,7 @@ section{padding:96px 0;position:relative;z-index:2}
 .sec-eyebrow{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:.7rem;color:var(--red);text-transform:uppercase;letter-spacing:.14em;margin-bottom:14px;border:1px solid rgba(238,0,0,0.2);border-radius:50px;padding:5px 14px;background:var(--red-subtle)}
 [data-theme="light"] .sec-eyebrow{background:rgba(192,0,0,0.06);border-color:rgba(192,0,0,0.2)}
 h2{font-size:clamp(1.9rem,3vw,2.8rem);font-weight:800;letter-spacing:-.035em;line-height:1.1;margin-bottom:14px}
-.sec-sub{font-size:1rem;color:var(--hi);max-width:540px;line-height:1.75;margin-bottom:56px;text-align:justify}
+.sec-sub{font-size:1rem;color:var(--hi);max-width:540px;line-height:1.75;margin-bottom:56px}
 
 /* ════════════════════════════════════════
    ABOUT
@@ -281,7 +281,7 @@ h2{font-size:clamp(1.9rem,3vw,2.8rem);font-weight:800;letter-spacing:-.035em;lin
 [data-theme="light"] .vision-tile{background:#fff;box-shadow:var(--shadow-sm)}
 .vision-tile::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 85% 50%,var(--red-subtle),transparent 65%);pointer-events:none}
 .vision-tile-label{font-family:var(--mono);font-size:.68rem;color:var(--red);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px}
-.vision-tile p{font-size:.875rem;color:var(--hi);line-height:1.8;position:relative;text-align:justify}
+.vision-tile p{font-size:.875rem;color:var(--hi);line-height:1.8;position:relative}
 
 /* ════════════════════════════════════════
    SKILLS
@@ -315,7 +315,7 @@ h2{font-size:clamp(1.9rem,3vw,2.8rem);font-weight:800;letter-spacing:-.035em;lin
 .exp-loc{font-size:.8rem;color:var(--mid)}
 .exp-title{font-size:1.05rem;font-weight:700;color:var(--hi);margin-bottom:12px}
 .exp-bullets{display:flex;flex-direction:column;gap:6px}
-.exp-bullets li{font-size:.875rem;color:var(--hi);line-height:1.65;padding-left:16px;position:relative;text-align:justify}
+.exp-bullets li{font-size:.875rem;color:var(--hi);line-height:1.65;padding-left:16px;position:relative}
 .exp-bullets li::before{content:'';position:absolute;left:0;top:9px;width:5px;height:5px;border-radius:50%;background:var(--red)}
 
 /* ════════════════════════════════════════
@@ -331,7 +331,7 @@ h2{font-size:clamp(1.9rem,3vw,2.8rem);font-weight:800;letter-spacing:-.035em;lin
 .impact-num sup{font-size:1.3rem;vertical-align:super;color:var(--red)}
 .impact-num.orange sup,.impact-num.orange{color:var(--orange)}
 .impact-num.blue sup,.impact-num.blue{color:var(--blue)}
-.impact-desc{font-size:.875rem;color:var(--hi);line-height:1.6;text-align:justify}
+.impact-desc{font-size:.875rem;color:var(--hi);line-height:1.6}
 
 /* ════════════════════════════════════════
    CONTACT
@@ -1567,7 +1567,7 @@ setInterval(async()=>{
 // AI Phoenix Assistant
 const SYSTEM=`You are Phoenix, the personal AI assistant for Michael Twagirayezu's professional website. You are his strongest advocate confident, warm, direct, and conversational. You speak like a knowledgeable friend who knows Michael extremely well.
 
-CORE RULES: Be direct and confident. Lead with "Yes", "Absolutely", "Definitely" when the answer is positive. Never hedge unnecessarily. Keep answers short 2-4 sentences max unless the visitor asks for detail. Get to the point fast. Never say "I don't have information about that" for things clearly in scope. Use what you know. If someone asks a yes/no question, answer it with yes or no FIRST, then add one supporting sentence. Sound like a confident human, not a disclaimer-heavy bot. Never use phrases like "based on the information provided", "it's worth noting", "I should mention", or "as an AI". If someone seems interested in hiring Michael, be enthusiastic and push them toward the contact form.
+CORE RULES: Be direct and confident. Lead with "Yes", "Absolutely", "Definitely" when the answer is positive. Never hedge unnecessarily. Keep answers short 2-4 sentences max unless the visitor asks for detail. Get to the point fast. Never say "I don't have information about that" for things clearly in scope. Use what you know. If someone asks a yes/no question, answer it with yes or no FIRST, then add one supporting sentence. Sound like a confident human, not a disclaimer-heavy bot. Never use phrases like "based on the information provided", "it's worth noting", "I should mention", or "as an AI". If someone seems interested in hiring Michael, be enthusiastic and push them toward the contact form. FORMATTING: Never use markdown. No asterisks, no bold, no italics, no bullet points starting with -, no backticks, no headers. Write in plain conversational sentences only.
 
 WHO MICHAEL IS:
 Michael Twagirayezu is a highly skilled IT Systems Engineer with 10+ years of real-world enterprise experience, based in Toronto, Canada. He is bilingual (English & French), originally from Rwanda, and deeply mission-driven.
@@ -1648,7 +1648,7 @@ async function send(text){
     }
     let rep=d.content?.[0]?.text;
     // Strip em-dashes and connector hyphens from AI output
-    if(rep){rep=rep.replace(/ — /g,' ').replace(/—/g,' ').replace(/ - /g,' ').replace(/\n- /g,'\n').replace(/^- /gm,'');}
+    if(rep){rep=rep.replace(/ — /g,' ').replace(/—/g,' ').replace(/ - /g,' ').replace(/\n- /g,'\n').replace(/^- /gm,'').replace(/\*\*([^*]+)\*\*/g,'$1').replace(/\*([^*]+)\*/g,'$1').replace(/`([^`]+)`/g,'$1');}
     if(!rep){
       ty.remove();
       addMsg('⚠️ Empty response API returned: '+JSON.stringify(d).slice(0,200),'bot');
