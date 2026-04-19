@@ -1648,8 +1648,7 @@ async function send(text){
     }
     let rep=d.content?.[0]?.text;
     // Strip em-dashes and connector hyphens from AI output
-    if(rep){rep=rep.replace(/ — /g,' ').replace(/—/g,' ').replace(/ - /g,' ').replace(/
-- /g,'\n').replace(/^- /gm,'');}
+    if(rep){rep=rep.replace(/ — /g,' ').replace(/—/g,' ').replace(/ - /g,' ').replace(/\n- /g,'\n').replace(/^- /gm,'');}
     if(!rep){
       ty.remove();
       addMsg('⚠️ Empty response API returned: '+JSON.stringify(d).slice(0,200),'bot');
