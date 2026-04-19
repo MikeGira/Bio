@@ -23,7 +23,7 @@
   --orange:#f97316;--orange2:#ea6b0a;--orange-glow:rgba(249,115,22,0.12);
   --blue:#3b82f6;--blue2:#2563eb;--blue-glow:rgba(59,130,246,0.12);
   --line:rgba(255,255,255,0.07);--line2:rgba(255,255,255,0.12);
-  --hi:#f0f0f8;--mid:#c8c8dc;--lo:#9090b0;
+  --hi:#f4f4fc;--mid:#c4c4d8;--lo:#8888a8;
   --green:#22c55e;--amber:#f59e0b;--purple:#a855f7;--teal:#14b8a6;
   --radius:10px;--r-sm:6px;--r-lg:16px;
   --font:'Inter',sans-serif;--mono:'JetBrains Mono',monospace;
@@ -235,6 +235,11 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;backdrop-filter:blur(20px);-
 .tag-devops{color:var(--orange);border-color:rgba(249,115,22,.3)}
 .tag-data{color:var(--teal);border-color:rgba(20,184,166,.3)}
 .tag-africa{color:var(--green);border-color:rgba(34,197,94,.3)}
+/* ── BACK TO TOP ── */
+.back-to-top{position:fixed;bottom:24px;right:24px;z-index:78;width:38px;height:38px;border-radius:12px;background:var(--card-bg);border:1px solid var(--card-border);color:var(--mid);font-size:.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .22s;opacity:0;pointer-events:none}
+.back-to-top.visible{opacity:1;pointer-events:all;background:var(--red);border-color:var(--red);color:#fff;box-shadow:0 4px 20px rgba(238,0,0,.3)}
+.back-to-top:hover{transform:translateY(-3px);box-shadow:0 8px 28px rgba(238,0,0,.4)}
+@media(max-width:700px){.back-to-top{bottom:16px;right:16px;width:34px;height:34px;font-size:.8rem}}
 </style>
 <!-- Vercel Analytics -->
 <script defer src="/_vercel/insights/script.js"></script>
@@ -403,13 +408,18 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;backdrop-filter:blur(20px);-
   </div>
 </footer>
 
-<script>
+<button class="back-to-top" id="backToTop" aria-label="Back to top">↑</button>
 // ── THEME ──────────────────────────────────────────────────
 const H=document.documentElement;
 H.setAttribute('data-theme',localStorage.getItem('mg-theme')||'dark');
 document.getElementById('themeBtn').addEventListener('click',()=>{
   const n=H.getAttribute('data-theme')==='dark'?'light':'dark';
   H.setAttribute('data-theme',n);localStorage.setItem('mg-theme',n);
+
+// ── BACK TO TOP ──
+const btt=document.getElementById('backToTop');
+window.addEventListener('scroll',()=>btt.classList.toggle('visible',window.scrollY>400),{passive:true});
+btt.addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
 });
 document.getElementById('mobBtn').addEventListener('click',()=>document.getElementById('navLinks').classList.toggle('open'));
 
