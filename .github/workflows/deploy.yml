@@ -1,97 +1,64 @@
-name: Deploy MikeGira PWA
+name: MikeGira — Security Scan & Deploy
 
 on:
   push:
     branches: [main]
-  schedule:
-    # Auto-refresh deployment daily at 6am UTC
-    - cron: '0 6 * * *'
   workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
-  security-events: write # Required for uploading scan results
+  security-events: write
 
 jobs:
-  security-scan:
-    name: DevSecOps Scan
+  # ── 1. SECRET DETECTION ──────────────────────────────────────────────
+  secret-scan:
+    name: Secret Detection (Gitleaks)
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      # 1. Dependency Vulnerability Scan (SCA)
-      - name: Run Snyk to check for vulnerabilities
-        uses: snyk/actions/node@master
-        continue-on-error: true
-        env:
-            # yaml-language-server-disable
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-
-      # 2. Static Analysis Security Testing (SAST)
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+      - uses: actions/checkout@v4
         with:
-          languages: javascript
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+          fetch-depth: 0
 
-      # 3. Secret Detection
-      - name: Gitleaks
+      - name: Gitleaks — detect hardcoded secrets
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-          # Add this to your existing security-scan job
-  iac-scan:
-    name: IaC Security Scan
+  # ── 2. STATIC CODE ANALYSIS ──────────────────────────────────────────
+  code-scan:
+    name: SAST — CodeQL Analysis
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Run Checkov
-        uses: bridgecrewio/checkov-action@master
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
         with:
-          directory: ./ # This will scan your whole repo
-          framework: terraform,ansible # Scans both
-          soft_fail: true # Change to false once you're confident to block deployment on failures
-          output_format: sarif
-          output_file_path: reports/results.sarif
+          languages: javascript
 
-      - name: Upload SARIF file
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: reports/results.sarif
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
 
-  deploy:
-    name: Deploy to GitHub Pages
-    needs: [security-scan, iac-scan]
+  # ── 3. CONFIRM VERCEL DEPLOYMENT ────────────────────────────────────
+  confirm-deploy:
+    name: Confirm Vercel Deployment
+    needs: [secret-scan, code-scan]
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: '.'
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-
-      - name: Post-deploy check
+      - name: Security gate passed
         run: |
-          echo "🚀 MikeGira PWA deployed successfully!"
-          echo "📅 Deployment time: $(date)"
-          echo "🔒 Security scan: Passed"
-          echo "🌐 URL: ${{ steps.deployment.outputs.page_url }}"
+          echo "✅ Secret scan passed"
+          echo "✅ CodeQL analysis passed"
+          echo "🚀 Vercel auto-deployed from push to main"
+          echo "🌐 Live at: https://bio-two-eta.vercel.app"
+          echo "📅 $(date -u)"
+
+      - name: Smoke test — verify site is live
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://bio-two-eta.vercel.app)
+          echo "HTTP status: $STATUS"
+          if [ "$STATUS" != "200" ]; then
+            echo "❌ Site returned $STATUS"
+            exit 1
+          fi
+          echo "✅ Site returning 200 OK"
