@@ -23,7 +23,7 @@
   --orange:#f97316;--orange2:#ea6b0a;--orange-glow:rgba(249,115,22,0.12);
   --blue:#3b82f6;--blue2:#2563eb;--blue-glow:rgba(59,130,246,0.12);
   --line:rgba(255,255,255,0.07);--line2:rgba(255,255,255,0.12);
-  --hi:#f0f0f5;--mid:#9898a8;--lo:#55555f;
+  --hi:#f0f0f8;--mid:#c8c8dc;--lo:#9090b0;
   --green:#22c55e;--amber:#f59e0b;--purple:#a855f7;--teal:#14b8a6;
   --radius:10px;--r-sm:6px;--r-lg:16px;
   --font:'Inter',sans-serif;--mono:'JetBrains Mono',monospace;
@@ -31,7 +31,7 @@
 [data-theme="light"]{
   --bg0:#f5f5f7;--bg1:#ffffff;--bg2:#f0f0f4;--bg3:#e8e8ef;
   --line:rgba(0,0,0,0.07);--line2:rgba(0,0,0,0.12);
-  --hi:#0f0f13;--mid:#52525b;--lo:#a1a1aa;
+  --hi:#0d0d12;--mid:#374151;--lo:#6b7280;
   --red:#c00000;--red2:#990000;--red-glow:rgba(192,0,0,0.08);
   --orange:#ea6b0a;--orange2:#c45a08;
   --blue:#2563eb;--blue2:#1d4ed8;
@@ -76,7 +76,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;backdrop-filter:blur(20px);-
 .blog-hero h1 span{color:var(--blue)}
 .blog-hero-sub{font-size:1rem;color:var(--mid);max-width:580px;line-height:1.75;margin-bottom:32px}
 .blog-hero-meta{display:flex;align-items:center;gap:24px;flex-wrap:wrap}
-.blog-hero-stat{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:.75rem;color:var(--lo)}
+.blog-hero-stat{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:.75rem;color:var(--mid)}
 .blog-hero-stat strong{color:var(--mid);font-weight:600}
 .refresh-btn{display:inline-flex;align-items:center;gap:8px;background:var(--blue);color:#fff;border:none;padding:9px 20px;border-radius:var(--r-sm);font-family:var(--font);font-size:.875rem;font-weight:600;cursor:pointer;transition:background .15s,transform .15s}
 .refresh-btn:hover{background:var(--blue2);transform:translateY(-1px)}
@@ -94,7 +94,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;backdrop-filter:blur(20px);-
 .filter-chip.purple.active{background:var(--purple);border-color:var(--purple)}
 .filter-chip.green.active{background:var(--green);border-color:var(--green)}
 .filter-chip.teal.active{background:var(--teal);border-color:var(--teal)}
-.filter-count{font-family:var(--mono);font-size:.7rem;color:var(--lo);margin-left:auto}
+.filter-count{font-family:var(--mono);font-size:.7rem;color:var(--mid);margin-left:auto}
 
 /* ── BLOG GRID ── */
 .blog-main{padding:48px 0;display:grid;grid-template-columns:1fr 340px;gap:48px;align-items:start}
@@ -109,8 +109,8 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;backdrop-filter:blur(20px);-
 .card-featured .excerpt{font-size:.9375rem;color:var(--mid);line-height:1.75;margin-bottom:20px}
 .card-meta{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
 .card-tag{font-family:var(--mono);font-size:.65rem;padding:3px 9px;border-radius:50px;border:1px solid;font-weight:500}
-.card-date{font-family:var(--mono);font-size:.68rem;color:var(--lo)}
-.card-read{font-family:var(--mono);font-size:.68rem;color:var(--lo)}
+.card-date{font-family:var(--mono);font-size:.68rem;color:var(--mid)}
+.card-read{font-family:var(--mono);font-size:.68rem;color:var(--mid)}
 .card-ai-badge{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:.62rem;color:var(--purple);background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.2);border-radius:50px;padding:2px 8px;margin-left:auto}
 
 /* ── REGULAR CARDS ── */
@@ -127,12 +127,12 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;backdrop-filter:blur(20px);-
 .card.green:hover::before{background:var(--green)}
 .card.teal:hover::before{background:var(--teal)}
 .card-inner{display:flex;gap:20px;align-items:flex-start}
-.card-num{font-family:var(--mono);font-size:.65rem;color:var(--lo);padding-top:3px;width:24px;flex-shrink:0}
+.card-num{font-family:var(--mono);font-size:.65rem;color:var(--mid);padding-top:3px;width:24px;flex-shrink:0}
 .card-body{flex:1}
 .card-body h3{font-size:1rem;font-weight:700;letter-spacing:-.01em;color:var(--hi);margin-bottom:6px;line-height:1.3}
 .card-body p{font-size:.8125rem;color:var(--mid);line-height:1.6;margin-bottom:10px}
 .card-footer{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.card-arrow{font-size:.875rem;color:var(--lo);flex-shrink:0;transition:transform .2s,color .2s}
+.card-arrow{font-size:.875rem;color:var(--mid);flex-shrink:0;transition:transform .2s,color .2s}
 .card:hover .card-arrow{transform:translateX(4px);color:var(--hi)}
 
 /* ── SKELETON LOADER ── */
@@ -149,21 +149,21 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;backdrop-filter:blur(20px);-
 .ai-digest-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:blink-dot 2s infinite}
 .ai-digest-label{font-family:var(--mono);font-size:.68rem;color:var(--mid)}
 .ai-digest-text{font-size:.8125rem;color:var(--mid);line-height:1.7;min-height:80px}
-.ai-digest-footer{margin-top:10px;font-family:var(--mono);font-size:.62rem;color:var(--lo)}
+.ai-digest-footer{margin-top:10px;font-family:var(--mono);font-size:.62rem;color:var(--mid)}
 /* trending topics */
 .trend-list{display:flex;flex-direction:column;gap:8px}
 .trend-item{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--bg2);border-radius:var(--r-sm);cursor:pointer;transition:background .15s}
 .trend-item:hover{background:var(--bg3)}
-.trend-rank{font-family:var(--mono);font-size:.62rem;color:var(--lo);width:14px;flex-shrink:0}
+.trend-rank{font-family:var(--mono);font-size:.62rem;color:var(--mid);width:14px;flex-shrink:0}
 .trend-name{font-size:.8125rem;color:var(--mid);flex:1}
-.trend-arrow{font-size:.65rem;color:var(--lo)}
+.trend-arrow{font-size:.65rem;color:var(--mid)}
 .trend-item.up .trend-arrow{color:var(--green)}
 .trend-item.hot .trend-name{color:var(--orange)}
 /* about widget */
 .about-widget{display:flex;align-items:center;gap:12px;margin-bottom:14px}
 .about-avatar{width:44px;height:44px;border-radius:50%;background:var(--bg2);border:2px solid var(--red);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.875rem;color:var(--red);flex-shrink:0}
 .about-name{font-size:.9rem;font-weight:700}
-.about-role{font-family:var(--mono);font-size:.65rem;color:var(--lo);margin-top:1px}
+.about-role{font-family:var(--mono);font-size:.65rem;color:var(--mid);margin-top:1px}
 .about-bio{font-size:.8125rem;color:var(--mid);line-height:1.65;margin-bottom:14px}
 .about-cta{display:block;text-align:center;background:var(--red);color:#fff;padding:8px;border-radius:var(--r-sm);font-size:.8125rem;font-weight:600;transition:background .15s}
 .about-cta:hover{background:var(--red2)}
@@ -172,7 +172,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;backdrop-filter:blur(20px);-
 .nl-input:focus{border-color:var(--blue)}
 .nl-btn{width:100%;background:var(--blue);color:#fff;border:none;border-radius:var(--r-sm);padding:9px;font-family:var(--font);font-size:.8125rem;font-weight:600;cursor:pointer;transition:background .15s}
 .nl-btn:hover{background:var(--blue2)}
-.nl-note{font-family:var(--mono);font-size:.6rem;color:var(--lo);margin-top:6px;text-align:center}
+.nl-note{font-family:var(--mono);font-size:.6rem;color:var(--mid);margin-top:6px;text-align:center}
 
 /* ── ARTICLE MODAL ── */
 .art-modal-bg{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.75);display:none;align-items:flex-start;justify-content:center;padding:24px;overflow-y:auto}
@@ -184,7 +184,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;backdrop-filter:blur(20px);-
 .art-x:hover{color:var(--hi)}
 .art-modal-meta{padding:14px 28px;border-bottom:1px solid var(--line);display:flex;gap:14px;flex-wrap:wrap;align-items:center}
 .art-modal-body{padding:28px;line-height:1.8;color:var(--mid);font-size:.9375rem;min-height:200px}
-.art-modal-body p{margin-bottom:16px}
+.art-modal-body p{margin-bottom:16pxtext-align:justify;}
 .art-modal-body h3{font-size:1.0625rem;font-weight:700;color:var(--hi);margin:24px 0 10px;letter-spacing:-.01em}
 .art-modal-body ul{margin:0 0 16px 20px}
 .art-modal-body ul li{margin-bottom:6px}
@@ -272,7 +272,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;backdrop-filter:blur(20px);-
         AI-Powered · Auto-Updated Daily · Latest Tech Insights
       </div>
       <h1>The <span>Tech Pulse</span><br/>by Michael Twagirayezu</h1>
-      <p class="blog-hero-sub">Fresh perspectives on Cloud Architecture, DevSecOps, AI Integration, Cybersecurity, and the technology shaping the future — curated and written by AI, filtered through 10+ years of real-world experience.</p>
+      <p class="blog-hero-sub">Fresh perspectives on Cloud Architecture, DevSecOps, AI Integration, Cybersecurity, and the technology shaping the future curated and written by AI, filtered through 10+ years of real-world experience.</p>
       <div class="blog-hero-meta">
         <button class="refresh-btn" id="refreshBtn">
           <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13.5 8A5.5 5.5 0 1 1 8 2.5V1M8 1L10 3M8 1L6 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -394,10 +394,10 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;backdrop-filter:blur(20px);-
 <footer style="border-top:1px solid var(--line);padding:36px 0;margin-top:0">
   <div class="wrap">
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
-      <div style="font-family:var(--mono);font-size:.75rem;color:var(--lo)"><strong style="color:var(--mid)">MikeGira · Tech Blog</strong> — AI-powered insights, updated daily.</div>
+      <div style="font-family:var(--mono);font-size:.75rem;color:var(--mid)"><strong style="color:var(--mid)">MikeGira · Tech Blog</strong> AI-powered insights, updated daily.</div>
       <div style="display:flex;gap:20px">
-        <a href="index.html" style="font-family:var(--mono);font-size:.72rem;color:var(--lo);transition:color .15s" onmouseover="this.style.color='var(--hi)'" onmouseout="this.style.color='var(--lo)'">← Portfolio</a>
-        <a href="index.html#contact" style="font-family:var(--mono);font-size:.72rem;color:var(--lo);transition:color .15s" onmouseover="this.style.color='var(--hi)'" onmouseout="this.style.color='var(--lo)'">Contact</a>
+        <a href="index.html" style="font-family:var(--mono);font-size:.72rem;color:var(--mid);transition:color .15s" onmouseover="this.style.color='var(--hi)'" onmouseout="this.style.color='var(--lo)'">← Portfolio</a>
+        <a href="index.html#contact" style="font-family:var(--mono);font-size:.72rem;color:var(--mid);transition:color .15s" onmouseover="this.style.color='var(--hi)'" onmouseout="this.style.color='var(--lo)'">Contact</a>
       </div>
     </div>
   </div>
@@ -446,7 +446,7 @@ function todayStr() {
 async function generatePosts(forceRefresh = false) {
   if (generating) return;
 
-  // Check cache — only regenerate if new day or forced
+  // Check cache only regenerate if new day or forced
   const cachedDate = localStorage.getItem(CACHE_DATE_KEY);
   const cachedPosts = localStorage.getItem(CACHE_KEY);
   if (!forceRefresh && cachedDate === todayStr() && cachedPosts) {
@@ -470,14 +470,7 @@ async function generatePosts(forceRefresh = false) {
 
 Today is ${today}.
 
-Generate exactly 9 blog post entries covering the LATEST trends and developments as of today in these categories:
-- AI & Machine Learning (2 posts)
-- Cloud Architecture (2 posts)
-- Cybersecurity (1 post)
-- DevSecOps (1 post)
-- Data & Analytics (1 post)
-- Tech for Good (1 post — focus on AI/tech helping underserved communities in Africa, Rwanda, Canada)
-- One additional post in whichever category has the hottest news today
+Generate exactly 9 blog post entries covering the LATEST trends and developments as of today in these categories: AI & Machine Learning (2 posts) Cloud Architecture (2 posts) Cybersecurity (1 post) DevSecOps (1 post) Data & Analytics (1 post) Tech for Good (1 post focus on AI/tech helping underserved communities in Africa, Rwanda, Canada) One additional post in whichever category has the hottest news today
 
 Return ONLY a valid JSON array (no markdown, no backticks, no extra text) in this exact format:
 [
@@ -494,19 +487,25 @@ Return ONLY a valid JSON array (no markdown, no backticks, no extra text) in thi
 ]
 
 Only the FIRST post should have "featured": true. All others should have "featured": false.
-Make titles punchy, specific, and current — include real technology names, product names, and version numbers where applicable. Avoid generic titles.
-The Tech for Good post must reference real specific use cases in agriculture, healthcare, education, or governance in Africa or Rwanda.`;
+Make titles punchy, specific, and current. Include real technology names, product names, and version numbers where applicable. Avoid generic titles.
+The Tech for Good post must reference real specific use cases in agriculture, healthcare, education, or governance in Africa or Rwanda. Do not use dashes or em dashes in titles or summaries.`;
 
   try {
+    // 25 second timeout abort if API takes too long
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 25000);
+
     const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      signal: controller.signal,
       body: JSON.stringify({
         model: 'claude-sonnet-4-5',
-        max_tokens: 3000,
+        max_tokens: 1500,
         messages: [{ role: 'user', content: prompt }]
       })
     });
+    clearTimeout(timeout);
     const data = await res.json();
     const raw = data.content?.[0]?.text || '[]';
 
@@ -660,6 +659,7 @@ async function openArticle(post) {
 
   // Show loading
   const body = document.getElementById('artBody');
+  body.className = '';
   body.innerHTML = '<div class="art-loading"><div class="art-loading-dots"><span></span><span></span><span></span></div><span>Claude AI is writing this article…</span></div>';
 
   modal.classList.add('open');
@@ -667,58 +667,57 @@ async function openArticle(post) {
 
   // Generate full article with Claude
   try {
+    const artController = new AbortController();
+    const artTimeout = setTimeout(() => artController.abort(), 20000);
     const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      signal: artController.signal,
       body: JSON.stringify({
         model: 'claude-sonnet-4-5',
-        max_tokens: 2000,
+        max_tokens: 800,
         messages: [{
           role: 'user',
-          content: `Write a full, insightful, well-structured blog article for the following post. Write it for senior IT professionals and tech decision-makers.
+          content: `Write a concise, insightful blog article for senior IT professionals.
 
 Title: ${post.title}
 Category: ${post.category}
 Tags: ${(post.tags||[]).join(', ')}
 Summary: ${post.excerpt}
 
-Requirements:
-- Professional but engaging tone
-- 400-600 words
-- Include: intro paragraph, 2-3 h3 subheadings with substantive content, a highlighted insight/callout box, and a concise conclusion
-- Include real product names, frameworks, and specific technical details
-- Reference actual current industry trends
-- End with a "Key Takeaway" section
+STRICT requirements: MAXIMUM 350 words total stop writing at 350 words Professional but engaging tone Structure: one intro paragraph, two h3 subheadings with 2-3 sentences each, one short conclusion paragraph Include specific technical details and product names NO lengthy lists, NO "Key Takeaway" section, NO filler
 
-Format the response as HTML using only these tags: <p>, <h3>, <ul>, <li>, <div class="highlight">
-Do not include <html>, <body>, <head>, or any outer wrapper tags.`
+Format as HTML using ONLY: <p>, <h3>, <ul>, <li>, <strong>
+Do NOT include any outer wrapper tags.
+Do NOT use dashes, em dashes, or hyphens as connectors in sentences. Use plain sentences instead.`
         }]
       })
     });
+    clearTimeout(artTimeout);
     const data = await res.json();
     const articleHTML = data.content?.[0]?.text || '<p>Article content unavailable.</p>';
 
-    // Sanitise — strict allowlist of tags and attributes, strip everything else
-    body.className = 'art-modal-body';
+    // Sanitise strict allowlist
     const ALLOWED_TAGS  = new Set(['P','H3','H4','UL','OL','LI','STRONG','EM','BR','BLOCKQUOTE']);
-    const ALLOWED_ATTRS = new Set([]); // no attributes allowed on any tag
     const tmp = document.createElement('div');
     tmp.innerHTML = articleHTML;
-    // Walk all elements bottom-up and remove disallowed tags/attributes
     tmp.querySelectorAll('*').forEach(el => {
       if (!ALLOWED_TAGS.has(el.tagName)) {
-        // Replace disallowed element with its text content only
         el.replaceWith(document.createTextNode(el.textContent));
         return;
       }
-      // Strip ALL attributes (prevents onerror, onload, style injection, etc.)
       [...el.attributes].forEach(attr => el.removeAttribute(attr.name));
     });
+
+    // Always clear loading state before showing content
+    body.innerHTML = '';
+    body.className = 'art-modal-body';
     body.appendChild(tmp);
 
   } catch(e) {
+    body.innerHTML = '';
     body.className = 'art-modal-body';
-    body.innerHTML = '<p style="color:var(--mid)">Unable to load article content. Please check your connection and try again.</p>';
+    body.innerHTML = '<p style="color:var(--mid)">Unable to load article. Please try again.</p>';
   }
 }
 
@@ -763,7 +762,7 @@ async function generateDigest(forceRefresh) {
         max_tokens: 200,
         messages: [{
           role: 'user',
-          content: `Write a 2-sentence "Today in Tech" digest for ${new Date().toLocaleDateString('en-CA',{weekday:'long',month:'long',day:'numeric'})}. Focus on the most significant AI, cloud, or security development happening right now. Be specific and name real products, companies, or events. Start directly with the insight — no intro phrases like "Today" or "In tech today".`
+          content: `Write a 2-sentence "Today in Tech" digest for ${new Date().toLocaleDateString('en-CA',{weekday:'long',month:'long',day:'numeric'})}. Focus on the most significant AI, cloud, or security development happening right now. Be specific and name real products, companies, or events. Start directly with the insight no intro phrases like "Today" or "In tech today".`
         }]
       })
     });
@@ -802,7 +801,7 @@ async function dbPost(action, payload) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
-  } catch(e) { /* silent — DB errors never break the UI */ }
+  } catch(e) { /* silent DB errors never break the UI */ }
 }
 
 // ── NEWSLETTER (now saves to Supabase) ──────────────────────
