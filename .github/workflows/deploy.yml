@@ -44,9 +44,31 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+          # Add this to your existing security-scan job
+  iac-scan:
+    name: IaC Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Checkov
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: ./ # This will scan your whole repo
+          framework: terraform,ansible # Scans both
+          soft_fail: true # Change to false once you're confident to block deployment on failures
+          output_format: sarif
+          output_file_path: reports/results.sarif
+
+      - name: Upload SARIF file
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: reports/results.sarif
+
   deploy:
     name: Deploy to GitHub Pages
-    needs: security-scan
+    needs: [security-scan, iac-scan]
     runs-on: ubuntu-latest
     environment:
       name: github-pages
