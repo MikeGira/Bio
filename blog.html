@@ -409,18 +409,20 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;backdrop-filter:blur(20px);-
 </footer>
 
 <button class="back-to-top" id="backToTop" aria-label="Back to top">↑</button>
+
+<script>
 // ── THEME ──────────────────────────────────────────────────
 const H=document.documentElement;
 H.setAttribute('data-theme',localStorage.getItem('mg-theme')||'dark');
 document.getElementById('themeBtn').addEventListener('click',()=>{
   const n=H.getAttribute('data-theme')==='dark'?'light':'dark';
   H.setAttribute('data-theme',n);localStorage.setItem('mg-theme',n);
+});
 
 // ── BACK TO TOP ──
 const btt=document.getElementById('backToTop');
 window.addEventListener('scroll',()=>btt.classList.toggle('visible',window.scrollY>400),{passive:true});
 btt.addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
-});
 document.getElementById('mobBtn').addEventListener('click',()=>document.getElementById('navLinks').classList.toggle('open'));
 
 // ── SCROLL REVEAL ──────────────────────────────────────────
