@@ -34,7 +34,7 @@ async function sendEmail({ to, subject, html }) {
         'Content-Type':  'application/json',
       },
       body: JSON.stringify({
-        from:    'Mike\'s Bio <hello@mikegira.dev>',  // must be verified domain on Resend
+        from:    'Mike\'s Bio <hello@blog.h0m3labs.store>',  // must be verified domain on Resend
         to:      Array.isArray(to) ? to : [to],
         subject,
         html,
@@ -87,13 +87,13 @@ export default async function handler(req, res) {
         to:      NOTIFY_EMAIL,
         subject: `New contact from ${name} — ${opportunity || 'General'}`,
         html: `
-          <h2 style="color:#ee0000">New message on MikeGira.dev</h2>
+          <h2 style="color:#ee0000">New message on blog.h0m3labs.store</h2>
           <p><strong>Name:</strong> ${name}</p>
           <p><strong>Email:</strong> <a href="mailto:${email}">${email}</a></p>
           <p><strong>Opportunity:</strong> ${opportunity || 'Not specified'}</p>
           <p><strong>Message:</strong></p>
           <blockquote style="border-left:3px solid #ee0000;padding-left:12px;color:#444">${message.replace(/\n/g,'<br>')}</blockquote>
-          <p style="color:#888;font-size:12px">Sent via mikegira.dev contact form</p>
+          <p style="color:#888;font-size:12px">Sent via blog.h0m3labs.store contact form</p>
         `,
       });
 
