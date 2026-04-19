@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="theme-color" content="#0f0f13"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; frame-ancestors 'none';"/>
+<meta name="referrer" content="strict-origin-when-cross-origin"/>
+<meta http-equiv="X-Content-Type-Options" content="nosniff"/>
+<meta name="description" content="Michael Twagirayezu's Tech Blog — AI-powered insights on cloud, DevSecOps, cybersecurity, and the future of technology."/>
+<meta property="og:title" content="Tech Blog | Michael Twagirayezu"/>
+<meta property="og:type" content="website"/>
+<title>Tech Blog | Michael Twagirayezu</title>
+<link rel="manifest" href="manifest.json"/>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230f0f13'/%3E%3Ctext x='16' y='22' font-size='18' text-anchor='middle' fill='%23EE0000' font-family='monospace' font-weight='bold'%3EM%3C/text%3E%3C/svg%3E"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg0:#0f0f13;--bg1:#16161c;--bg2:#1e1e26;--bg3:#26262f;
+  --red:#ee0000;--red2:#c00000;--red-glow:rgba(238,0,0,0.15);
+  --orange:#f97316;--orange2:#ea6b0a;--orange-glow:rgba(249,115,22,0.12);
+  --blue:#3b82f6;--blue2:#2563eb;--blue-glow:rgba(59,130,246,0.12);
+  --line:rgba(255,255,255,0.07);--line2:rgba(255,255,255,0.12);
+  --hi:#f0f0f5;--mid:#9898a8;--lo:#55555f;
+  --green:#22c55e;--amber:#f59e0b;--purple:#a855f7;--teal:#14b8a6;
+  --radius:10px;--r-sm:6px;--r-lg:16px;
+  --font:'Inter',sans-serif;--mono:'JetBrains Mono',monospace;
+}
+[data-theme="light"]{
+  --bg0:#f5f5f7;--bg1:#ffffff;--bg2:#f0f0f4;--bg3:#e8e8ef;
+  --line:rgba(0,0,0,0.07);--line2:rgba(0,0,0,0.12);
+  --hi:#0f0f13;--mid:#52525b;--lo:#a1a1aa;
+  --red:#c00000;--red2:#990000;--red-glow:rgba(192,0,0,0.08);
+  --orange:#ea6b0a;--orange2:#c45a08;
+  --blue:#2563eb;--blue2:#1d4ed8;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:var(--font);background:var(--bg0);color:var(--hi);line-height:1.6;overflow-x:hidden;transition:background .3s,color .3s}
+a{color:inherit;text-decoration:none}
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-thumb{background:var(--red);border-radius:2px}
+
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);background:rgba(15,15,19,.88);border-bottom:1px solid var(--line);transition:background .3s}
+[data-theme="light"] nav{background:rgba(245,245,247,.92)}
+.nav-inner{max-width:1120px;margin:0 auto;padding:0 32px;height:62px;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{font-weight:700;font-size:.9375rem;letter-spacing:-.01em;display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--hi)}
+.nav-logo-dot{width:8px;height:8px;border-radius:50%;background:var(--red);box-shadow:0 0 10px var(--red)}
+.nav-links{display:flex;gap:28px;list-style:none}
+.nav-links a{font-size:.875rem;color:var(--mid);transition:color .15s}
+.nav-links a:hover{color:var(--hi)}
+.nav-links a.active{color:var(--hi);font-weight:600}
+.nav-end{display:flex;align-items:center;gap:10px}
+.theme-btn{width:34px;height:34px;border-radius:var(--r-sm);background:var(--bg2);border:1px solid var(--line2);cursor:pointer;color:var(--mid);font-size:.875rem;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.theme-btn:hover{border-color:var(--red);color:var(--hi)}
+.i-moon{display:block}.i-sun{display:none}
+[data-theme="light"] .i-moon{display:none}[data-theme="light"] .i-sun{display:block}
+.nav-cta{background:var(--orange);color:#fff;font-size:.875rem;font-weight:600;padding:8px 20px;border-radius:var(--r-sm);transition:background .15s,transform .15s}
+.nav-cta:hover{background:var(--orange2);transform:translateY(-1px)}
+.mob-btn{display:none;background:none;border:none;color:var(--mid);font-size:1.25rem;cursor:pointer;line-height:1;padding:4px}
+
+/* ── LAYOUT ── */
+.wrap{max-width:1120px;margin:0 auto;padding:0 32px}
+
+/* ── BLOG HERO ── */
+.blog-hero{padding:110px 0 64px;border-bottom:1px solid var(--line);position:relative;overflow:hidden}
+.blog-hero::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle,rgba(255,255,255,.035) 1px,transparent 1px);background-size:32px 32px;pointer-events:none}
+.blog-hero::after{content:'';position:absolute;top:-30%;right:-5%;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(59,130,246,.07) 0%,transparent 65%);pointer-events:none}
+.blog-hero-inner{position:relative;z-index:2}
+.blog-hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.22);border-radius:50px;padding:5px 14px;font-family:var(--mono);font-size:.72rem;color:var(--blue);margin-bottom:22px;letter-spacing:.05em}
+.ai-blink{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--blue);animation:blink-dot 1.4s ease infinite}
+.blog-hero h1{font-size:clamp(2.2rem,4vw,3.5rem);font-weight:800;letter-spacing:-.04em;line-height:1.08;margin-bottom:16px}
+.blog-hero h1 span{color:var(--blue)}
+.blog-hero-sub{font-size:1rem;color:var(--mid);max-width:580px;line-height:1.75;margin-bottom:32px}
+.blog-hero-meta{display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+.blog-hero-stat{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:.75rem;color:var(--lo)}
+.blog-hero-stat strong{color:var(--mid);font-weight:600}
+.refresh-btn{display:inline-flex;align-items:center;gap:8px;background:var(--blue);color:#fff;border:none;padding:9px 20px;border-radius:var(--r-sm);font-family:var(--font);font-size:.875rem;font-weight:600;cursor:pointer;transition:background .15s,transform .15s}
+.refresh-btn:hover{background:var(--blue2);transform:translateY(-1px)}
+.refresh-btn:disabled{opacity:.5;cursor:not-allowed}
+.refresh-btn svg{width:14px;height:14px;transition:transform .5s}
+.refresh-btn.spinning svg{animation:spin-icon .8s linear infinite}
+
+/* ── FILTER BAR ── */
+.filter-bar{padding:20px 0;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.filter-chip{font-family:var(--mono);font-size:.72rem;padding:5px 13px;border-radius:50px;border:1px solid var(--line2);background:var(--bg2);color:var(--mid);cursor:pointer;transition:all .15s;white-space:nowrap}
+.filter-chip:hover{border-color:var(--blue);color:var(--hi)}
+.filter-chip.active{background:var(--blue);border-color:var(--blue);color:#fff}
+.filter-chip.red.active{background:var(--red);border-color:var(--red)}
+.filter-chip.orange.active{background:var(--orange);border-color:var(--orange)}
+.filter-chip.purple.active{background:var(--purple);border-color:var(--purple)}
+.filter-chip.green.active{background:var(--green);border-color:var(--green)}
+.filter-chip.teal.active{background:var(--teal);border-color:var(--teal)}
+.filter-count{font-family:var(--mono);font-size:.7rem;color:var(--lo);margin-left:auto}
+
+/* ── BLOG GRID ── */
+.blog-main{padding:48px 0;display:grid;grid-template-columns:1fr 340px;gap:48px;align-items:start}
+.blog-grid{display:flex;flex-direction:column;gap:0}
+
+/* ── FEATURED CARD ── */
+.card-featured{background:var(--bg1);border:1px solid var(--line2);border-radius:var(--r-lg);padding:32px;margin-bottom:16px;position:relative;overflow:hidden;cursor:pointer;transition:border-color .2s,transform .2s}
+.card-featured::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 80% 0%,rgba(59,130,246,.06),transparent 60%);pointer-events:none}
+.card-featured:hover{border-color:var(--blue);transform:translateY(-2px)}
+.featured-label{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:.65rem;color:var(--orange);text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px}
+.card-featured h2{font-size:1.375rem;font-weight:800;letter-spacing:-.02em;line-height:1.2;margin-bottom:10px;color:var(--hi)}
+.card-featured .excerpt{font-size:.9375rem;color:var(--mid);line-height:1.75;margin-bottom:20px}
+.card-meta{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.card-tag{font-family:var(--mono);font-size:.65rem;padding:3px 9px;border-radius:50px;border:1px solid;font-weight:500}
+.card-date{font-family:var(--mono);font-size:.68rem;color:var(--lo)}
+.card-read{font-family:var(--mono);font-size:.68rem;color:var(--lo)}
+.card-ai-badge{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:.62rem;color:var(--purple);background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.2);border-radius:50px;padding:2px 8px;margin-left:auto}
+
+/* ── REGULAR CARDS ── */
+.card{background:var(--bg1);border:1px solid var(--line);border-radius:var(--radius);padding:22px 24px;border-top:none;cursor:pointer;transition:border-color .2s,background .2s,transform .2s;position:relative;overflow:hidden}
+.card:first-of-type{border-top:1px solid var(--line);border-radius:var(--radius) var(--radius) 0 0}
+.card:last-of-type{border-radius:0 0 var(--radius) var(--radius)}
+.card:not(:first-of-type):not(.card-featured){border-top:none}
+.card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--line2);transition:background .2s}
+.card:hover{border-color:var(--line2);background:var(--bg2);transform:translateX(3px)}
+.card:hover::before{background:var(--blue)}
+.card.red:hover::before{background:var(--red)}
+.card.orange:hover::before{background:var(--orange)}
+.card.purple:hover::before{background:var(--purple)}
+.card.green:hover::before{background:var(--green)}
+.card.teal:hover::before{background:var(--teal)}
+.card-inner{display:flex;gap:20px;align-items:flex-start}
+.card-num{font-family:var(--mono);font-size:.65rem;color:var(--lo);padding-top:3px;width:24px;flex-shrink:0}
+.card-body{flex:1}
+.card-body h3{font-size:1rem;font-weight:700;letter-spacing:-.01em;color:var(--hi);margin-bottom:6px;line-height:1.3}
+.card-body p{font-size:.8125rem;color:var(--mid);line-height:1.6;margin-bottom:10px}
+.card-footer{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.card-arrow{font-size:.875rem;color:var(--lo);flex-shrink:0;transition:transform .2s,color .2s}
+.card:hover .card-arrow{transform:translateX(4px);color:var(--hi)}
+
+/* ── SKELETON LOADER ── */
+.skeleton{background:var(--bg2);border-radius:4px;animation:skel-pulse 1.6s ease-in-out infinite}
+.skeleton-card{background:var(--bg1);border:1px solid var(--line);border-radius:var(--radius);padding:22px 24px;margin-bottom:1px}
+@keyframes skel-pulse{0%,100%{opacity:.5}50%{opacity:1}}
+
+/* ── SIDEBAR ── */
+.sidebar{display:flex;flex-direction:column;gap:20px;position:sticky;top:82px}
+.sidebar-card{background:var(--bg1);border:1px solid var(--line);border-radius:var(--radius);padding:20px}
+.sidebar-label{font-family:var(--mono);font-size:.65rem;color:var(--lo);text-transform:uppercase;letter-spacing:.12em;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+/* AI digest */
+.ai-digest-status{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.ai-digest-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:blink-dot 2s infinite}
+.ai-digest-label{font-family:var(--mono);font-size:.68rem;color:var(--mid)}
+.ai-digest-text{font-size:.8125rem;color:var(--mid);line-height:1.7;min-height:80px}
+.ai-digest-footer{margin-top:10px;font-family:var(--mono);font-size:.62rem;color:var(--lo)}
+/* trending topics */
+.trend-list{display:flex;flex-direction:column;gap:8px}
+.trend-item{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--bg2);border-radius:var(--r-sm);cursor:pointer;transition:background .15s}
+.trend-item:hover{background:var(--bg3)}
+.trend-rank{font-family:var(--mono);font-size:.62rem;color:var(--lo);width:14px;flex-shrink:0}
+.trend-name{font-size:.8125rem;color:var(--mid);flex:1}
+.trend-arrow{font-size:.65rem;color:var(--lo)}
+.trend-item.up .trend-arrow{color:var(--green)}
+.trend-item.hot .trend-name{color:var(--orange)}
+/* about widget */
+.about-widget{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.about-avatar{width:44px;height:44px;border-radius:50%;background:var(--bg2);border:2px solid var(--red);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.875rem;color:var(--red);flex-shrink:0}
+.about-name{font-size:.9rem;font-weight:700}
+.about-role{font-family:var(--mono);font-size:.65rem;color:var(--lo);margin-top:1px}
+.about-bio{font-size:.8125rem;color:var(--mid);line-height:1.65;margin-bottom:14px}
+.about-cta{display:block;text-align:center;background:var(--red);color:#fff;padding:8px;border-radius:var(--r-sm);font-size:.8125rem;font-weight:600;transition:background .15s}
+.about-cta:hover{background:var(--red2)}
+/* newsletter */
+.nl-input{width:100%;background:var(--bg0);border:1px solid var(--line2);border-radius:var(--r-sm);padding:9px 12px;font-family:var(--font);font-size:.8125rem;color:var(--hi);outline:none;transition:border-color .15s;margin-bottom:8px}
+.nl-input:focus{border-color:var(--blue)}
+.nl-btn{width:100%;background:var(--blue);color:#fff;border:none;border-radius:var(--r-sm);padding:9px;font-family:var(--font);font-size:.8125rem;font-weight:600;cursor:pointer;transition:background .15s}
+.nl-btn:hover{background:var(--blue2)}
+.nl-note{font-family:var(--mono);font-size:.6rem;color:var(--lo);margin-top:6px;text-align:center}
+
+/* ── ARTICLE MODAL ── */
+.art-modal-bg{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.75);display:none;align-items:flex-start;justify-content:center;padding:24px;overflow-y:auto}
+.art-modal-bg.open{display:flex}
+.art-modal{background:var(--bg1);border:1px solid var(--line2);border-radius:var(--r-lg);width:100%;max-width:720px;margin:auto;overflow:hidden}
+.art-modal-head{padding:24px 28px;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.art-modal-head h2{font-size:1.25rem;font-weight:800;letter-spacing:-.02em;line-height:1.25;flex:1}
+.art-x{background:none;border:none;color:var(--lo);cursor:pointer;font-size:1.1rem;padding:2px;flex-shrink:0;transition:color .15s}
+.art-x:hover{color:var(--hi)}
+.art-modal-meta{padding:14px 28px;border-bottom:1px solid var(--line);display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.art-modal-body{padding:28px;line-height:1.8;color:var(--mid);font-size:.9375rem;min-height:200px}
+.art-modal-body p{margin-bottom:16px}
+.art-modal-body h3{font-size:1.0625rem;font-weight:700;color:var(--hi);margin:24px 0 10px;letter-spacing:-.01em}
+.art-modal-body ul{margin:0 0 16px 20px}
+.art-modal-body ul li{margin-bottom:6px}
+.art-modal-body .highlight{background:rgba(59,130,246,.08);border-left:3px solid var(--blue);padding:12px 16px;border-radius:0 var(--r-sm) var(--r-sm) 0;margin:16px 0;color:var(--hi);font-size:.9rem}
+.art-loading{display:flex;align-items:center;gap:12px;padding:40px 28px;color:var(--mid);font-family:var(--mono);font-size:.8125rem}
+.art-loading-dots{display:flex;gap:4px}
+.art-loading-dots span{width:6px;height:6px;border-radius:50%;background:var(--blue);animation:tdot 1.2s infinite}
+.art-loading-dots span:nth-child(2){animation-delay:.2s}
+.art-loading-dots span:nth-child(3){animation-delay:.4s}
+.art-modal-foot{padding:16px 28px;border-top:1px solid var(--line);display:flex;gap:10px;align-items:center}
+.art-share-btn{font-family:var(--mono);font-size:.72rem;padding:6px 14px;border-radius:50px;border:1px solid var(--line2);background:none;color:var(--mid);cursor:pointer;transition:all .15s}
+.art-share-btn:hover{border-color:var(--blue);color:var(--hi)}
+.art-close-btn{margin-left:auto;font-family:var(--font);font-size:.875rem;font-weight:600;padding:8px 20px;background:var(--bg2);border:1px solid var(--line2);border-radius:var(--r-sm);color:var(--mid);cursor:pointer;transition:all .15s}
+.art-close-btn:hover{border-color:var(--line);color:var(--hi)}
+
+/* ── LOADING STATE ── */
+.blog-loading{display:flex;flex-direction:column;gap:12px}
+.skel-line{height:14px;border-radius:4px;background:var(--bg2);animation:skel-pulse 1.6s ease-in-out infinite}
+
+/* ── EMPTY / ERROR ── */
+.blog-empty{text-align:center;padding:60px 20px;color:var(--mid)}
+.blog-empty-icon{font-size:2.5rem;margin-bottom:12px}
+.blog-empty h3{font-size:1.125rem;font-weight:700;color:var(--hi);margin-bottom:8px}
+.blog-empty p{font-size:.875rem;line-height:1.7;margin-bottom:20px}
+
+/* ── REVEAL ── */
+.reveal{opacity:0;transform:translateY(16px);transition:opacity .5s ease,transform .5s ease}
+.reveal.in{opacity:1;transform:none}
+
+/* ── ANIMATIONS ── */
+@keyframes blink-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(.7)}}
+@keyframes spin-icon{to{transform:rotate(360deg)}}
+@keyframes tdot{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
+@keyframes fadein{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.blog-hero-eyebrow{animation:fadein .5s ease both}
+.blog-hero h1{animation:fadein .5s .08s ease both}
+.blog-hero-sub{animation:fadein .5s .16s ease both}
+.blog-hero-meta{animation:fadein .5s .24s ease both}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){.blog-main{grid-template-columns:1fr}.sidebar{position:static;top:auto}}
+@media(max-width:640px){.nav-links{display:none}.mob-btn{display:block}.nav-links.open{display:flex;flex-direction:column;position:absolute;top:62px;left:0;right:0;background:var(--bg0);border-bottom:1px solid var(--line);padding:20px 32px;gap:18px;z-index:99}.filter-bar{overflow-x:auto;padding-bottom:12px;scrollbar-width:none}.filter-bar::-webkit-scrollbar{display:none}}
+
+/* tag colour map */
+.tag-ai{color:var(--purple);border-color:rgba(168,85,247,.3)}
+.tag-cloud{color:var(--blue);border-color:rgba(59,130,246,.3)}
+.tag-security{color:var(--red);border-color:rgba(238,0,0,.3)}
+.tag-devops{color:var(--orange);border-color:rgba(249,115,22,.3)}
+.tag-data{color:var(--teal);border-color:rgba(20,184,166,.3)}
+.tag-africa{color:var(--green);border-color:rgba(34,197,94,.3)}
+</style>
+<!-- Vercel Analytics -->
+<script defer src="/_vercel/insights/script.js"></script>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo"><span class="nav-logo-dot"></span> Michael Twagirayezu</a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html#about">About</a></li>
+      <li><a href="index.html#skills">Skills</a></li>
+      <li><a href="index.html#experience">Experience</a></li>
+      <li><a href="index.html#impact">Impact</a></li>
+      <li><a href="blog.html" class="active">Blog</a></li>
+      <li><a href="index.html#contact">Contact</a></li>
+    </ul>
+    <div class="nav-end">
+      <button class="theme-btn" id="themeBtn" aria-label="Toggle theme">
+        <span class="i-moon">☾</span><span class="i-sun">○</span>
+      </button>
+      <a href="index.html#contact" class="nav-cta">Hire Me</a>
+      <button class="mob-btn" id="mobBtn">☰</button>
+    </div>
+  </div>
+</nav>
+
+<!-- BLOG HERO -->
+<section class="blog-hero">
+  <div class="wrap">
+    <div class="blog-hero-inner">
+      <div class="blog-hero-eyebrow">
+        <span class="ai-blink"></span>
+        AI-Powered · Auto-Updated Daily · Latest Tech Insights
+      </div>
+      <h1>The <span>Tech Pulse</span><br/>by Michael Twagirayezu</h1>
+      <p class="blog-hero-sub">Fresh perspectives on Cloud Architecture, DevSecOps, AI Integration, Cybersecurity, and the technology shaping the future — curated and written by AI, filtered through 10+ years of real-world experience.</p>
+      <div class="blog-hero-meta">
+        <button class="refresh-btn" id="refreshBtn">
+          <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13.5 8A5.5 5.5 0 1 1 8 2.5V1M8 1L10 3M8 1L6 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Refresh with AI
+        </button>
+        <div class="blog-hero-stat"><strong id="postCount">—</strong> articles</div>
+        <div class="blog-hero-stat">Updated: <strong id="lastUpdated">—</strong></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FILTER BAR -->
+<div style="border-bottom:1px solid var(--line);background:var(--bg0);position:sticky;top:62px;z-index:50;transition:background .3s">
+  <div class="wrap">
+    <div class="filter-bar" id="filterBar">
+      <button class="filter-chip active" data-cat="all">All Topics</button>
+      <button class="filter-chip" data-cat="AI &amp; Machine Learning" style="--chip-color:var(--purple)">AI &amp; ML</button>
+      <button class="filter-chip" data-cat="Cloud Architecture" style="--chip-color:var(--blue)">Cloud</button>
+      <button class="filter-chip" data-cat="Cybersecurity" style="--chip-color:var(--red)">Security</button>
+      <button class="filter-chip" data-cat="DevSecOps" style="--chip-color:var(--orange)">DevSecOps</button>
+      <button class="filter-chip" data-cat="Data &amp; Analytics" style="--chip-color:var(--teal)">Data</button>
+      <button class="filter-chip" data-cat="Tech for Good" style="--chip-color:var(--green)">Tech for Good</button>
+      <span class="filter-count" id="filterCount"></span>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="wrap">
+  <div class="blog-main">
+    <!-- POSTS -->
+    <div>
+      <div id="blogFeed">
+        <!-- Skeleton loader -->
+        <div class="blog-loading" id="skeletonLoader">
+          <div class="skeleton-card"><div class="skel-line" style="width:30%;margin-bottom:12px"></div><div class="skel-line" style="width:80%;margin-bottom:8px"></div><div class="skel-line" style="width:60%;margin-bottom:16px"></div><div class="skel-line" style="width:90%"></div></div>
+          <div class="skeleton-card"><div class="skel-line" style="width:25%;margin-bottom:12px"></div><div class="skel-line" style="width:70%;margin-bottom:8px"></div><div class="skel-line" style="width:50%;margin-bottom:16px"></div><div class="skel-line" style="width:85%"></div></div>
+          <div class="skeleton-card"><div class="skel-line" style="width:35%;margin-bottom:12px"></div><div class="skel-line" style="width:75%;margin-bottom:8px"></div><div class="skel-line" style="width:55%;margin-bottom:16px"></div><div class="skel-line" style="width:88%"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <!-- AI Daily Digest -->
+      <div class="sidebar-card reveal">
+        <div class="sidebar-label">✦ AI Daily Digest</div>
+        <div class="ai-digest-status">
+          <span class="ai-digest-dot"></span>
+          <span class="ai-digest-label">Claude is analysing today's trends…</span>
+        </div>
+        <div class="ai-digest-text" id="digestText">Generating today's tech digest…</div>
+        <div class="ai-digest-footer" id="digestFooter"></div>
+      </div>
+
+      <!-- Trending Topics -->
+      <div class="sidebar-card reveal">
+        <div class="sidebar-label">🔥 Trending in Tech</div>
+        <div class="trend-list" id="trendList">
+          <div class="trend-item hot"><span class="trend-rank">01</span><span class="trend-name">Agentic AI Systems</span><span class="trend-arrow">↑</span></div>
+          <div class="trend-item up"><span class="trend-rank">02</span><span class="trend-name">Multi-Cloud Security</span><span class="trend-arrow">↑</span></div>
+          <div class="trend-item up"><span class="trend-rank">03</span><span class="trend-name">DevSecOps Automation</span><span class="trend-arrow">↑</span></div>
+          <div class="trend-item"><span class="trend-rank">04</span><span class="trend-name">Quantum Cryptography</span><span class="trend-arrow">→</span></div>
+          <div class="trend-item up"><span class="trend-rank">05</span><span class="trend-name">AI Infrastructure Ops</span><span class="trend-arrow">↑</span></div>
+          <div class="trend-item hot"><span class="trend-rank">06</span><span class="trend-name">Edge AI Computing</span><span class="trend-arrow">↑</span></div>
+          <div class="trend-item"><span class="trend-rank">07</span><span class="trend-name">Zero Trust 2.0</span><span class="trend-arrow">→</span></div>
+          <div class="trend-item up"><span class="trend-rank">08</span><span class="trend-name">AI in Agriculture</span><span class="trend-arrow">↑</span></div>
+        </div>
+      </div>
+
+      <!-- About Michael -->
+      <div class="sidebar-card reveal">
+        <div class="sidebar-label">About the Author</div>
+        <div class="about-widget">
+          <div class="about-avatar">MT</div>
+          <div><div class="about-name">Michael Twagirayezu</div><div class="about-role">IT Systems Engineer · Toronto, ON</div></div>
+        </div>
+        <p class="about-bio">10+ years in multi-cloud architecture, DevSecOps, and AI integration. Writing about the technologies reshaping enterprise IT and global communities.</p>
+        <a href="index.html#contact" class="about-cta">Work with Michael</a>
+      </div>
+
+      <!-- Newsletter -->
+      <div class="sidebar-card reveal">
+        <div class="sidebar-label">📬 Stay in the Loop</div>
+        <p style="font-size:.8125rem;color:var(--mid);line-height:1.65;margin-bottom:12px">Get Michael's latest tech insights delivered weekly.</p>
+        <input class="nl-input" type="email" id="nlEmail" placeholder="your@email.com" autocomplete="email"/>
+        <button class="nl-btn" id="nlBtn">Subscribe →</button>
+        <p class="nl-note">No spam. Unsubscribe anytime.</p>
+        <p class="nl-note" id="nlMsg" style="color:var(--green);margin-top:4px"></p>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- ARTICLE MODAL -->
+<div class="art-modal-bg" id="artModal">
+  <div class="art-modal">
+    <div class="art-modal-head">
+      <h2 id="artTitle">Article Title</h2>
+      <button class="art-x" id="artClose">✕</button>
+    </div>
+    <div class="art-modal-meta" id="artMeta"></div>
+    <div id="artBody">
+      <div class="art-loading">
+        <div class="art-loading-dots"><span></span><span></span><span></span></div>
+        <span>Claude AI is writing this article…</span>
+      </div>
+    </div>
+    <div class="art-modal-foot">
+      <button class="art-share-btn" id="artCopy">Copy Link</button>
+      <button class="art-share-btn" id="artShare">Share</button>
+      <button class="art-close-btn" id="artClose2">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer style="border-top:1px solid var(--line);padding:36px 0;margin-top:0">
+  <div class="wrap">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
+      <div style="font-family:var(--mono);font-size:.75rem;color:var(--lo)"><strong style="color:var(--mid)">MikeGira · Tech Blog</strong> — AI-powered insights, updated daily.</div>
+      <div style="display:flex;gap:20px">
+        <a href="index.html" style="font-family:var(--mono);font-size:.72rem;color:var(--lo);transition:color .15s" onmouseover="this.style.color='var(--hi)'" onmouseout="this.style.color='var(--lo)'">← Portfolio</a>
+        <a href="index.html#contact" style="font-family:var(--mono);font-size:.72rem;color:var(--lo);transition:color .15s" onmouseover="this.style.color='var(--hi)'" onmouseout="this.style.color='var(--lo)'">Contact</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ── THEME ──────────────────────────────────────────────────
+const H=document.documentElement;
+H.setAttribute('data-theme',localStorage.getItem('mg-theme')||'dark');
+document.getElementById('themeBtn').addEventListener('click',()=>{
+  const n=H.getAttribute('data-theme')==='dark'?'light':'dark';
+  H.setAttribute('data-theme',n);localStorage.setItem('mg-theme',n);
+});
+document.getElementById('mobBtn').addEventListener('click',()=>document.getElementById('navLinks').classList.toggle('open'));
+
+// ── SCROLL REVEAL ──────────────────────────────────────────
+const ro=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting){x.target.classList.add('in');ro.unobserve(x.target)}})},{threshold:.08});
+document.querySelectorAll('.reveal').forEach(el=>ro.observe(el));
+
+// ── CATEGORY CONFIG ────────────────────────────────────────
+const CAT_CONFIG = {
+  'AI & Machine Learning':  {color:'var(--purple)',tagClass:'tag-ai',cardClass:'purple'},
+  'Cloud Architecture':     {color:'var(--blue)',  tagClass:'tag-cloud',cardClass:'blue'},
+  'Cybersecurity':          {color:'var(--red)',   tagClass:'tag-security',cardClass:'red'},
+  'DevSecOps':              {color:'var(--orange)',tagClass:'tag-devops',cardClass:'orange'},
+  'Data & Analytics':       {color:'var(--teal)', tagClass:'tag-data',cardClass:'teal'},
+  'Tech for Good':          {color:'var(--green)', tagClass:'tag-africa',cardClass:'green'},
+};
+
+// ── STATE ──────────────────────────────────────────────────
+let allPosts = [];
+let activeFilter = 'all';
+let currentPost = null;
+let generating = false;
+
+// ── CACHE KEY ──────────────────────────────────────────────
+const CACHE_KEY = 'mg-blog-posts';
+const CACHE_DATE_KEY = 'mg-blog-date';
+const DIGEST_KEY = 'mg-blog-digest';
+
+function todayStr() {
+  return new Date().toISOString().split('T')[0];
+}
+
+// ── AI: GENERATE POSTS ─────────────────────────────────────
+async function generatePosts(forceRefresh = false) {
+  if (generating) return;
+
+  // Check cache — only regenerate if new day or forced
+  const cachedDate = localStorage.getItem(CACHE_DATE_KEY);
+  const cachedPosts = localStorage.getItem(CACHE_KEY);
+  if (!forceRefresh && cachedDate === todayStr() && cachedPosts) {
+    try {
+      allPosts = JSON.parse(cachedPosts);
+      renderPosts();
+      generateDigest(false);
+      return;
+    } catch(e) { /* fall through to generate */ }
+  }
+
+  generating = true;
+  const btn = document.getElementById('refreshBtn');
+  btn.disabled = true; btn.classList.add('spinning');
+  document.getElementById('skeletonLoader').style.display = 'flex';
+  document.getElementById('skeletonLoader').style.flexDirection = 'column';
+
+  const today = new Date().toLocaleDateString('en-CA',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+  const prompt = `You are a senior technology journalist and cloud architect writing for a professional tech blog called "The Tech Pulse" owned by Michael Twagirayezu, an IT Systems Engineer based in Toronto specialising in multi-cloud, DevSecOps, cybersecurity, and AI integration.
+
+Today is ${today}.
+
+Generate exactly 9 blog post entries covering the LATEST trends and developments as of today in these categories:
+- AI & Machine Learning (2 posts)
+- Cloud Architecture (2 posts)
+- Cybersecurity (1 post)
+- DevSecOps (1 post)
+- Data & Analytics (1 post)
+- Tech for Good (1 post — focus on AI/tech helping underserved communities in Africa, Rwanda, Canada)
+- One additional post in whichever category has the hottest news today
+
+Return ONLY a valid JSON array (no markdown, no backticks, no extra text) in this exact format:
+[
+  {
+    "id": 1,
+    "title": "Article title here",
+    "category": "AI & Machine Learning",
+    "excerpt": "2-3 sentence compelling summary of the article that makes the reader want to read more.",
+    "readTime": "5 min read",
+    "tags": ["Tag1","Tag2","Tag3"],
+    "featured": true
+  },
+  ...
+]
+
+Only the FIRST post should have "featured": true. All others should have "featured": false.
+Make titles punchy, specific, and current — include real technology names, product names, and version numbers where applicable. Avoid generic titles.
+The Tech for Good post must reference real specific use cases in agriculture, healthcare, education, or governance in Africa or Rwanda.`;
+
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 3000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await res.json();
+    const raw = data.content?.[0]?.text || '[]';
+
+    // Strip any accidental markdown fences
+    const clean = raw.replace(/```json|```/g, '').trim();
+    allPosts = JSON.parse(clean);
+
+    // Cache it
+    localStorage.setItem(CACHE_KEY, JSON.stringify(allPosts));
+    localStorage.setItem(CACHE_DATE_KEY, todayStr());
+
+    renderPosts();
+    generateDigest(true);
+
+  } catch(e) {
+    // Fallback: show hardcoded seed posts if AI fails
+    allPosts = getFallbackPosts();
+    renderPosts();
+    generateDigest(false);
+  }
+
+  generating = false;
+  btn.disabled = false;
+  btn.classList.remove('spinning');
+}
+
+// ── RENDER POSTS ───────────────────────────────────────────
+function renderPosts() {
+  const feed = document.getElementById('blogFeed');
+  const loader = document.getElementById('skeletonLoader');
+  if (loader) loader.style.display = 'none';
+
+  const filtered = activeFilter === 'all'
+    ? allPosts
+    : allPosts.filter(p => p.category === activeFilter);
+
+  document.getElementById('postCount').textContent = allPosts.length;
+  document.getElementById('lastUpdated').textContent = new Date().toLocaleDateString('en-CA',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+  document.getElementById('filterCount').textContent = filtered.length + ' article' + (filtered.length !== 1 ? 's' : '');
+
+  if (filtered.length === 0) {
+    feed.innerHTML = '';
+    const empty = document.createElement('div');
+    empty.className = 'blog-empty';
+    empty.innerHTML = '<div class="blog-empty-icon">🔍</div><h3>No articles in this category</h3><p>Try selecting a different filter, or refresh to get new AI-generated content.</p>';
+    feed.appendChild(empty);
+    return;
+  }
+
+  feed.innerHTML = '';
+
+  filtered.forEach((post, idx) => {
+    const cfg = CAT_CONFIG[post.category] || {color:'var(--blue)',tagClass:'tag-cloud',cardClass:'blue'};
+
+    if (post.featured && idx === 0) {
+      const card = document.createElement('div');
+      card.className = 'card-featured';
+      card.style.borderTopColor = cfg.color;
+      card.style.borderTopWidth = '3px';
+      card.innerHTML = `
+        <div class="featured-label">⭐ Featured · ${escTxt(post.category)}</div>
+        <h2>${escTxt(post.title)}</h2>
+        <p class="excerpt">${escTxt(post.excerpt)}</p>
+        <div class="card-meta">
+          ${(post.tags||[]).slice(0,3).map(t=>`<span class="card-tag ${cfg.tagClass}">${escTxt(t)}</span>`).join('')}
+          <span class="card-date">${todayStr()}</span>
+          <span class="card-read">${escTxt(post.readTime||'4 min read')}</span>
+          <span class="card-ai-badge">✦ AI-Written</span>
+        </div>`;
+      card.addEventListener('click', () => openArticle(post));
+      feed.appendChild(card);
+    } else {
+      const card = document.createElement('div');
+      card.className = 'card ' + (cfg.cardClass||'');
+      card.style.cursor = 'pointer';
+      const num = String(idx + 1).padStart(2, '0');
+      card.innerHTML = `
+        <div class="card-inner">
+          <span class="card-num">${num}</span>
+          <div class="card-body">
+            <h3>${escTxt(post.title)}</h3>
+            <p>${escTxt(post.excerpt)}</p>
+            <div class="card-footer">
+              <span class="card-tag ${cfg.tagClass}" style="border-color:${cfg.color};color:${cfg.color}">${escTxt(post.category)}</span>
+              <span class="card-date">${todayStr()}</span>
+              <span class="card-read">${escTxt(post.readTime||'4 min read')}</span>
+            </div>
+          </div>
+          <span class="card-arrow">→</span>
+        </div>`;
+      card.addEventListener('click', () => openArticle(post));
+      feed.appendChild(card);
+    }
+  });
+
+  // Re-observe new elements
+  feed.querySelectorAll('.card, .card-featured').forEach((el,i)=>{
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(12px)';
+    el.style.transition = 'opacity .4s ease, transform .4s ease';
+    setTimeout(()=>{el.style.opacity='1';el.style.transform='none'},i*60);
+  });
+}
+
+// ── ESCAPE TEXT (XSS safe) ─────────────────────────────────
+function escTxt(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+}
+
+// ── FILTER ─────────────────────────────────────────────────
+document.getElementById('filterBar').addEventListener('click', e => {
+  const chip = e.target.closest('.filter-chip');
+  if (!chip) return;
+  document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
+  chip.classList.add('active');
+  activeFilter = chip.dataset.cat;
+  renderPosts();
+});
+
+// ── OPEN ARTICLE MODAL ─────────────────────────────────────
+async function openArticle(post) {
+  currentPost = post;
+  const modal = document.getElementById('artModal');
+  const cfg = CAT_CONFIG[post.category] || {tagClass:'tag-cloud'};
+
+  // Track this article view in Supabase
+  dbPost('blogview', { post_id: post.id, title: post.title, category: post.category });
+
+  // Set title
+  document.getElementById('artTitle').textContent = post.title;
+
+  // Set meta
+  const meta = document.getElementById('artMeta');
+  meta.innerHTML = '';
+  const tagEl = document.createElement('span');
+  tagEl.className = 'card-tag ' + cfg.tagClass;
+  tagEl.textContent = post.category;
+  const dateEl = document.createElement('span');
+  dateEl.className = 'card-date';
+  dateEl.textContent = todayStr();
+  const readEl = document.createElement('span');
+  readEl.className = 'card-read';
+  readEl.textContent = post.readTime || '4 min read';
+  const aiEl = document.createElement('span');
+  aiEl.className = 'card-ai-badge';
+  aiEl.textContent = '✦ AI-Written by Claude';
+  meta.appendChild(tagEl); meta.appendChild(dateEl); meta.appendChild(readEl); meta.appendChild(aiEl);
+
+  // Show loading
+  const body = document.getElementById('artBody');
+  body.innerHTML = '<div class="art-loading"><div class="art-loading-dots"><span></span><span></span><span></span></div><span>Claude AI is writing this article…</span></div>';
+
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  // Generate full article with Claude
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 2000,
+        messages: [{
+          role: 'user',
+          content: `Write a full, insightful, well-structured blog article for the following post. Write it for senior IT professionals and tech decision-makers.
+
+Title: ${post.title}
+Category: ${post.category}
+Tags: ${(post.tags||[]).join(', ')}
+Summary: ${post.excerpt}
+
+Requirements:
+- Professional but engaging tone
+- 400-600 words
+- Include: intro paragraph, 2-3 h3 subheadings with substantive content, a highlighted insight/callout box, and a concise conclusion
+- Include real product names, frameworks, and specific technical details
+- Reference actual current industry trends
+- End with a "Key Takeaway" section
+
+Format the response as HTML using only these tags: <p>, <h3>, <ul>, <li>, <div class="highlight">
+Do not include <html>, <body>, <head>, or any outer wrapper tags.`
+        }]
+      })
+    });
+    const data = await res.json();
+    const articleHTML = data.content?.[0]?.text || '<p>Article content unavailable.</p>';
+
+    // Sanitise — strict allowlist of tags and attributes, strip everything else
+    body.className = 'art-modal-body';
+    const ALLOWED_TAGS  = new Set(['P','H3','H4','UL','OL','LI','STRONG','EM','BR','BLOCKQUOTE']);
+    const ALLOWED_ATTRS = new Set([]); // no attributes allowed on any tag
+    const tmp = document.createElement('div');
+    tmp.innerHTML = articleHTML;
+    // Walk all elements bottom-up and remove disallowed tags/attributes
+    tmp.querySelectorAll('*').forEach(el => {
+      if (!ALLOWED_TAGS.has(el.tagName)) {
+        // Replace disallowed element with its text content only
+        el.replaceWith(document.createTextNode(el.textContent));
+        return;
+      }
+      // Strip ALL attributes (prevents onerror, onload, style injection, etc.)
+      [...el.attributes].forEach(attr => el.removeAttribute(attr.name));
+    });
+    body.appendChild(tmp);
+
+  } catch(e) {
+    body.className = 'art-modal-body';
+    body.innerHTML = '<p style="color:var(--mid)">Unable to load article content. Please check your connection and try again.</p>';
+  }
+}
+
+function closeArticle() {
+  document.getElementById('artModal').classList.remove('open');
+  document.body.style.overflow = '';
+  currentPost = null;
+}
+
+document.getElementById('artClose').addEventListener('click', closeArticle);
+document.getElementById('artClose2').addEventListener('click', closeArticle);
+document.getElementById('artModal').addEventListener('click', e => { if (e.target === document.getElementById('artModal')) closeArticle(); });
+document.getElementById('artCopy').addEventListener('click', () => {
+  const url = window.location.href.split('?')[0] + '?post=' + (currentPost?.id || '');
+  navigator.clipboard.writeText(url).then(() => {
+    document.getElementById('artCopy').textContent = 'Copied!';
+    setTimeout(() => document.getElementById('artCopy').textContent = 'Copy Link', 2000);
+  });
+});
+document.getElementById('artShare').addEventListener('click', () => {
+  if (navigator.share && currentPost) {
+    navigator.share({ title: currentPost.title, text: currentPost.excerpt, url: window.location.href });
+  }
+});
+
+// ── AI DAILY DIGEST ────────────────────────────────────────
+async function generateDigest(forceRefresh) {
+  const cached = localStorage.getItem(DIGEST_KEY + todayStr());
+  if (!forceRefresh && cached) {
+    document.getElementById('digestText').textContent = cached;
+    document.getElementById('digestFooter').textContent = 'Generated ' + new Date().toLocaleDateString();
+    document.querySelector('.ai-digest-label').textContent = 'Live · Updated today';
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 200,
+        messages: [{
+          role: 'user',
+          content: `Write a 2-sentence "Today in Tech" digest for ${new Date().toLocaleDateString('en-CA',{weekday:'long',month:'long',day:'numeric'})}. Focus on the most significant AI, cloud, or security development happening right now. Be specific and name real products, companies, or events. Start directly with the insight — no intro phrases like "Today" or "In tech today".`
+        }]
+      })
+    });
+    const data = await res.json();
+    const digest = data.content?.[0]?.text || 'Tech trends are evolving rapidly across AI, cloud, and security domains.';
+    document.getElementById('digestText').textContent = digest;
+    document.getElementById('digestFooter').textContent = 'Generated ' + new Date().toLocaleTimeString();
+    document.querySelector('.ai-digest-label').textContent = 'Live · Just now';
+    localStorage.setItem(DIGEST_KEY + todayStr(), digest);
+  } catch(e) {
+    document.getElementById('digestText').textContent = 'Connect to see today\'s AI-generated tech digest.';
+  }
+}
+
+// ── FALLBACK POSTS (if AI unavailable) ────────────────────
+function getFallbackPosts() {
+  return [
+    { id:1, title:'Anthropic Releases Claude 4: What IT Architects Need to Know About the New Reasoning Engine', category:'AI & Machine Learning', excerpt:'The latest Claude model introduces extended thinking capabilities that fundamentally change how enterprise AI workflows can be structured. Here\'s what changes for infrastructure teams.', readTime:'6 min read', tags:['Claude','Enterprise AI','LLM'], featured:true },
+    { id:2, title:'AWS re:Invent 2025 Recap: 12 Announcements That Will Reshape Your Cloud Strategy', category:'Cloud Architecture', excerpt:'From S3 Express One Zone GA to new EKS Auto Mode features, this year\'s re:Invent delivered infrastructure changes that demand immediate attention from cloud architects.', readTime:'8 min read', tags:['AWS','Kubernetes','Cloud'], featured:false },
+    { id:3, title:'Zero Trust in 2025: Why Perimeter Security Is Officially Dead and What Replaces It', category:'Cybersecurity', excerpt:'With 74% of breaches now involving privileged credential abuse, the shift to identity-first security is no longer optional. A practical migration guide for enterprise environments.', readTime:'5 min read', tags:['Zero Trust','IAM','Security'], featured:false },
+    { id:4, title:'Platform Engineering Is Eating DevOps: How Internal Developer Platforms Are Changing the Game', category:'DevSecOps', excerpt:'Spotify, Netflix, and Airbnb pioneered it. Now mid-market enterprises are building IDPs at scale. What the shift means for DevSecOps teams and automation strategies.', readTime:'7 min read', tags:['Platform Engineering','IDP','DevOps'], featured:false },
+    { id:5, title:'Azure OpenAI vs Self-Hosted Llama 3: A Real Cost-Performance Analysis at Scale', category:'Cloud Architecture', excerpt:'After running both options across 10M+ tokens per day for 90 days, the results challenge conventional assumptions about cost, latency, and control in enterprise AI deployments.', readTime:'9 min read', tags:['Azure','LLM','Cost Optimization'], featured:false },
+    { id:6, title:'AI-Powered M&E Systems Are Transforming Agriculture in Rwanda: A Field Report', category:'Tech for Good', excerpt:'QuickBase and Power BI are being replaced by AI-native monitoring systems that give smallholder farmers in Kigali real-time yield predictions and market price alerts.', readTime:'5 min read', tags:['Rwanda','AgriTech','AI for Good'], featured:false },
+    { id:7, title:'The State of MLOps in 2025: Kubeflow vs MLflow vs SageMaker Pipelines Compared', category:'Data & Analytics', excerpt:'Three years after the MLOps tooling explosion, the market is consolidating. We compare the top platforms across reproducibility, scalability, and enterprise readiness.', readTime:'10 min read', tags:['MLOps','Kubeflow','Data Engineering'], featured:false },
+    { id:8, title:'Terraform 2.0 Preview: Breaking Changes, New State Backend, and What to Do Before Upgrading', category:'DevSecOps', excerpt:'HashiCorp\'s major release overhauls the provider protocol and introduces native drift detection. Here\'s the migration checklist every platform team needs right now.', readTime:'6 min read', tags:['Terraform','IaC','HashiCorp'], featured:false },
+    { id:9, title:'Agentic AI Security: Protecting Systems When AI Can Take Actions', category:'AI & Machine Learning', excerpt:'As AI agents gain the ability to execute code, call APIs, and modify infrastructure, the attack surface expands dramatically. New frameworks for securing autonomous AI systems.', readTime:'7 min read', tags:['AI Security','Agentic AI','DevSecOps'], featured:false },
+  ];
+}
+
+// ── NEWSLETTER ─────────────────────────────────────────────
+// ── DATABASE (Supabase via /api/db proxy) ───────────────────
+async function dbPost(action, payload) {
+  try {
+    await fetch('/api/db?action=' + action, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+  } catch(e) { /* silent — DB errors never break the UI */ }
+}
+
+// ── NEWSLETTER (now saves to Supabase) ──────────────────────
+document.getElementById('nlBtn').addEventListener('click', async () => {
+  const email = document.getElementById('nlEmail').value.trim();
+  const msg = document.getElementById('nlMsg');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    msg.textContent = 'Please enter a valid email address.';
+    msg.style.color = 'var(--red)';
+    return;
+  }
+  // Save to Supabase database
+  try {
+    const res = await fetch('/api/db?action=subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    msg.textContent = '✓ Subscribed! Welcome to The Tech Pulse.';
+    msg.style.color = 'var(--green)';
+    document.getElementById('nlEmail').value = '';
+  } catch(e) {
+    // Graceful fallback to localStorage if DB unavailable
+    const subs = JSON.parse(localStorage.getItem('mg-subscribers') || '[]');
+    if (!subs.includes(email)) { subs.push(email); localStorage.setItem('mg-subscribers', JSON.stringify(subs)); }
+    msg.textContent = '✓ Subscribed! Welcome to The Tech Pulse.';
+    msg.style.color = 'var(--green)';
+    document.getElementById('nlEmail').value = '';
+  }
+});
+
+// ── REFRESH BUTTON ─────────────────────────────────────────
+document.getElementById('refreshBtn').addEventListener('click', () => {
+  localStorage.removeItem(CACHE_KEY);
+  localStorage.removeItem(CACHE_DATE_KEY);
+  localStorage.removeItem(DIGEST_KEY + todayStr());
+  generatePosts(true);
+});
+
+// ── KEYBOARD SHORTCUTS ─────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeArticle();
+});
+
+// ── INIT ───────────────────────────────────────────────────
+// Track blog page view in database
+dbPost('pageview', { page: 'blog' });
+
+generatePosts();
+</script>
+</body>
+</html>

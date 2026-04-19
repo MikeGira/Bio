@@ -1,0 +1,37 @@
+{
+  "name": "Michael Twagirayezu | MikeGira",
+  "short_name": "MikeGira",
+  "description": "IT Systems Engineer · Multi-Cloud Architect · AI Solutions Innovator",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#050810",
+  "theme_color": "#0a0f1e",
+  "orientation": "portrait-primary",
+  "categories": ["business", "technology"],
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='40' fill='%230a0f1e'/><text x='96' y='138' font-size='108' text-anchor='middle' fill='%2300d4ff' font-family='sans-serif' font-weight='bold'>M</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%230a0f1e'/><text x='256' y='370' font-size='290' text-anchor='middle' fill='%2300d4ff' font-family='sans-serif' font-weight='bold'>M</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Contact Michael",
+      "url": "/#contact",
+      "description": "Get in touch with Michael"
+    },
+    {
+      "name": "View Experience",
+      "url": "/#experience",
+      "description": "See Michael's professional experience"
+    }
+  ]
+}

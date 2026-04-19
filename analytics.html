@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="robots" content="noindex,nofollow"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; frame-ancestors 'none';"/>
+<title>Analytics — MikeGira.dev</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<!-- Vercel Analytics -->
+<script defer src="/_vercel/insights/script.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg0:#0d0d12;--bg1:#13131a;--bg2:#1a1a24;--bg3:#22222e;
+  --red:#ee0000;--red2:#c00000;
+  --green:#22c55e;--blue:#3b82f6;--orange:#f97316;--gold:#f0ab00;--purple:#a855f7;--teal:#14b8a6;
+  --hi:#f4f4f8;--mid:#8888a0;--lo:#44445a;
+  --line:rgba(255,255,255,0.07);--line2:rgba(255,255,255,0.11);
+  --font:'Inter',sans-serif;--mono:'JetBrains Mono',monospace;
+  --r:16px;--r-sm:10px;--r-lg:22px;
+}
+html{font-size:16px;background:var(--bg0)}
+body{font-family:var(--font);background:var(--bg0);color:var(--hi);min-height:100vh}
+
+/* ── LOGIN SCREEN ── */
+.login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.login-card{background:var(--bg1);border:1px solid var(--line2);border-radius:var(--r-lg);padding:40px;width:100%;max-width:400px;text-align:center}
+.login-logo{width:44px;height:44px;background:var(--red);border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.1rem;color:#fff;margin:0 auto 20px}
+.login-card h1{font-size:1.4rem;font-weight:800;letter-spacing:-.03em;margin-bottom:6px}
+.login-card p{font-size:.875rem;color:var(--mid);margin-bottom:28px}
+.login-field{margin-bottom:14px;text-align:left}
+.login-field label{display:block;font-family:var(--mono);font-size:.67rem;color:var(--lo);text-transform:uppercase;letter-spacing:.09em;margin-bottom:7px}
+.login-field input{width:100%;background:var(--bg0);border:1px solid var(--line2);border-radius:var(--r-sm);padding:11px 14px;color:var(--hi);font-family:var(--font);font-size:.9rem;outline:none;transition:border-color .15s}
+.login-field input:focus{border-color:var(--red)}
+.login-btn{width:100%;padding:12px;background:var(--red);border:none;border-radius:var(--r);color:#fff;font-family:var(--font);font-size:.9375rem;font-weight:600;cursor:pointer;transition:background .15s;margin-top:6px}
+.login-btn:hover{background:var(--red2)}
+.login-err{font-family:var(--mono);font-size:.75rem;color:#ef4444;margin-top:10px;min-height:18px}
+
+/* ── DASHBOARD ── */
+.dash{display:none;min-height:100vh;flex-direction:column}
+.dash.visible{display:flex}
+
+/* Top bar */
+.topbar{background:var(--bg1);border-bottom:1px solid var(--line2);padding:14px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar-left{display:flex;align-items:center;gap:12px}
+.topbar-logo{width:32px;height:32px;background:var(--red);border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.85rem;color:#fff}
+.topbar h1{font-size:1rem;font-weight:700;letter-spacing:-.02em}
+.topbar-sub{font-family:var(--mono);font-size:.68rem;color:var(--lo)}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.refresh-btn{background:var(--bg2);border:1px solid var(--line2);border-radius:var(--r-sm);padding:7px 14px;color:var(--mid);font-family:var(--mono);font-size:.72rem;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:6px}
+.refresh-btn:hover{border-color:var(--line2);color:var(--hi)}
+.refresh-btn.spinning svg{animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.logout-btn{background:none;border:1px solid var(--line2);border-radius:var(--r-sm);padding:7px 14px;color:var(--lo);font-family:var(--mono);font-size:.72rem;cursor:pointer;transition:all .15s}
+.logout-btn:hover{color:var(--red);border-color:var(--red)}
+.last-refresh{font-family:var(--mono);font-size:.67rem;color:var(--lo)}
+
+/* Main content */
+.dash-body{flex:1;padding:32px;max-width:1200px;margin:0 auto;width:100%}
+
+/* Stat cards row */
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px}
+.stat-card{background:var(--bg1);border:1px solid var(--line2);border-radius:var(--r-lg);padding:24px 20px;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--r-lg) var(--r-lg) 0 0}
+.stat-card.red::before{background:var(--red)}
+.stat-card.green::before{background:var(--green)}
+.stat-card.blue::before{background:var(--blue)}
+.stat-card.orange::before{background:var(--orange)}
+.stat-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+.stat-card.red .stat-icon{background:rgba(238,0,0,.12)}
+.stat-card.green .stat-icon{background:rgba(34,197,94,.12)}
+.stat-card.blue .stat-icon{background:rgba(59,130,246,.12)}
+.stat-card.orange .stat-icon{background:rgba(249,115,22,.12)}
+.stat-num{font-size:2.2rem;font-weight:800;line-height:1;letter-spacing:-.03em;margin-bottom:5px}
+.stat-card.red .stat-num{color:var(--red)}
+.stat-card.green .stat-num{color:var(--green)}
+.stat-card.blue .stat-num{color:var(--blue)}
+.stat-card.orange .stat-num{color:var(--orange)}
+.stat-label{font-size:.8rem;color:var(--mid);font-weight:500}
+.stat-sub{font-family:var(--mono);font-size:.67rem;color:var(--lo);margin-top:4px}
+
+/* Grid of panels */
+.panels{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.panel{background:var(--bg1);border:1px solid var(--line2);border-radius:var(--r-lg);overflow:hidden}
+.panel-full{grid-column:1/-1}
+.panel-head{padding:18px 22px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
+.panel-head h2{font-size:.9375rem;font-weight:700;letter-spacing:-.02em}
+.panel-badge{font-family:var(--mono);font-size:.65rem;background:var(--bg3);border:1px solid var(--line2);border-radius:50px;padding:3px 10px;color:var(--lo)}
+.panel-body{padding:0}
+
+/* Table */
+.data-table{width:100%;border-collapse:collapse}
+.data-table th{font-family:var(--mono);font-size:.65rem;color:var(--lo);text-transform:uppercase;letter-spacing:.09em;padding:10px 22px;text-align:left;border-bottom:1px solid var(--line);font-weight:400}
+.data-table td{padding:12px 22px;font-size:.8125rem;border-bottom:1px solid var(--line);vertical-align:middle}
+.data-table tr:last-child td{border-bottom:none}
+.data-table tr:hover td{background:rgba(255,255,255,.02)}
+.data-table .mono{font-family:var(--mono);font-size:.75rem;color:var(--mid)}
+.data-table .tag{font-family:var(--mono);font-size:.62rem;padding:2px 8px;border-radius:50px;background:var(--bg3);color:var(--lo)}
+.data-table .views-bar{display:flex;align-items:center;gap:10px}
+.bar-track{flex:1;height:5px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px;background:var(--blue);transition:width .6s ease}
+.bar-fill.red{background:var(--red)}
+.bar-fill.green{background:var(--green)}
+.bar-fill.orange{background:var(--orange)}
+.bar-num{font-family:var(--mono);font-size:.72rem;color:var(--mid);width:30px;text-align:right;flex-shrink:0}
+
+/* Contacts panel */
+.contact-card{padding:14px 22px;border-bottom:1px solid var(--line);transition:background .15s}
+.contact-card:last-child{border-bottom:none}
+.contact-card:hover{background:rgba(255,255,255,.02)}
+.cc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.cc-name{font-weight:600;font-size:.875rem}
+.cc-time{font-family:var(--mono);font-size:.65rem;color:var(--lo)}
+.cc-email{font-family:var(--mono);font-size:.72rem;color:var(--blue);margin-bottom:6px}
+.cc-type{font-family:var(--mono);font-size:.62rem;padding:2px 8px;border-radius:50px;background:rgba(238,0,0,.1);color:var(--red);border:1px solid rgba(238,0,0,.2);display:inline-block;margin-bottom:6px}
+.cc-msg{font-size:.8125rem;color:var(--mid);line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+/* Subscribers */
+.sub-item{display:flex;align-items:center;justify-content:space-between;padding:11px 22px;border-bottom:1px solid var(--line);font-size:.8125rem}
+.sub-item:last-child{border-bottom:none}
+.sub-email{font-family:var(--mono);font-size:.75rem;color:var(--hi)}
+.sub-date{font-family:var(--mono);font-size:.67rem;color:var(--lo)}
+
+/* Empty state */
+.empty{padding:40px;text-align:center;color:var(--lo);font-family:var(--mono);font-size:.78rem}
+
+/* Loading skeleton */
+.skel{background:linear-gradient(90deg,var(--bg2) 25%,var(--bg3) 50%,var(--bg2) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:6px;height:16px;margin:4px 0}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* Error banner */
+.err-banner{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);border-radius:var(--r-sm);padding:12px 18px;font-family:var(--mono);font-size:.75rem;color:#ef4444;margin-bottom:20px;display:none}
+.err-banner.visible{display:block}
+
+@media(max-width:900px){.stat-row{grid-template-columns:1fr 1fr}.panels{grid-template-columns:1fr}}
+@media(max-width:600px){.stat-row{grid-template-columns:1fr}.dash-body{padding:16px}.topbar{padding:12px 16px}}
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN SCREEN ── -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">MT</div>
+    <h1>Analytics Dashboard</h1>
+    <p>MikeGira.dev · Private Access</p>
+    <div class="login-field">
+      <label>Password</label>
+      <input type="password" id="pwInput" placeholder="Enter dashboard password" autocomplete="current-password"/>
+    </div>
+    <button class="login-btn" id="loginBtn">Enter Dashboard →</button>
+    <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- ── DASHBOARD ── -->
+<div class="dash" id="dashboard">
+
+  <!-- Top bar -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-logo">MT</div>
+      <div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <h1>Analytics</h1>
+          <span class="panel-badge">Live</span>
+        </div>
+        <div class="topbar-sub">MikeGira.dev · <span id="lastRefresh">Loading…</span></div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button class="refresh-btn" id="refreshBtn">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c-1.66 0-3-4.03-3-9s1.34-9 3-9m0 18c1.66 0 3-4.03 3-9s-1.34-9-3-9m-9 9a9 9 0 019-9"/></svg>
+        Refresh
+      </button>
+      <button class="logout-btn" id="logoutBtn">Sign Out</button>
+    </div>
+  </div>
+
+  <div class="dash-body">
+    <div class="err-banner" id="errBanner"></div>
+
+    <!-- Stat cards -->
+    <div class="stat-row">
+      <div class="stat-card red">
+        <div class="stat-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ee0000" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        </div>
+        <div class="stat-num" id="totalContacts">—</div>
+        <div class="stat-label">Contact Submissions</div>
+        <div class="stat-sub">All time</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.43 19.79 19.79 0 01.22 5a2 2 0 012-2.18h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8 9.91a16 16 0 006 6l.46-.46a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 17.68z"/></svg>
+        </div>
+        <div class="stat-num" id="totalSubs">—</div>
+        <div class="stat-label">Newsletter Subscribers</div>
+        <div class="stat-sub">Active</div>
+      </div>
+      <div class="stat-card blue">
+        <div class="stat-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </div>
+        <div class="stat-num" id="totalPageViews">—</div>
+        <div class="stat-label">Total Page Views</div>
+        <div class="stat-sub">Index + Blog</div>
+      </div>
+      <div class="stat-card orange">
+        <div class="stat-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        </div>
+        <div class="stat-num" id="totalBlogViews">—</div>
+        <div class="stat-label">Blog Article Reads</div>
+        <div class="stat-sub">All articles</div>
+      </div>
+    </div>
+
+    <!-- Row 1: Page views + Top blog posts -->
+    <div class="panels">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Page Views</h2>
+          <span class="panel-badge" id="pageViewsBadge">—</span>
+        </div>
+        <div class="panel-body" id="pageViewsBody">
+          <div class="empty">Loading…</div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Top Blog Articles</h2>
+          <span class="panel-badge" id="blogBadge">—</span>
+        </div>
+        <div class="panel-body" id="blogBody">
+          <div class="empty">Loading…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 2: Contact submissions (full width) -->
+    <div class="panels">
+      <div class="panel panel-full">
+        <div class="panel-head">
+          <h2>Contact Submissions</h2>
+          <span class="panel-badge" id="contactBadge">—</span>
+        </div>
+        <div class="panel-body" id="contactBody">
+          <div class="empty">Loading…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 3: Newsletter subscribers -->
+    <div class="panels">
+      <div class="panel panel-full">
+        <div class="panel-head">
+          <h2>Newsletter Subscribers</h2>
+          <span class="panel-badge" id="subsBadge">—</span>
+        </div>
+        <div class="panel-body" id="subsBody">
+          <div class="empty">Loading…</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /dash-body -->
+</div><!-- /dash -->
+
+<script>
+// ── AUTH — password verified server-side only ───────────────
+// No password is stored in this file. It lives in Vercel env vars as ANALYTICS_PASSWORD.
+const loginScreen = document.getElementById('loginScreen');
+const dashboard   = document.getElementById('dashboard');
+const SESSION_KEY = 'mg-analytics-token';
+
+function checkSession() {
+  const token = sessionStorage.getItem(SESSION_KEY);
+  if (token) showDashboard(token);
+}
+
+document.getElementById('loginBtn').addEventListener('click', tryLogin);
+document.getElementById('pwInput').addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin(); });
+
+async function tryLogin() {
+  const pw  = document.getElementById('pwInput').value.trim();
+  const err = document.getElementById('loginErr');
+  const btn = document.getElementById('loginBtn');
+  if (!pw) return;
+  btn.textContent = 'Verifying…';
+  btn.disabled = true;
+  try {
+    const res = await fetch('/api/analytics-auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pw })
+    });
+    const data = await res.json();
+    if (res.ok && data.token) {
+      sessionStorage.setItem(SESSION_KEY, data.token);
+      showDashboard(data.token);
+    } else {
+      err.textContent = data.error || 'Incorrect password. Try again.';
+      document.getElementById('pwInput').value = '';
+      document.getElementById('pwInput').focus();
+    }
+  } catch {
+    err.textContent = 'Connection error. Make sure you are on the deployed site.';
+  } finally {
+    btn.textContent = 'Enter Dashboard →';
+    btn.disabled = false;
+  }
+}
+
+function showDashboard(token) {
+  loginScreen.style.display = 'none';
+  dashboard.classList.add('visible');
+  loadData(token);
+}
+
+document.getElementById('logoutBtn').addEventListener('click', () => {
+  sessionStorage.removeItem(SESSION_KEY);
+  location.reload();
+});
+
+// ── DATA LOADING ────────────────────────────────────────────
+async function loadData(token) {
+  if (!token) token = sessionStorage.getItem(SESSION_KEY);
+  const btn = document.getElementById('refreshBtn');
+  btn.classList.add('spinning');
+  document.getElementById('errBanner').classList.remove('visible');
+
+  try {
+    const res = await fetch('/api/db?action=analytics', {
+      headers: token ? { 'Authorization': 'Bearer ' + token } : {}
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    renderAll(data);
+    document.getElementById('lastRefresh').textContent =
+      'Last updated ' + new Date().toLocaleTimeString();
+  } catch (err) {
+    const banner = document.getElementById('errBanner');
+    banner.textContent = 'Could not load analytics: ' + err.message +
+      '. Make sure SUPABASE_URL and SUPABASE_SERVICE_KEY are set in Vercel.';
+    banner.classList.add('visible');
+
+    // Show demo data so the dashboard isn't blank
+    renderAll(getDemoData());
+    document.getElementById('lastRefresh').textContent = 'Demo data (DB not connected)';
+  } finally {
+    btn.classList.remove('spinning');
+  }
+}
+
+document.getElementById('refreshBtn').addEventListener('click', loadData);
+
+// ── RENDER ──────────────────────────────────────────────────
+function renderAll(data) {
+  const pageViews   = data.page_views   || [];
+  const topPosts    = data.top_posts    || [];
+  const contacts    = data.contacts     || [];
+  const subscribers = data.subscribers  || [];
+
+  // Stat cards
+  const totalPageViews = pageViews.reduce((s, r) => s + (r.views || 0), 0);
+  const totalBlogViews = topPosts.reduce((s, r) => s + (r.views || 0), 0);
+  animateNum('totalContacts',   contacts.length);
+  animateNum('totalSubs',       subscribers.length);
+  animateNum('totalPageViews',  totalPageViews);
+  animateNum('totalBlogViews',  totalBlogViews);
+
+  // Page views panel
+  const maxPV = Math.max(...pageViews.map(r => r.views || 0), 1);
+  document.getElementById('pageViewsBadge').textContent = pageViews.length + ' pages';
+  document.getElementById('pageViewsBody').innerHTML = pageViews.length ? `
+    <table class="data-table">
+      <thead><tr><th>Page</th><th>Views</th><th>Last Visit</th></tr></thead>
+      <tbody>
+        ${pageViews.map(r => `
+          <tr>
+            <td><span class="mono">${escHtml(r.page || '')}</span></td>
+            <td>
+              <div class="views-bar">
+                <div class="bar-track"><div class="bar-fill blue" style="width:${Math.round((r.views/maxPV)*100)}%"></div></div>
+                <span class="bar-num">${r.views || 0}</span>
+              </div>
+            </td>
+            <td><span class="mono">${fmtDate(r.last_visited)}</span></td>
+          </tr>`).join('')}
+      </tbody>
+    </table>` : '<div class="empty">No page views recorded yet.</div>';
+
+  // Blog posts panel
+  const maxBV = Math.max(...topPosts.map(r => r.views || 0), 1);
+  document.getElementById('blogBadge').textContent = topPosts.length + ' articles';
+  document.getElementById('blogBody').innerHTML = topPosts.length ? `
+    <table class="data-table">
+      <thead><tr><th>Article</th><th>Category</th><th>Views</th></tr></thead>
+      <tbody>
+        ${topPosts.map(r => `
+          <tr>
+            <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(r.title || '')}</td>
+            <td><span class="tag">${escHtml(r.category || '')}</span></td>
+            <td>
+              <div class="views-bar">
+                <div class="bar-track"><div class="bar-fill orange" style="width:${Math.round((r.views/maxBV)*100)}%"></div></div>
+                <span class="bar-num">${r.views || 0}</span>
+              </div>
+            </td>
+          </tr>`).join('')}
+      </tbody>
+    </table>` : '<div class="empty">No article reads recorded yet.</div>';
+
+  // Contacts panel
+  document.getElementById('contactBadge').textContent = contacts.length + ' messages';
+  document.getElementById('contactBody').innerHTML = contacts.length ?
+    contacts.slice().reverse().map(c => `
+      <div class="contact-card">
+        <div class="cc-top">
+          <span class="cc-name">${escHtml(c.name || 'Anonymous')}</span>
+          <span class="cc-time">${fmtDate(c.created_at)}</span>
+        </div>
+        <div class="cc-email">${escHtml(c.email || '')}</div>
+        ${c.opportunity ? `<span class="cc-type">${escHtml(c.opportunity)}</span>` : ''}
+        <div class="cc-msg">${escHtml(c.message || '')}</div>
+      </div>`).join('')
+    : '<div class="empty">No contact submissions yet.</div>';
+
+  // Subscribers panel
+  document.getElementById('subsBadge').textContent = subscribers.length + ' subscribers';
+  document.getElementById('subsBody').innerHTML = subscribers.length ?
+    subscribers.slice().reverse().map(s => `
+      <div class="sub-item">
+        <span class="sub-email">${escHtml(s.email || '')}</span>
+        <span class="sub-date">${fmtDate(s.subscribed_at)}</span>
+      </div>`).join('')
+    : '<div class="empty">No subscribers yet.</div>';
+}
+
+// ── HELPERS ─────────────────────────────────────────────────
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function fmtDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-CA', { month:'short', day:'numeric', year:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+function animateNum(id, target) {
+  const el = document.getElementById(id);
+  const dur = 900, start = performance.now();
+  function tick(now) {
+    const t = Math.min((now - start) / dur, 1);
+    const ease = 1 - Math.pow(1 - t, 3);
+    el.textContent = Math.round(ease * target).toLocaleString();
+    if (t < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+// ── DEMO DATA (shown when DB not connected) ─────────────────
+function getDemoData() {
+  return {
+    page_views: [
+      { page: 'index', views: 142, last_visited: new Date().toISOString() },
+      { page: 'blog',  views: 87,  last_visited: new Date().toISOString() },
+    ],
+    top_posts: [
+      { title: 'Zero Trust Architecture in 2025', category: 'Cybersecurity', views: 34 },
+      { title: 'AWS vs Azure for Enterprise', category: 'Cloud Architecture', views: 28 },
+      { title: 'MLOps Pipeline Best Practices', category: 'AI & Machine Learning', views: 19 },
+    ],
+    contacts: [
+      { name: 'Jane Smith', email: 'jane@company.com', opportunity: 'Full-time Role', message: 'Hi Michael, I came across your portfolio and was really impressed by your multi-cloud work.', created_at: new Date().toISOString() },
+    ],
+    subscribers: [
+      { email: 'reader@example.com', subscribed_at: new Date().toISOString() },
+    ],
+  };
+}
+
+// ── INIT ─────────────────────────────────────────────────────
+checkSession();
+</script>
+</body>
+</html>
