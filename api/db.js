@@ -118,11 +118,11 @@ export default async function handler(req, res) {
         html: `
           <div style="font-family:Inter,sans-serif;max-width:480px;margin:0 auto">
             <h2 style="color:#ee0000">Welcome to Michael's Tech Blog 🔥</h2>
-            <p>Hi there! You're now subscribed to <strong>MikeGira.dev</strong> — a blog about cloud architecture, DevSecOps, AI integration, and tech that matters.</p>
+            <p>Hi there! You're now subscribed to <strong>The Tech Pulse by Michael Twagirayezu</strong> — a blog about cloud architecture, DevSecOps, AI integration, and tech that matters.</p>
             <p>You'll hear from me when there's something worth reading. No spam, ever.</p>
             <p style="color:#888;font-size:13px">— Michael Twagirayezu · Toronto, ON</p>
             <hr style="border:1px solid #eee;margin:24px 0"/>
-            <p style="font-size:11px;color:#aaa">You subscribed at mikegira.dev. To unsubscribe, reply with "unsubscribe".</p>
+            <p style="font-size:11px;color:#aaa">You subscribed at The Tech Pulse by Michael Twagirayezu. To unsubscribe, reply with "unsubscribe".</p>
           </div>
         `,
       });
