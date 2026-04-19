@@ -1469,7 +1469,7 @@ Be concise, technical, and professional. Format as a numbered list matching the 
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
-        model:'claude-sonnet-4-20250514',
+        model:'claude-sonnet-4-5',
         max_tokens:1000,
         messages:[{role:'user',content:prompt}]
       })
@@ -1630,13 +1630,26 @@ async function send(text){
   if(now-_lastSend<1500){addMsg('Please wait a moment before sending another message.','bot');return;}
   _lastSend=now;_sending=true;
   addMsg(text,'user');hist.push({role:'user',content:text});
-  if(hist.length>40){hist=hist.slice(-40);}// cap conversation history
+  if(hist.length>40){hist=hist.slice(-40);}
   const ty=addMsg('<span></span><span></span><span></span>','bot typing');
   try{
-    const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:SYSTEM,messages:hist})});
-    const d=await r.json();const rep=d.content?.[0]?.text||'Please try again.';
+    const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:1000,system:SYSTEM,messages:hist})});
+    const d=await r.json();
+    // Show actual error from API so we can diagnose
+    if(!r.ok){
+      ty.remove();
+      const errMsg=d.error||d.message||('API error '+r.status);
+      addMsg('⚠️ '+errMsg,'bot');
+      _sending=false;return;
+    }
+    const rep=d.content?.[0]?.text;
+    if(!rep){
+      ty.remove();
+      addMsg('⚠️ Empty response — API returned: '+JSON.stringify(d).slice(0,200),'bot');
+      _sending=false;return;
+    }
     ty.remove();addMsg(rep,'bot');hist.push({role:'assistant',content:rep});
-  }catch(e){ty.remove();addMsg('Connection error — please try again.','bot')}
+  }catch(e){ty.remove();addMsg('Connection error: '+e.message,'bot')}
   finally{_sending=false;}
 }
 

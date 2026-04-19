@@ -23,7 +23,7 @@ export default async function handler(req, res) {
   }
 
   // Always use the correct model
-  if (req.body) req.body.model = 'claude-sonnet-4-20250514';
+  if (req.body) req.body.model = 'claude-sonnet-4-5';
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -39,7 +39,8 @@ export default async function handler(req, res) {
     const data = await response.json();
 
     if (!response.ok) {
-      return res.status(response.status).json({ error: data.error?.message || 'Anthropic API error' });
+      console.error('Anthropic error:', response.status, JSON.stringify(data));
+      return res.status(response.status).json({ error: data.error?.message || data.error || 'Anthropic API error ' + response.status });
     }
 
     return res.status(200).json(data);

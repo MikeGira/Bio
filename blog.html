@@ -502,7 +502,7 @@ The Tech for Good post must reference real specific use cases in agriculture, he
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-5',
         max_tokens: 3000,
         messages: [{ role: 'user', content: prompt }]
       })
@@ -671,7 +671,7 @@ async function openArticle(post) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-5',
         max_tokens: 2000,
         messages: [{
           role: 'user',
@@ -759,7 +759,7 @@ async function generateDigest(forceRefresh) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-5',
         max_tokens: 200,
         messages: [{
           role: 'user',
