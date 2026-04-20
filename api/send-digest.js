@@ -29,7 +29,7 @@ async function sendEmail({ to, subject, html }) {
       'Content-Type':  'application/json',
     },
     body: JSON.stringify({
-      from:    `Stack Signal <hello@blog.h0m3labs.store>`,
+      from:    `Stack Signal <hello@mikegira.dev>`,
       to:      Array.isArray(to) ? to : [to],
       subject,
       html,
@@ -65,7 +65,9 @@ function buildDigestHtml(posts, issueNum) {
         <tr>
           <td style="background:#0d0d12;padding:28px 32px">
             <div style="display:flex;align-items:center;gap:12px">
-              <div style="width:36px;height:36px;background:#ee0000;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;color:#fff;vertical-align:middle;margin-right:10px">MT</div>
+              <table cellpadding="0" cellspacing="0" style="display:inline-table;vertical-align:middle;margin-right:10px">
+                <tr><td width="36" height="36" align="center" valign="middle" style="width:36px;height:36px;background:#ee0000;border-radius:9px;font-weight:900;font-size:14px;color:#fff;font-family:Arial,sans-serif;line-height:36px;text-align:center">MT</td></tr>
+              </table>
               <span style="font-size:20px;font-weight:800;color:#f4f4f8;vertical-align:middle;letter-spacing:-.02em">Stack Signal</span>
             </div>
             <div style="font-size:13px;color:#8888a0;margin-top:8px">by Michael Twagirayezu · Toronto, ON</div>
@@ -99,7 +101,7 @@ function buildDigestHtml(posts, issueNum) {
         <tr>
           <td style="padding:20px 32px 28px;border-top:1px solid #e5e5e5">
             <div style="font-size:12px;color:#8888a0;line-height:1.7">
-              You're receiving this because you subscribed to Stack Signal at <a href="${SITE_URL}" style="color:#ee0000">Stack Signal</a>.<br/>
+              You're receiving this because you subscribed to Stack Signal at <a href="${SITE_URL}" style="color:#ee0000">mikegira.dev</a>.<br/>
               To unsubscribe, reply to this email with "unsubscribe".
             </div>
           </td>
