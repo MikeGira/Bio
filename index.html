@@ -342,6 +342,7 @@ h2{font-size:clamp(1.9rem,3vw,2.8rem);font-weight:800;letter-spacing:-.035em;lin
 .link-stack{display:flex;flex-direction:column;gap:10px}
 .link-card{display:flex;align-items:center;gap:14px;padding:14px 18px;background:var(--card-bg);border:1px solid var(--card-border);border-radius:var(--r-lg);transition:border-color .2s,transform .2s,box-shadow .2s}
 .link-card-a{display:flex;align-items:center;gap:14px;flex:1;text-decoration:none;color:inherit;min-width:0}
+@media(pointer:fine){.link-card-a[href^="mailto:"],.link-card-a[href^="tel:"]{cursor:copy}}
 .link-copy{background:var(--bg3);border:1px solid var(--line2);border-radius:var(--r-xs);width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--mid);font-size:.85rem;transition:all .15s;flex-shrink:0;margin-left:auto}
 .link-copy:hover{background:var(--red);border-color:var(--red);color:#fff}
 .link-copy.copied{background:var(--green);border-color:var(--green);color:#fff}
@@ -1676,7 +1677,6 @@ function copyContact(btn, text) {
     btn.classList.add('copied');
     setTimeout(() => { btn.textContent = '⧉'; btn.classList.remove('copied'); }, 2000);
   }).catch(() => {
-    // Fallback for older browsers
     const el = document.createElement('textarea');
     el.value = text; el.style.position = 'fixed'; el.style.opacity = '0';
     document.body.appendChild(el); el.select();
@@ -1686,6 +1686,28 @@ function copyContact(btn, text) {
     setTimeout(() => { btn.textContent = '⧉'; btn.classList.remove('copied'); }, 2000);
   });
 }
+
+// On desktop: clicking the email/phone card body copies instead of opening ugly picker.
+// On mobile (pointer: coarse = touchscreen): let the href work normally.
+(function(){
+  const isTouchDevice = () => window.matchMedia('(pointer: coarse)').matches;
+  document.querySelectorAll('.link-card-a').forEach(a => {
+    const href = a.getAttribute('href');
+    if (!href || (!href.startsWith('mailto:') && !href.startsWith('tel:'))) return;
+    a.addEventListener('click', function(e) {
+      if (!isTouchDevice()) {
+        e.preventDefault();
+        const copyValue = href.startsWith('mailto:')
+          ? href.replace('mailto:', '')
+          : href.replace('tel:', '');
+        // Find the sibling copy button and trigger it
+        const btn = this.closest('.link-card').querySelector('.link-copy');
+        if (btn) copyContact(btn, copyValue);
+      }
+      // Touch devices: do nothing, let href open the app naturally
+    });
+  });
+})();
 
 // PWA
 let dp;
