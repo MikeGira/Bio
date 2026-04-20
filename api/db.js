@@ -6,13 +6,14 @@ const RESEND_API_KEY       = process.env.RESEND_API_KEY;        // add this in V
 const NOTIFY_EMAIL         = process.env.NOTIFY_EMAIL || 'chrismikeparker1@gmail.com';
 
 async function supabase(path, method = 'GET', body = null) {
+  const prefer = method === 'POST' ? 'return=representation' : method === 'PATCH' ? 'return=minimal' : '';
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
     method,
     headers: {
       'apikey':        SUPABASE_SERVICE_KEY,
       'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
       'Content-Type':  'application/json',
-      'Prefer':        method === 'POST' ? 'return=representation' : '',
+      ...(prefer ? { 'Prefer': prefer } : {}),
     },
     body: body ? JSON.stringify(body) : null,
   });
@@ -34,7 +35,7 @@ async function sendEmail({ to, subject, html }) {
         'Content-Type':  'application/json',
       },
       body: JSON.stringify({
-        from:    'Mike\'s Bio <hello@blog.h0m3labs.store>',  // must be verified domain on Resend
+        from:    'Mike\'s Bio <hello@mikegira.dev>',  // must be verified domain on Resend
         to:      Array.isArray(to) ? to : [to],
         subject,
         html,
@@ -87,13 +88,13 @@ export default async function handler(req, res) {
         to:      NOTIFY_EMAIL,
         subject: `New contact from ${name} — ${opportunity || 'General'}`,
         html: `
-          <h2 style="color:#ee0000">New message on blog.h0m3labs.store</h2>
+          <h2 style="color:#ee0000">New message on Mike's Bio</h2>
           <p><strong>Name:</strong> ${name}</p>
           <p><strong>Email:</strong> <a href="mailto:${email}">${email}</a></p>
           <p><strong>Opportunity:</strong> ${opportunity || 'Not specified'}</p>
           <p><strong>Message:</strong></p>
           <blockquote style="border-left:3px solid #ee0000;padding-left:12px;color:#444">${message.replace(/\n/g,'<br>')}</blockquote>
-          <p style="color:#888;font-size:12px">Sent via blog.h0m3labs.store contact form</p>
+          <p style="color:#888;font-size:12px">Sent via Mike's Bio contact form</p>
         `,
       });
 
@@ -118,11 +119,11 @@ export default async function handler(req, res) {
         html: `
           <div style="font-family:Inter,sans-serif;max-width:480px;margin:0 auto">
             <h2 style="color:#ee0000">Welcome to Michael's Tech Blog 🔥</h2>
-            <p>Hi there! You're now subscribed to <strong>The Stack Signal by Michael Twagirayezu</strong> — a blog about cloud architecture, DevSecOps, AI integration, and tech that matters.</p>
+            <p>Hi there! You're now subscribed to <strong>MikeGira.dev</strong> — a blog about cloud architecture, DevSecOps, AI integration, and tech that matters.</p>
             <p>You'll hear from me when there's something worth reading. No spam, ever.</p>
             <p style="color:#888;font-size:13px">— Michael Twagirayezu · Toronto, ON</p>
             <hr style="border:1px solid #eee;margin:24px 0"/>
-            <p style="font-size:11px;color:#aaa">You subscribed at The Stack Signal by Michael Twagirayezu. To unsubscribe, reply with "unsubscribe".</p>
+            <p style="font-size:11px;color:#aaa">You subscribed at mikegira.dev. To unsubscribe, reply with "unsubscribe".</p>
           </div>
         `,
       });
@@ -141,7 +142,7 @@ export default async function handler(req, res) {
     if (action === 'pageview' && req.method === 'POST') {
       const { page } = req.body;
       if (!page) return res.status(400).json({ error: 'Missing page.' });
-      const existing = await supabase(`page_views?page=eq.${encodeURIComponent(page)}&select=id,views`);
+      const existing = await supabase(`page_views?page=eq.${encodeURIComponent(String(page).trim())}&select=id,views`);
       if (existing.data && existing.data.length > 0) {
         const row = existing.data[0];
         await supabase(`page_views?id=eq.${row.id}`, 'PATCH', { views: (row.views || 0) + 1, last_visited: new Date().toISOString() });
@@ -155,7 +156,7 @@ export default async function handler(req, res) {
     if (action === 'blogview' && req.method === 'POST') {
       const { post_id, title, category } = req.body;
       if (!post_id || !title) return res.status(400).json({ error: 'Missing post_id or title.' });
-      const existing = await supabase(`blog_post_views?post_id=eq.${encodeURIComponent(String(post_id))}&select=id,views`);
+      const existing = await supabase(`blog_post_views?post_id=eq.${encodeURIComponent(String(post_id).trim())}&select=id,views`);
       if (existing.data && existing.data.length > 0) {
         const row = existing.data[0];
         await supabase(`blog_post_views?id=eq.${row.id}`, 'PATCH', { views: (row.views || 0) + 1, last_viewed: new Date().toISOString() });

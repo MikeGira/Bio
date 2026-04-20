@@ -751,8 +751,16 @@ async function openArticle(post) {
   // Write article ID into URL hash — makes the link shareable
   history.replaceState(null, '', '#article-' + post.id);
 
+  // Use a stable slug from the title as post_id (not fragile 1-9 number)
+  // This ensures the same article accumulates views across daily regenerations
+  const stableId = (post.title || String(post.id))
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 50);
+
   // Track this article view in Supabase
-  dbPost('blogview', { post_id: post.id, title: post.title, category: post.category });
+  dbPost('blogview', { post_id: stableId, title: post.title, category: post.category });
 
   // Set title
   document.getElementById('artTitle').textContent = post.title;
