@@ -8,9 +8,9 @@
 <meta name="referrer" content="strict-origin-when-cross-origin"/>
 <meta http-equiv="X-Content-Type-Options" content="nosniff"/>
 <meta name="description" content="Michael Twagirayezu's Tech Blog — AI-powered insights on cloud, DevSecOps, cybersecurity, and the future of technology."/>
-<meta property="og:title" content="Tech Blog | Michael Twagirayezu"/>
+<meta property="og:title" content="Stack Signal | Michael Twagirayezu"/>
 <meta property="og:type" content="website"/>
-<title>Tech Blog | Michael Twagirayezu</title>
+<title>Stack Signal | Michael Twagirayezu</title>
 <link rel="manifest" href="manifest.json"/>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230f0f13'/%3E%3Ctext x='16' y='22' font-size='18' text-anchor='middle' fill='%23EE0000' font-family='monospace' font-weight='bold'%3EM%3C/text%3E%3C/svg%3E"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
@@ -276,7 +276,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;backdrop-filter:blur(20px);-
         <span class="ai-blink"></span>
         AI-Powered · Auto-Updated Daily · Latest Tech Insights
       </div>
-      <h1>The <span>Tech Pulse</span><br/>by Michael Twagirayezu</h1>
+      <h1><span>Stack Signal</span><br/>by Michael Twagirayezu</h1>
       <p class="blog-hero-sub">Fresh perspectives on Cloud Architecture, DevSecOps, AI Integration, Cybersecurity, and the technology shaping the future curated and written by AI, filtered through 10+ years of real-world experience.</p>
       <div class="blog-hero-meta">
         <button class="refresh-btn" id="refreshBtn">
@@ -478,7 +478,7 @@ async function generatePosts(forceRefresh = false) {
 
   const today = new Date().toLocaleDateString('en-CA',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
 
-  const prompt = `You are a senior technology journalist and cloud architect writing for a professional tech blog called "The Tech Pulse" owned by Michael Twagirayezu, an IT Systems Engineer based in Toronto specialising in multi-cloud, DevSecOps, cybersecurity, and AI integration.
+  const prompt = `You are a senior technology journalist and cloud architect writing for a professional tech blog called "Stack Signal" owned by Michael Twagirayezu, an IT Systems Engineer based in Toronto specialising in multi-cloud, DevSecOps, cybersecurity, and AI integration.
 
 Today is ${today}.
 
@@ -834,14 +834,14 @@ document.getElementById('nlBtn').addEventListener('click', async () => {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error);
-    msg.textContent = '✓ Subscribed! Welcome to The Tech Pulse.';
+    msg.textContent = '✓ Subscribed! Welcome to Stack Signal.';
     msg.style.color = 'var(--green)';
     document.getElementById('nlEmail').value = '';
   } catch(e) {
     // Graceful fallback to localStorage if DB unavailable
     const subs = JSON.parse(localStorage.getItem('mg-subscribers') || '[]');
     if (!subs.includes(email)) { subs.push(email); localStorage.setItem('mg-subscribers', JSON.stringify(subs)); }
-    msg.textContent = '✓ Subscribed! Welcome to The Tech Pulse.';
+    msg.textContent = '✓ Subscribed! Welcome to Stack Signal.';
     msg.style.color = 'var(--green)';
     document.getElementById('nlEmail').value = '';
   }
