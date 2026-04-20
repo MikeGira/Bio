@@ -679,7 +679,26 @@ function renderPosts() {
     el.style.transition = 'opacity .4s ease, transform .4s ease';
     setTimeout(()=>{el.style.opacity='1';el.style.transform='none'},i*60);
   });
+
+  // After rendering, check if URL has an article hash and auto-open it
+  checkHashAndOpen();
 }
+
+// ── DEEP LINK: open article from URL hash ──────────────────
+function checkHashAndOpen() {
+  const hash = window.location.hash; // e.g. #article-3
+  if (!hash.startsWith('#article-')) return;
+  const id = parseInt(hash.replace('#article-', ''), 10);
+  if (!id || !allPosts.length) return;
+  const post = allPosts.find(p => p.id === id);
+  if (post && !currentPost) openArticle(post);
+}
+
+// Re-check when hash changes (back/forward browser navigation)
+window.addEventListener('hashchange', () => {
+  if (!window.location.hash) { closeArticle(); return; }
+  checkHashAndOpen();
+});
 
 // ── ESCAPE TEXT (XSS safe) ─────────────────────────────────
 function escTxt(str) {
@@ -704,6 +723,9 @@ async function openArticle(post) {
   currentPost = post;
   const modal = document.getElementById('artModal');
   const cfg = CAT_CONFIG[post.category] || {tagClass:'tag-cloud'};
+
+  // Write article ID into URL hash — makes the link shareable
+  history.replaceState(null, '', '#article-' + post.id);
 
   // Track this article view in Supabase
   dbPost('blogview', { post_id: post.id, title: post.title, category: post.category });
@@ -796,21 +818,43 @@ function closeArticle() {
   document.getElementById('artModal').classList.remove('open');
   document.body.style.overflow = '';
   currentPost = null;
+  // Clear the URL hash without triggering a page reload
+  history.replaceState(null, '', window.location.pathname);
 }
 
 document.getElementById('artClose').addEventListener('click', closeArticle);
 document.getElementById('artClose2').addEventListener('click', closeArticle);
 document.getElementById('artModal').addEventListener('click', e => { if (e.target === document.getElementById('artModal')) closeArticle(); });
+
 document.getElementById('artCopy').addEventListener('click', () => {
-  const url = window.location.href.split('?')[0] + '?post=' + (currentPost?.id || '');
+  if (!currentPost) return;
+  // Use hash-based URL so it works on any host without server config
+  const url = window.location.origin + window.location.pathname + '#article-' + currentPost.id;
   navigator.clipboard.writeText(url).then(() => {
+    document.getElementById('artCopy').textContent = 'Copied!';
+    setTimeout(() => document.getElementById('artCopy').textContent = 'Copy Link', 2000);
+  }).catch(() => {
+    // Fallback for older browsers
+    const el = document.createElement('textarea');
+    el.value = url; el.style.position='fixed'; el.style.opacity='0';
+    document.body.appendChild(el); el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
     document.getElementById('artCopy').textContent = 'Copied!';
     setTimeout(() => document.getElementById('artCopy').textContent = 'Copy Link', 2000);
   });
 });
+
 document.getElementById('artShare').addEventListener('click', () => {
-  if (navigator.share && currentPost) {
-    navigator.share({ title: currentPost.title, text: currentPost.excerpt, url: window.location.href });
+  if (!currentPost) return;
+  const url = window.location.origin + window.location.pathname + '#article-' + currentPost.id;
+  if (navigator.share) {
+    navigator.share({ title: currentPost.title, text: currentPost.excerpt, url });
+  } else {
+    // Fallback — copy the share URL
+    navigator.clipboard.writeText(url).catch(() => {});
+    document.getElementById('artShare').textContent = 'Link Copied!';
+    setTimeout(() => document.getElementById('artShare').textContent = 'Share', 2000);
   }
 });
 
