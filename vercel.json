@@ -24,6 +24,10 @@
     {
       "src": "api/analytics-auth.js",
       "use": "@vercel/node"
+    },
+    {
+      "src": "api/send-digest.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
@@ -46,6 +50,10 @@
     {
       "src": "/api/analytics-auth",
       "dest": "/api/analytics-auth.js"
+    },
+    {
+      "src": "/api/send-digest",
+      "dest": "/api/send-digest.js"
     },
     {
       "src": "/(.*)",
