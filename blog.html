@@ -372,14 +372,14 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;backdrop-filter:blur(20px);-
       <div class="sidebar-card reveal">
         <div class="sidebar-label">🔥 Trending in Tech</div>
         <div class="trend-list" id="trendList">
-          <div class="trend-item hot"><span class="trend-rank">01</span><span class="trend-name">Agentic AI Systems</span><span class="trend-arrow">↑</span></div>
-          <div class="trend-item up"><span class="trend-rank">02</span><span class="trend-name">Multi-Cloud Security</span><span class="trend-arrow">↑</span></div>
-          <div class="trend-item up"><span class="trend-rank">03</span><span class="trend-name">DevSecOps Automation</span><span class="trend-arrow">↑</span></div>
-          <div class="trend-item"><span class="trend-rank">04</span><span class="trend-name">Quantum Cryptography</span><span class="trend-arrow">→</span></div>
-          <div class="trend-item up"><span class="trend-rank">05</span><span class="trend-name">AI Infrastructure Ops</span><span class="trend-arrow">↑</span></div>
-          <div class="trend-item hot"><span class="trend-rank">06</span><span class="trend-name">Edge AI Computing</span><span class="trend-arrow">↑</span></div>
-          <div class="trend-item"><span class="trend-rank">07</span><span class="trend-name">Zero Trust 2.0</span><span class="trend-arrow">→</span></div>
-          <div class="trend-item up"><span class="trend-rank">08</span><span class="trend-name">AI in Agriculture</span><span class="trend-arrow">↑</span></div>
+          <div class="trend-item hot" data-topic="Agentic AI Systems"><span class="trend-rank">01</span><span class="trend-name">Agentic AI Systems</span><span class="trend-arrow">↑</span></div>
+          <div class="trend-item up" data-topic="Multi-Cloud Security"><span class="trend-rank">02</span><span class="trend-name">Multi-Cloud Security</span><span class="trend-arrow">↑</span></div>
+          <div class="trend-item up" data-topic="DevSecOps Automation"><span class="trend-rank">03</span><span class="trend-name">DevSecOps Automation</span><span class="trend-arrow">↑</span></div>
+          <div class="trend-item" data-topic="Quantum Cryptography"><span class="trend-rank">04</span><span class="trend-name">Quantum Cryptography</span><span class="trend-arrow">→</span></div>
+          <div class="trend-item up" data-topic="AI Infrastructure Ops"><span class="trend-rank">05</span><span class="trend-name">AI Infrastructure Ops</span><span class="trend-arrow">↑</span></div>
+          <div class="trend-item hot" data-topic="Edge AI Computing"><span class="trend-rank">06</span><span class="trend-name">Edge AI Computing</span><span class="trend-arrow">↑</span></div>
+          <div class="trend-item" data-topic="Zero Trust 2.0"><span class="trend-rank">07</span><span class="trend-name">Zero Trust 2.0</span><span class="trend-arrow">→</span></div>
+          <div class="trend-item up" data-topic="AI in Agriculture"><span class="trend-rank">08</span><span class="trend-name">AI in Agriculture</span><span class="trend-arrow">↑</span></div>
         </div>
       </div>
 
@@ -698,6 +698,20 @@ function checkHashAndOpen() {
 window.addEventListener('hashchange', () => {
   if (!window.location.hash) { closeArticle(); return; }
   checkHashAndOpen();
+});
+
+// ── TRENDING TOPICS — click opens Phoenix asking about that topic ──
+document.getElementById('trendList').addEventListener('click', e => {
+  const item = e.target.closest('.trend-item[data-topic]');
+  if (!item) return;
+  const topic = item.dataset.topic;
+  // Open Phoenix panel and send the question
+  const panel = document.getElementById('aiPanel');
+  if (panel) {
+    panel.classList.add('open');
+    // Small delay so panel animation completes before message appears
+    setTimeout(() => send(`What can you tell me about ${topic} and how does it relate to Michael's work?`), 200);
+  }
 });
 
 // ── ESCAPE TEXT (XSS safe) ─────────────────────────────────
