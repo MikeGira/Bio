@@ -116,5 +116,13 @@
         }
       ]
     }
-  ]
+  ],
+  "functions": {
+    "api/chat.js": {
+      "maxDuration": 60
+    },
+    "api/send-digest.js": {
+      "maxDuration": 60
+    }
+  }
 }

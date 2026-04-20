@@ -1650,19 +1650,22 @@ async function send(text){
   try{
     const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:1000,system:SYSTEM,messages:hist})});
     const d=await r.json();
-    // Show actual error from API so we can diagnose
     if(!r.ok){
       ty.remove();
-      const errMsg=d.error||d.message||('API error '+r.status);
-      addMsg('⚠️ '+errMsg,'bot');
+      // Show a friendly message for overload errors
+      const isOverload = r.status===529 || (d.error||'').toLowerCase().includes('overload');
+      const errMsg = isOverload
+        ? 'Anthropic\'s servers are busy right now. Please try again in a minute.'
+        : (d.error||d.message||('API error '+r.status));
+      addMsg((isOverload?'⏳ ':'⚠️ ')+errMsg,'bot');
       _sending=false;return;
     }
     let rep=d.content?.[0]?.text;
-    // Strip em-dashes and connector hyphens from AI output
+    // Strip markdown and em-dashes from AI output
     if(rep){rep=rep.replace(/ — /g,' ').replace(/—/g,' ').replace(/ - /g,' ').replace(/\n- /g,'\n').replace(/^- /gm,'').replace(/\*\*([^*]+)\*\*/g,'$1').replace(/\*([^*]+)\*/g,'$1').replace(/`([^`]+)`/g,'$1');}
     if(!rep){
       ty.remove();
-      addMsg('⚠️ Empty response API returned: '+JSON.stringify(d).slice(0,200),'bot');
+      addMsg('No response received. Please try again.','bot');
       _sending=false;return;
     }
     ty.remove();addMsg(rep,'bot');hist.push({role:'assistant',content:rep});
