@@ -29,7 +29,7 @@ async function sendEmail({ to, subject, html }) {
       'Content-Type':  'application/json',
     },
     body: JSON.stringify({
-      from:    `Stack Signal <hello@mikegira.dev>`,
+      from:    `Stack Signal <hello@blog.h0m3labs.store>`,
       to:      Array.isArray(to) ? to : [to],
       subject,
       html,
@@ -101,7 +101,7 @@ function buildDigestHtml(posts, issueNum) {
         <tr>
           <td style="padding:20px 32px 28px;border-top:1px solid #e5e5e5">
             <div style="font-size:12px;color:#8888a0;line-height:1.7">
-              You're receiving this because you subscribed to Stack Signal at <a href="${SITE_URL}" style="color:#ee0000">mikegira.dev</a>.<br/>
+              You're receiving this because you subscribed to Stack Signal at <a href="${SITE_URL}" style="color:#ee0000">Mike's Bio</a>.<br/>
               To unsubscribe, reply to this email with "unsubscribe".
             </div>
           </td>
