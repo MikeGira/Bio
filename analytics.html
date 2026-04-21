@@ -391,11 +391,12 @@ async function loadData(token) {
     document.getElementById('lastRefresh').textContent = 'Error — data not loaded';
     // Do NOT fall back to demo data — it masks real failures
   } finally {
-    btn.classList.remove('spinning');
+    const btn2 = document.getElementById('refreshBtn');
+    if (btn2) { btn2.classList.remove('spinning'); btn2.disabled = false; }
   }
 }
 
-document.getElementById('refreshBtn').addEventListener('click', loadData);
+document.getElementById('refreshBtn').addEventListener('click', () => loadData());
 
 // ── RENDER ──────────────────────────────────────────────────
 function renderAll(data) {
