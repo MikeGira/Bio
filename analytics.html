@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <meta name="robots" content="noindex,nofollow"/>
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; frame-ancestors 'none';"/>
-<title>Analytics — MikeGira.dev</title>
+<title>Analytics — Stack Signal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
@@ -147,7 +147,7 @@ body{font-family:var(--font);background:var(--bg0);color:var(--hi);min-height:10
   <div class="login-card">
     <div class="login-logo">MT</div>
     <h1>Analytics Dashboard</h1>
-    <p>MikeGira.dev · Private Access</p>
+    <p>Stack Signal · Private Access</p>
     <div class="login-field">
       <label>Password</label>
       <input type="password" id="pwInput" placeholder="Enter dashboard password" autocomplete="current-password"/>
@@ -169,7 +169,7 @@ body{font-family:var(--font);background:var(--bg0);color:var(--hi);min-height:10
           <h1>Analytics</h1>
           <span class="panel-badge">Live</span>
         </div>
-        <div class="topbar-sub">MikeGira.dev · <span id="lastRefresh">Loading…</span></div>
+        <div class="topbar-sub">Stack Signal · <span id="lastRefresh">Loading…</span></div>
       </div>
     </div>
     <div class="topbar-right">
@@ -377,17 +377,19 @@ async function loadData(token) {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     renderAll(data);
-    document.getElementById('lastRefresh').textContent =
-      'Last updated ' + new Date().toLocaleTimeString();
+    const fetchedAt = data._fetched_at
+      ? 'Live data · fetched ' + new Date(data._fetched_at).toLocaleTimeString()
+      : 'Last updated ' + new Date().toLocaleTimeString();
+    document.getElementById('lastRefresh').textContent = fetchedAt;
   } catch (err) {
     const banner = document.getElementById('errBanner');
-    banner.textContent = 'Could not load analytics: ' + err.message +
-      '. Make sure SUPABASE_URL and SUPABASE_SERVICE_KEY are set in Vercel.';
+    const is401 = err.message.includes('401');
+    banner.textContent = is401
+      ? 'Session expired — please sign out and log in again.'
+      : 'Could not load data: ' + err.message;
     banner.classList.add('visible');
-
-    // Show demo data so the dashboard isn't blank
-    renderAll(getDemoData());
-    document.getElementById('lastRefresh').textContent = 'Demo data (DB not connected)';
+    document.getElementById('lastRefresh').textContent = 'Error — data not loaded';
+    // Do NOT fall back to demo data — it masks real failures
   } finally {
     btn.classList.remove('spinning');
   }
@@ -491,15 +493,9 @@ function fmtDate(iso) {
   return d.toLocaleDateString('en-CA', { month:'short', day:'numeric', year:'numeric', hour:'2-digit', minute:'2-digit' });
 }
 function animateNum(id, target) {
+  // Set directly — no animation so it's clear the number changed
   const el = document.getElementById(id);
-  const dur = 900, start = performance.now();
-  function tick(now) {
-    const t = Math.min((now - start) / dur, 1);
-    const ease = 1 - Math.pow(1 - t, 3);
-    el.textContent = Math.round(ease * target).toLocaleString();
-    if (t < 1) requestAnimationFrame(tick);
-  }
-  requestAnimationFrame(tick);
+  if (el) el.textContent = (target || 0).toLocaleString();
 }
 
 // ── DEMO DATA (shown when DB not connected) ─────────────────
