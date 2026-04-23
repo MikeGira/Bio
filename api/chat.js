@@ -23,7 +23,7 @@ export default async function handler(req, res) {
   }
 
   // Always use the correct model
-  if (req.body) req.body.model = 'claude-sonnet-4-5';
+  if (req.body) req.body.model = 'claude-sonnet-4-6';
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
