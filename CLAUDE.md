@@ -9,15 +9,15 @@ A full-stack professional portfolio PWA for Michael Twagirayezu.
 - **Live URL**: https://bio-two-eta.vercel.app (or custom domain if configured)
 - **GitHub**: https://github.com/MikeGira/Bio
 - **Hosting**: Vercel (static frontend + serverless functions)
-- **AI Assistant**: Phoenix AI — powered by Claude (claude-sonnet-4-5)
+- **AI Assistant**: Phoenix AI — powered by Claude (claude-sonnet-4-6)
 
 ## TECH STACK
 | Layer | Technology |
 |-------|------------|
 | Frontend | Vanilla HTML5, CSS3, JavaScript ES2022+ (zero npm dependencies) |
 | Backend | Vercel Serverless Functions (Node.js, /api/ folder) |
-| AI Model | Anthropic Claude claude-sonnet-4-5 |
-| AI Proxy | api/claude.js — forces model, hides key, controls CORS |
+| AI Model | Anthropic Claude claude-sonnet-4-6 |
+| AI Proxy | api/chat.js — forces model, hides key, controls CORS |
 | Database | Supabase (PostgreSQL + REST API + Row Level Security) |
 | Email | Resend API (transactional email) |
 | Contact Form | Formspree + Supabase fallback |
@@ -30,14 +30,16 @@ A full-stack professional portfolio PWA for Michael Twagirayezu.
 ```
 Bio/
 ├── index.html               # Main PWA — all UI and frontend logic
+├── blog.html                # Blog page
+├── analytics.html           # Analytics dashboard (password protected)
 ├── manifest.json            # PWA installability
 ├── sw.js                    # Service Worker (offline caching)
 ├── api/
-│   ├── claude.js            # Anthropic API proxy — model forced, key hidden
+│   ├── chat.js              # Anthropic API proxy — model forced, key hidden
 │   ├── db.js                # Supabase proxy + Resend email
-│   └── analytics-auth.js   # Server-side analytics password verification
-├── database/
-│   └── schema.sql           # PostgreSQL schema — 4 tables, RLS, indexes
+│   ├── analytics-auth.js    # Server-side analytics password verification
+│   └── send-digest.js       # Email digest sender (cron/manual trigger)
+├── schema.sql               # PostgreSQL schema — RLS, indexes
 ├── .github/workflows/
 │   └── deploy.yml           # CI/CD: Gitleaks + CodeQL + Vercel smoke test
 ├── vercel.json              # Vercel config — routes, security headers
@@ -70,9 +72,9 @@ After adding/changing any env var: Vercel → Deployments → Redeploy
 ## PROVEN PATTERNS — USE THESE IN NEW PROJECTS
 
 ### Serverless Proxy Pattern (protects API keys)
-The api/claude.js file is the key pattern. Frontend never has the API key.
+The `api/chat.js` file is the key pattern. Frontend never has the API key.
 All Claude calls go: Frontend → Vercel Function → Anthropic API → back.
-The function forces the model, validates input, controls CORS, and hides the key.
+The function forces the model (`claude-sonnet-4-6`), validates input, controls CORS, and hides the key.
 Copy this pattern for ANY project that needs to call an external API securely.
 
 ### Supabase + RLS Pattern
@@ -117,7 +119,7 @@ vercel --prod
 ## UPDATING CONTENT
 When adding new skills, projects, or experience to the portfolio:
 1. Edit the relevant section in index.html
-2. Update the Phoenix AI system prompt in api/claude.js so it knows about the new content
+2. Update the Phoenix AI system prompt in api/chat.js so it knows about the new content
 3. Commit and push — Vercel auto-deploys
 4. Verify the live URL shows the changes (~60 seconds after push)
 
