@@ -372,6 +372,7 @@ async function loadData(token) {
 
   try {
     const res = await fetch('/api/db?action=analytics', {
+      cache: 'no-store',
       headers: token ? { 'Authorization': 'Bearer ' + token } : {}
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
