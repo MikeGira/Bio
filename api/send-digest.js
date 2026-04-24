@@ -1,6 +1,8 @@
 // api/send-digest.js — Send blog digest email to all newsletter subscribers
 // Called from the analytics dashboard — requires analytics token auth
 
+import crypto from 'crypto';
+
 const SUPABASE_URL         = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const RESEND_API_KEY       = process.env.RESEND_API_KEY;
@@ -39,8 +41,17 @@ async function sendEmail({ to, subject, html }) {
   return { ok: res.ok, data, error: data.message };
 }
 
-function buildDigestHtml(posts, issueNum) {
-  const blogUrl = `${SITE_URL}/blog.html`;
+function makeUnsubToken(email) {
+  return crypto
+    .createHmac('sha256', process.env.ANALYTICS_PASSWORD || 'fallback')
+    .update(email.toLowerCase())
+    .digest('hex')
+    .slice(0, 40);
+}
+
+function buildDigestHtml(posts, subscriberEmail) {
+  const blogUrl   = `${SITE_URL}/blog.html`;
+  const unsubUrl  = `${SITE_URL}/api/unsubscribe?email=${encodeURIComponent(subscriberEmail)}&token=${makeUnsubToken(subscriberEmail)}`;
   const topPosts = posts.slice(0, 5);
 
   const postRows = topPosts.map((p, i) => `
@@ -102,7 +113,7 @@ function buildDigestHtml(posts, issueNum) {
           <td style="padding:20px 32px 28px;border-top:1px solid #e5e5e5">
             <div style="font-size:12px;color:#8888a0;line-height:1.7">
               You're receiving this because you subscribed to Stack Signal at <a href="${SITE_URL}" style="color:#ee0000">Mike's Bio</a>.<br/>
-              To unsubscribe, reply to this email with "unsubscribe".
+              Don't want these emails? <a href="${unsubUrl}" style="color:#8888a0">Unsubscribe</a>.
             </div>
           </td>
         </tr>
@@ -158,14 +169,14 @@ export default async function handler(req, res) {
     }
 
     const emailSubject = subject || `Stack Signal: ${posts[0]?.title || 'Latest from the blog'}`;
-    const html = buildDigestHtml(posts);
 
-    // Send to each subscriber individually (personalised + avoids bulk spam flags)
+    // Send to each subscriber individually (personalised unsubscribe link per recipient)
     let sent = 0;
     let failed = 0;
     const errors = [];
 
     for (const sub of subscribers) {
+      const html = buildDigestHtml(posts, sub.email);
       const result = await sendEmail({
         to:      sub.email,
         subject: emailSubject,

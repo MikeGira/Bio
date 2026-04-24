@@ -1,9 +1,20 @@
 // api/db.js — Supabase Database Proxy + Email via Resend
 
+import crypto from 'crypto';
+
 const SUPABASE_URL         = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const RESEND_API_KEY       = process.env.RESEND_API_KEY;
 const NOTIFY_EMAIL         = process.env.NOTIFY_EMAIL || 'chrismikeparker1@gmail.com';
+const SITE_URL             = process.env.SITE_URL || 'https://bio-two-eta.vercel.app';
+
+function makeUnsubToken(email) {
+  return crypto
+    .createHmac('sha256', process.env.ANALYTICS_PASSWORD || 'fallback')
+    .update(email.toLowerCase())
+    .digest('hex')
+    .slice(0, 40);
+}
 
 async function supabase(path, method = 'GET', body = null) {
   const prefer = method === 'POST' ? 'return=representation' : method === 'PATCH' ? 'return=minimal' : '';
@@ -82,9 +93,10 @@ export default async function handler(req, res) {
       await supabase('newsletter_subscribers?on_conflict=email', 'POST', {
         email: email.slice(0,200), subscribed_at: new Date().toISOString(),
       });
+      const unsubUrl = `${SITE_URL}/api/unsubscribe?email=${encodeURIComponent(email)}&token=${makeUnsubToken(email)}`;
       await sendEmail({
         to: email, subject: "You're subscribed to Stack Signal",
-        html: `<div style="font-family:Inter,sans-serif;max-width:480px;margin:0 auto"><h2 style="color:#ee0000">Welcome to Stack Signal!</h2><p>You're now subscribed to Michael Twagirayezu's tech blog covering cloud architecture, DevSecOps, AI integration, and more.</p><p style="color:#888;font-size:13px">— Michael · Toronto, ON</p><hr style="border:1px solid #eee;margin:24px 0"/><p style="font-size:11px;color:#aaa">To unsubscribe, reply with "unsubscribe".</p></div>`,
+        html: `<div style="font-family:Inter,sans-serif;max-width:480px;margin:0 auto"><h2 style="color:#ee0000">Welcome to Stack Signal!</h2><p>You're now subscribed to Michael Twagirayezu's tech blog covering cloud architecture, DevSecOps, AI integration, and more.</p><p style="color:#888;font-size:13px">— Michael · Toronto, ON</p><hr style="border:1px solid #eee;margin:24px 0"/><p style="font-size:11px;color:#aaa">Don't want these emails? <a href="${unsubUrl}" style="color:#aaa">Unsubscribe</a>.</p></div>`,
       });
       await sendEmail({
         to: NOTIFY_EMAIL, subject: `New blog subscriber: ${email}`,
