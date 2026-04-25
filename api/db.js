@@ -164,7 +164,7 @@ export default async function handler(req, res) {
       const [pages, posts, subscribers, contacts] = await Promise.all([
         supabase('page_views?select=page,views,last_visited&order=views.desc'),
         supabase('blog_post_views?select=post_id,title,category,views,last_viewed&order=views.desc&limit=50'),
-        supabase('newsletter_subscribers?select=email,subscribed_at&order=subscribed_at.desc&limit=100'),
+        supabase('newsletter_subscribers?is_active=eq.true&select=email,subscribed_at&order=subscribed_at.desc&limit=100'),
         supabase('contact_submissions?select=name,email,opportunity,message,created_at&order=created_at.desc&limit=50'),
       ]);
 
