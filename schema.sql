@@ -97,8 +97,9 @@ REVOKE ALL ON public.newsletter_subscribers  FROM anon, authenticated;
 REVOKE ALL ON public.page_views              FROM anon, authenticated;
 REVOKE ALL ON public.blog_post_views         FROM anon, authenticated;
 
--- Supabase internal function — not callable by end users
-REVOKE EXECUTE ON FUNCTION public.rls_auto_enable() FROM anon, authenticated;
+-- rls_auto_enable is a Supabase internal function — revoke from PUBLIC, not just
+-- individual roles, since the PUBLIC grant overrides role-level revokes
+REVOKE EXECUTE ON FUNCTION public.rls_auto_enable() FROM PUBLIC;
 
 -- ============================================================
 -- VERIFY: Run this to confirm tables were created
