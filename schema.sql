@@ -80,6 +80,24 @@ CREATE INDEX IF NOT EXISTS idx_blogviews_post      ON blog_post_views(post_id);
 CREATE INDEX IF NOT EXISTS idx_blogviews_views     ON blog_post_views(views DESC);
 
 -- ============================================================
+-- DATA API GRANTS (Supabase May/Oct 2026 compliance)
+-- All access is via serverless proxy (api/db.js) using
+-- service_role only. anon and authenticated have no direct
+-- table access by design — all writes go through /api/db.
+-- ============================================================
+GRANT USAGE ON SCHEMA public TO service_role;
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.contact_submissions    TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.newsletter_subscribers  TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.page_views              TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.blog_post_views         TO service_role;
+
+REVOKE ALL ON public.contact_submissions    FROM anon, authenticated;
+REVOKE ALL ON public.newsletter_subscribers  FROM anon, authenticated;
+REVOKE ALL ON public.page_views              FROM anon, authenticated;
+REVOKE ALL ON public.blog_post_views         FROM anon, authenticated;
+
+-- ============================================================
 -- VERIFY: Run this to confirm tables were created
 -- ============================================================
 SELECT table_name FROM information_schema.tables
