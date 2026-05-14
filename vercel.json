@@ -5,7 +5,8 @@
     "api/db.js":             { "maxDuration": 30 },
     "api/analytics-auth.js": { "maxDuration": 10 },
     "api/send-digest.js":    { "maxDuration": 60 },
-    "api/stats.js":          { "maxDuration": 15 }
+    "api/stats.js":          { "maxDuration": 15 },
+    "api/visitors.js":       { "maxDuration": 10 }
   },
   "routes": [
     { "src": "/api/chat",            "dest": "/api/chat.js" },
@@ -13,6 +14,7 @@
     { "src": "/api/db\\?.*",         "dest": "/api/db.js" },
     { "src": "/api/stats",           "dest": "/api/stats.js" },
     { "src": "/api/stats\\?.*",      "dest": "/api/stats.js" },
+    { "src": "/api/visitors",        "dest": "/api/visitors.js" },
     { "src": "/stats",               "dest": "/stats.html" },
     { "src": "/analytics",           "dest": "/analytics.html" },
     { "src": "/api/analytics-auth",  "dest": "/api/analytics-auth.js" },
