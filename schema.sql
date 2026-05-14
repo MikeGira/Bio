@@ -46,6 +46,16 @@ CREATE TABLE IF NOT EXISTS blog_post_views (
   last_viewed     TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 5. ANALYTICS EVENTS
+-- Fine-grained event log for time-series stats on /stats page
+-- Events: pageview, chat_start, chat_message, section_view, project_click, cta_click
+CREATE TABLE IF NOT EXISTS analytics_events (
+  id          BIGSERIAL    PRIMARY KEY,
+  event_type  TEXT         NOT NULL CHECK (char_length(event_type) <= 50),
+  metadata    JSONB        DEFAULT '{}'::jsonb,
+  created_at  TIMESTAMPTZ  DEFAULT NOW() NOT NULL
+);
+
 -- ============================================================
 -- ROW LEVEL SECURITY (RLS)
 -- Restricts direct browser access. Only your service key (used
@@ -55,6 +65,7 @@ ALTER TABLE contact_submissions   ENABLE ROW LEVEL SECURITY;
 ALTER TABLE newsletter_subscribers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE page_views             ENABLE ROW LEVEL SECURITY;
 ALTER TABLE blog_post_views        ENABLE ROW LEVEL SECURITY;
+ALTER TABLE analytics_events       ENABLE ROW LEVEL SECURITY;
 
 -- Service role can do everything (used by api/db.js)
 CREATE POLICY "Service role full access" ON contact_submissions
@@ -69,6 +80,9 @@ CREATE POLICY "Service role full access" ON page_views
 CREATE POLICY "Service role full access" ON blog_post_views
   FOR ALL USING (auth.role() = 'service_role');
 
+CREATE POLICY "Service role full access" ON analytics_events
+  FOR ALL USING (auth.role() = 'service_role');
+
 -- ============================================================
 -- INDEXES for performance
 -- ============================================================
@@ -78,6 +92,9 @@ CREATE INDEX IF NOT EXISTS idx_subscribers_email   ON newsletter_subscribers(ema
 CREATE INDEX IF NOT EXISTS idx_pageviews_page      ON page_views(page);
 CREATE INDEX IF NOT EXISTS idx_blogviews_post      ON blog_post_views(post_id);
 CREATE INDEX IF NOT EXISTS idx_blogviews_views     ON blog_post_views(views DESC);
+CREATE INDEX IF NOT EXISTS idx_events_created      ON analytics_events(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_events_type         ON analytics_events(event_type);
+CREATE INDEX IF NOT EXISTS idx_events_type_time    ON analytics_events(event_type, created_at DESC);
 
 -- ============================================================
 -- DATA API GRANTS (Supabase May/Oct 2026 compliance)
@@ -91,11 +108,14 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON public.contact_submissions    TO service
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.newsletter_subscribers  TO service_role;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.page_views              TO service_role;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.blog_post_views         TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.analytics_events         TO service_role;
+GRANT USAGE, SELECT ON SEQUENCE analytics_events_id_seq                 TO service_role;
 
 REVOKE ALL ON public.contact_submissions    FROM anon, authenticated;
 REVOKE ALL ON public.newsletter_subscribers  FROM anon, authenticated;
 REVOKE ALL ON public.page_views              FROM anon, authenticated;
 REVOKE ALL ON public.blog_post_views         FROM anon, authenticated;
+REVOKE ALL ON public.analytics_events        FROM anon, authenticated;
 
 -- rls_auto_enable is a Supabase internal function — revoke from PUBLIC, not just
 -- individual roles, since the PUBLIC grant overrides role-level revokes

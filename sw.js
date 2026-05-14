@@ -1,10 +1,11 @@
 // MikeGira.dev Service Worker
 // Handles offline caching, PWA install, and background sync
 
-const CACHE_NAME = 'mikegira-v2';
+const CACHE_NAME = 'mikegira-v3';
 const CACHE_URLS = [
   '/',
   '/index.html',
+  '/stats',
   '/manifest.json',
 ];
 

@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230c0c14'/%3E%3Ctext x='16' y='22' font-size='18' text-anchor='middle' fill='%23EE0000' font-family='monospace' font-weight='bold'%3EM%3C/text%3E%3C/svg%3E"/>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="description" content="Live portfolio engagement stats for Michael Twagirayezu — self-hosted, privacy-first analytics. No cookies, no third-party tracking."/>
+<meta property="og:title" content="Live Stats — Michael Twagirayezu"/>
+<meta property="og:description" content="Real-time portfolio metrics: page views, AI conversations, contacts, and more. Self-hosted analytics."/>
+<meta property="og:type" content="website"/>
+<meta name="robots" content="index, follow"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; frame-ancestors 'none';"/>
+<title>Live Stats — Michael Twagirayezu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg0:#0d0d12;--bg1:#13131a;--bg2:#1a1a24;--bg3:#22222e;
+  --red:#ee0000;--red2:#c00000;
+  --green:#22c55e;--blue:#3b82f6;--gold:#f0ab00;
+  --hi:#f0f0f8;--mid:#c0c0d8;--lo:#8888a8;
+  --line:rgba(255,255,255,0.07);--line2:rgba(255,255,255,0.11);
+  --font:'Inter',sans-serif;--mono:'JetBrains Mono',monospace;
+  --r:16px;--r-sm:10px;--r-lg:22px;
+}
+html{font-size:16px;background:var(--bg0)}
+body{font-family:var(--font);background:var(--bg0);color:var(--hi);min-height:100vh}
+
+/* ── NAV ── */
+.stats-nav{
+  background:var(--bg1);
+  border-bottom:1px solid var(--line2);
+  padding:14px 24px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  position:sticky;top:0;z-index:50;
+}
+.nav-home{
+  display:flex;align-items:center;gap:10px;
+  text-decoration:none;color:var(--hi);
+  font-weight:600;font-size:.9rem;
+  transition:color .15s;
+}
+.nav-home:hover{color:var(--red)}
+.nav-logo{
+  width:30px;height:30px;
+  background:var(--red);border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:900;font-size:.85rem;color:#fff;flex-shrink:0;
+}
+.nav-tag{
+  font-family:var(--mono);font-size:.68rem;
+  color:var(--lo);
+  background:var(--bg2);border:1px solid var(--line2);
+  border-radius:50px;padding:4px 12px;
+  letter-spacing:.05em;
+}
+
+/* ── MAIN WRAP ── */
+.wrap{max-width:920px;margin:0 auto;padding:32px 20px 60px}
+
+/* ── TERMINAL CHROME ── */
+.term-chrome{
+  background:var(--bg1);
+  border:1px solid rgba(238,0,0,.2);
+  border-radius:var(--r-lg);
+  overflow:hidden;
+  box-shadow:0 0 0 1px rgba(238,0,0,.06),
+             0 32px 80px rgba(0,0,0,.65),
+             0 0 60px rgba(238,0,0,.03);
+}
+.term-bar{
+  display:flex;align-items:center;gap:8px;
+  padding:12px 16px;
+  background:rgba(238,0,0,.05);
+  border-bottom:1px solid rgba(238,0,0,.15);
+}
+.dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+.dot.r{background:#ff5f57}.dot.y{background:#febc2e}.dot.g{background:#28c840}
+.term-title{
+  font-family:var(--mono);font-size:.7rem;
+  color:var(--lo);margin-left:8px;letter-spacing:.04em;
+}
+.term-body{padding:24px 28px 28px}
+
+/* ── COMMAND PROMPT ── */
+.prompt{
+  font-family:var(--mono);font-size:.875rem;
+  color:var(--mid);margin-bottom:20px;
+  display:flex;align-items:center;flex-wrap:wrap;gap:0;
+}
+.p-user{color:var(--green)}.p-host{color:var(--blue)}
+.p-sep{color:var(--lo)}.p-cmd{color:var(--hi)}
+.cursor{
+  display:inline-block;width:8px;height:1em;
+  background:var(--red);margin-left:3px;
+  animation:blink 1.1s step-end infinite;
+  vertical-align:text-bottom;border-radius:1px;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* ── PERIOD TABS ── */
+.period-tabs{display:flex;gap:6px;margin-bottom:22px;flex-wrap:wrap}
+.p-tab{
+  font-family:var(--mono);font-size:.75rem;
+  padding:5px 14px;border-radius:8px;
+  border:1px solid var(--line2);
+  background:none;color:var(--lo);
+  cursor:pointer;transition:all .15s;
+}
+.p-tab:hover{color:var(--mid);border-color:var(--line2)}
+.p-tab.active{
+  border-color:var(--red);color:var(--red);
+  background:rgba(238,0,0,.08);
+}
+
+/* ── STAT CARDS ── */
+.stat-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;margin-bottom:20px;
+}
+.scard{
+  background:var(--bg2);
+  border:1px solid var(--line2);
+  border-radius:14px;padding:18px 16px;
+  position:relative;overflow:hidden;
+  transition:border-color .2s,transform .2s;
+}
+.scard:hover{border-color:rgba(238,0,0,.35);transform:translateY(-2px)}
+.scard::before{
+  content:'';position:absolute;
+  top:0;left:0;right:0;height:2px;
+  border-radius:14px 14px 0 0;
+}
+.scard.red::before{background:var(--red)}
+.scard.blue::before{background:var(--blue)}
+.scard.green::before{background:var(--green)}
+.scard.gold::before{background:var(--gold)}
+.scard-icon{
+  width:32px;height:32px;border-radius:9px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1rem;margin-bottom:12px;
+}
+.scard.red   .scard-icon{background:rgba(238,0,0,.12)}
+.scard.blue  .scard-icon{background:rgba(59,130,246,.12)}
+.scard.green .scard-icon{background:rgba(34,197,94,.12)}
+.scard.gold  .scard-icon{background:rgba(240,171,0,.12)}
+.scard-num{
+  font-family:var(--mono);
+  font-size:1.9rem;font-weight:700;
+  line-height:1;letter-spacing:-.03em;
+  margin-bottom:5px;
+}
+.scard.red   .scard-num{color:var(--red)}
+.scard.blue  .scard-num{color:var(--blue)}
+.scard.green .scard-num{color:var(--green)}
+.scard.gold  .scard-num{color:var(--gold)}
+.scard-label{font-size:.72rem;color:var(--lo);font-family:var(--mono)}
+
+/* ── SPARKLINE ── */
+.spark-wrap{
+  background:var(--bg2);border:1px solid var(--line2);
+  border-radius:14px;padding:18px;margin-bottom:20px;
+}
+.spark-head{
+  display:flex;justify-content:space-between;align-items:baseline;
+  margin-bottom:14px;
+}
+.spark-label{
+  font-family:var(--mono);font-size:.65rem;
+  color:var(--lo);text-transform:uppercase;letter-spacing:.1em;
+}
+.spark-period{color:var(--mid)}
+#sparkCanvas{width:100%;height:80px;display:block}
+
+/* ── TWO-PANEL ROW ── */
+.panels{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+.panel{
+  background:var(--bg2);border:1px solid var(--line2);
+  border-radius:14px;overflow:hidden;
+}
+.panel-head{
+  padding:14px 18px;border-bottom:1px solid var(--line);
+  font-family:var(--mono);font-size:.65rem;color:var(--lo);
+  text-transform:uppercase;letter-spacing:.1em;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.panel-count{
+  background:var(--bg3);border:1px solid var(--line2);
+  border-radius:50px;padding:2px 9px;
+  font-size:.6rem;color:var(--mid);
+}
+.panel-body{padding:16px 18px}
+
+/* Post bars */
+.post-row{margin-bottom:14px}
+.post-row:last-child{margin-bottom:0}
+.post-top{
+  display:flex;justify-content:space-between;
+  align-items:baseline;margin-bottom:5px;
+}
+.post-title{font-size:.8rem;color:var(--hi);font-weight:600;flex:1;margin-right:8px;line-height:1.3}
+.post-views{font-family:var(--mono);font-size:.68rem;color:var(--mid);flex-shrink:0}
+.post-bar{height:3px;background:var(--bg3);border-radius:2px;overflow:hidden}
+.post-fill{height:100%;background:var(--red);border-radius:2px;transition:width .7s ease}
+
+/* Engagement rows */
+.eng-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:9px 0;border-bottom:1px solid var(--line);
+}
+.eng-row:last-child{border-bottom:none}
+.eng-label{font-family:var(--mono);font-size:.72rem;color:var(--mid)}
+.eng-val{font-family:var(--mono);font-size:.8rem;color:var(--hi);font-weight:600}
+
+/* ── PRIVACY BADGE ── */
+.badge-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.privacy-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  font-family:var(--mono);font-size:.68rem;color:var(--green);
+  background:rgba(34,197,94,.07);
+  border:1px solid rgba(34,197,94,.2);
+  border-radius:50px;padding:5px 14px;
+}
+.stats-link{
+  font-family:var(--mono);font-size:.68rem;color:var(--lo);
+  text-decoration:none;transition:color .15s;
+}
+.stats-link:hover{color:var(--mid)}
+
+/* ── SKELETON ── */
+.skel{
+  background:linear-gradient(90deg,var(--bg2) 25%,var(--bg3) 50%,var(--bg2) 75%);
+  background-size:200% 100%;
+  animation:shimmer 1.4s infinite;
+  border-radius:6px;
+}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* ── RESPONSIVE ── */
+@media(max-width:680px){
+  .stat-grid{grid-template-columns:1fr 1fr}
+  .panels{grid-template-columns:1fr}
+}
+@media(max-width:360px){
+  .stat-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<nav class="stats-nav">
+  <a href="/" class="nav-home">
+    <span class="nav-logo">M</span>
+    Michael Twagirayezu
+  </a>
+  <span class="nav-tag">live stats</span>
+</nav>
+
+<main class="wrap">
+  <div class="term-chrome">
+
+    <!-- macOS title bar -->
+    <div class="term-bar">
+      <span class="dot r"></span>
+      <span class="dot y"></span>
+      <span class="dot g"></span>
+      <span class="term-title">mike@portfolio — stats</span>
+    </div>
+
+    <div class="term-body">
+
+      <!-- Command prompt -->
+      <div class="prompt">
+        <span class="p-user">mike</span><span class="p-sep">@</span><span class="p-host">portfolio</span><span class="p-sep">:~$&nbsp;</span><span class="p-cmd" id="cmdText">stats --last 30d</span><span class="cursor"></span>
+      </div>
+
+      <!-- Period selector -->
+      <div class="period-tabs">
+        <button class="p-tab" data-p="7d">7d</button>
+        <button class="p-tab active" data-p="30d">30d</button>
+        <button class="p-tab" data-p="90d">90d</button>
+        <button class="p-tab" data-p="all">all</button>
+      </div>
+
+      <!-- 4 stat cards -->
+      <div class="stat-grid">
+        <div class="scard red">
+          <div class="scard-icon">👁</div>
+          <div class="scard-num" id="sv">—</div>
+          <div class="scard-label">page views</div>
+        </div>
+        <div class="scard blue">
+          <div class="scard-icon">🤖</div>
+          <div class="scard-num" id="sc">—</div>
+          <div class="scard-label">AI conversations</div>
+        </div>
+        <div class="scard red">
+          <div class="scard-icon">✉</div>
+          <div class="scard-num" id="sco">—</div>
+          <div class="scard-label">contacts received</div>
+        </div>
+        <div class="scard green">
+          <div class="scard-icon">📬</div>
+          <div class="scard-num" id="ss">—</div>
+          <div class="scard-label">newsletter subs</div>
+        </div>
+      </div>
+
+      <!-- Sparkline -->
+      <div class="spark-wrap">
+        <div class="spark-head">
+          <span class="spark-label">daily page views &mdash; <span class="spark-period" id="sparkPeriod">last 30 days</span></span>
+          <span class="spark-label" id="sparkStatus" style="color:var(--lo)">loading...</span>
+        </div>
+        <canvas id="sparkCanvas" role="img" aria-label="Daily page views sparkline chart"></canvas>
+      </div>
+
+      <!-- Two panels -->
+      <div class="panels">
+        <div class="panel">
+          <div class="panel-head">
+            top blog posts
+            <span class="panel-count" id="postCount">—</span>
+          </div>
+          <div class="panel-body" id="postsBody">
+            <div class="skel" style="height:12px;margin-bottom:16px"></div>
+            <div class="skel" style="height:12px;margin-bottom:16px"></div>
+            <div class="skel" style="height:12px"></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head">engagement</div>
+          <div class="panel-body" id="engBody">
+            <div class="skel" style="height:12px;margin-bottom:16px"></div>
+            <div class="skel" style="height:12px;margin-bottom:16px"></div>
+            <div class="skel" style="height:12px;margin-bottom:16px"></div>
+            <div class="skel" style="height:12px"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer badge -->
+      <div class="badge-row">
+        <span class="privacy-badge">&#10022; self-hosted &middot; no cookies &middot; privacy-first</span>
+        <a class="stats-link" href="/analytics" aria-label="Admin analytics dashboard">admin &rarr;</a>
+      </div>
+
+    </div><!-- /term-body -->
+  </div><!-- /term-chrome -->
+</main>
+
+<script>
+const PERIOD_CMDS   = {'7d':'stats --last 7d','30d':'stats --last 30d','90d':'stats --last 90d','all':'stats --all-time'};
+const PERIOD_LABELS = {'7d':'last 7 days','30d':'last 30 days','90d':'last 90 days','all':'all time'};
+
+let curPeriod = '30d';
+let curData   = null;
+
+// ── Period tabs ──────────────────────────────────────────────
+document.querySelectorAll('.p-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (btn.dataset.p === curPeriod) return;
+    curPeriod = btn.dataset.p;
+    document.querySelectorAll('.p-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('cmdText').textContent = PERIOD_CMDS[curPeriod];
+    loadStats();
+  });
+});
+
+// ── Data loading ─────────────────────────────────────────────
+async function loadStats() {
+  setLoading(true);
+  try {
+    const res = await fetch(`/api/stats?period=${curPeriod}`, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    curData = await res.json();
+    render(curData);
+  } catch (err) {
+    console.error('Stats load failed:', err);
+    showError('Stats temporarily unavailable.');
+  } finally {
+    setLoading(false);
+  }
+}
+
+function setLoading(on) {
+  ['sv','sc','sco','ss'].forEach(id => {
+    document.getElementById(id).style.opacity = on ? '0.3' : '1';
+  });
+}
+
+function showError(msg) {
+  document.getElementById('sparkStatus').textContent = msg;
+  document.getElementById('sparkStatus').style.color = 'var(--red)';
+}
+
+// ── Render ────────────────────────────────────────────────────
+function render(data) {
+  const s = data.stats;
+
+  animateTo('sv',  s.page_views);
+  animateTo('sc',  s.ai_chats);
+  animateTo('sco', s.contacts);
+  animateTo('ss',  s.subscribers);
+
+  document.getElementById('sparkPeriod').textContent = PERIOD_LABELS[data.period] || data.period;
+  document.getElementById('sparkStatus').textContent =
+    'updated ' + new Date(data.generated_at).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+  document.getElementById('sparkStatus').style.color = 'var(--lo)';
+
+  renderPosts(data.top_posts);
+  renderEngagement(s);
+  drawSparkline(data.sparkline);
+}
+
+// ── Animated counter ─────────────────────────────────────────
+function animateTo(id, target) {
+  const el = document.getElementById(id);
+  const start = parseInt((el.textContent || '').replace(/[^0-9]/g, ''), 10) || 0;
+  const duration = 800;
+  const t0 = performance.now();
+  if (el._raf) cancelAnimationFrame(el._raf);
+  function tick(now) {
+    const t = Math.min((now - t0) / duration, 1);
+    const ease = 1 - Math.pow(1 - t, 4);
+    el.textContent = Math.round(start + (target - start) * ease).toLocaleString();
+    if (t < 1) el._raf = requestAnimationFrame(tick);
+  }
+  el._raf = requestAnimationFrame(tick);
+}
+
+// ── Posts panel ──────────────────────────────────────────────
+function renderPosts(posts) {
+  const el = document.getElementById('postsBody');
+  const cnt = document.getElementById('postCount');
+  if (!posts || posts.length === 0) {
+    el.innerHTML = '<div style="font-family:var(--mono);font-size:.75rem;color:var(--lo)">No posts yet.</div>';
+    cnt.textContent = '0';
+    return;
+  }
+  cnt.textContent = posts.length;
+  const max = Math.max(...posts.map(p => p.views), 1);
+  el.innerHTML = posts.map(p => `
+    <div class="post-row">
+      <div class="post-top">
+        <span class="post-title">${esc(p.title)}</span>
+        <span class="post-views">${p.views}</span>
+      </div>
+      <div class="post-bar">
+        <div class="post-fill" style="width:${(p.views/max*100).toFixed(1)}%"></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── Engagement panel ─────────────────────────────────────────
+function renderEngagement(s) {
+  const rows = [
+    ['AI messages sent',    (s.ai_messages || 0).toLocaleString()],
+    ['Project card clicks', (s.project_clicks || 0).toLocaleString()],
+    ['CTA / link clicks',   (s.cta_clicks || 0).toLocaleString()],
+    ['Contact rate',        (s.conversion_rate || '0.00') + '%'],
+  ];
+  document.getElementById('engBody').innerHTML = rows.map(([label, val]) =>
+    `<div class="eng-row"><span class="eng-label">${label}</span><span class="eng-val">${val}</span></div>`
+  ).join('');
+}
+
+// ── Sparkline canvas ─────────────────────────────────────────
+function drawSparkline(data) {
+  const canvas = document.getElementById('sparkCanvas');
+  if (!data || data.length < 2) {
+    document.getElementById('sparkStatus').textContent = 'collecting data...';
+    return;
+  }
+  const dpr  = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width  = rect.width  * dpr;
+  canvas.height = rect.height * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const W  = rect.width;
+  const H  = rect.height;
+  const py = { top: 6, bottom: 20 };
+  const px = { left: 4, right: 4 };
+  const iW = W - px.left - px.right;
+  const iH = H - py.top  - py.bottom;
+
+  const counts = data.map(d => d.count);
+  const maxV   = Math.max(...counts, 1);
+
+  const pts = counts.map((v, i) => ({
+    x: px.left + (i / (counts.length - 1)) * iW,
+    y: py.top  + iH - (v / maxV) * iH,
+  }));
+
+  // Gradient fill
+  const grad = ctx.createLinearGradient(0, py.top, 0, H - py.bottom);
+  grad.addColorStop(0, 'rgba(238,0,0,0.28)');
+  grad.addColorStop(1, 'rgba(238,0,0,0.0)');
+
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x, pts[0].y);
+  for (let i = 1; i < pts.length; i++) {
+    const cpx = (pts[i-1].x + pts[i].x) / 2;
+    ctx.bezierCurveTo(cpx, pts[i-1].y, cpx, pts[i].y, pts[i].x, pts[i].y);
+  }
+  ctx.lineTo(pts[pts.length-1].x, H - py.bottom);
+  ctx.lineTo(pts[0].x,            H - py.bottom);
+  ctx.closePath();
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // Line
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x, pts[0].y);
+  for (let i = 1; i < pts.length; i++) {
+    const cpx = (pts[i-1].x + pts[i].x) / 2;
+    ctx.bezierCurveTo(cpx, pts[i-1].y, cpx, pts[i].y, pts[i].x, pts[i].y);
+  }
+  ctx.strokeStyle = 'rgba(238,0,0,0.9)';
+  ctx.lineWidth   = 2;
+  ctx.lineJoin    = 'round';
+  ctx.stroke();
+
+  // Date labels
+  ctx.fillStyle    = 'rgba(136,136,168,0.6)';
+  ctx.font         = `${10}px JetBrains Mono, monospace`;
+  ctx.textBaseline = 'bottom';
+  const fmt = d => d.slice(5); // MM-DD
+  ctx.textAlign = 'left';
+  ctx.fillText(fmt(data[0].date), px.left, H);
+  ctx.textAlign = 'center';
+  ctx.fillText(fmt(data[Math.floor(data.length / 2)].date), W / 2, H);
+  ctx.textAlign = 'right';
+  ctx.fillText(fmt(data[data.length - 1].date), W - px.right, H);
+
+  // Axis baseline
+  ctx.beginPath();
+  ctx.moveTo(px.left, H - py.bottom);
+  ctx.lineTo(W - px.right, H - py.bottom);
+  ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+}
+
+// ── Resize redraw ─────────────────────────────────────────────
+let _resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(_resizeTimer);
+  _resizeTimer = setTimeout(() => {
+    if (curData) drawSparkline(curData.sparkline);
+  }, 150);
+});
+
+// ── Escape helper ─────────────────────────────────────────────
+function esc(str) {
+  return String(str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Track this view ───────────────────────────────────────────
+fetch('/api/db?action=track', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ event_type: 'pageview', metadata: { page: 'stats' } }),
+}).catch(() => {});
+
+// ── Boot ──────────────────────────────────────────────────────
+loadStats();
+</script>
+</body>
+</html>

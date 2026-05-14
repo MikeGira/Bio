@@ -1446,6 +1446,20 @@ btt.addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
 const ro=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting){x.target.classList.add('in');ro.unobserve(x.target)}})},{threshold:.08});
 document.querySelectorAll('.reveal').forEach(el=>ro.observe(el));
 
+const _viewedSections=new Set();
+const _sectionObs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting&&!_viewedSections.has(e.target.id)){
+      _viewedSections.add(e.target.id);
+      track('section_view',{section:e.target.id});
+    }
+  });
+},{threshold:0.3});
+['home','about','skills','projects','contact'].forEach(id=>{
+  const el=document.getElementById(id);
+  if(el)_sectionObs.observe(el);
+});
+
 // FORM + SECURITY + AI all preserved from previous version
 </script>
 <script>
@@ -1521,6 +1535,14 @@ async function dbPost(action, payload) {
   } catch(e) { /* silent DB errors never break the UI */ }
 }
 
+function track(event_type, metadata) {
+  fetch('/api/db?action=track', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ event_type, metadata: metadata || {} }),
+  }).catch(() => {});
+}
+
 // Save contact form submission to Supabase
 const _origFormSubmit = document.getElementById('formSubmit');
 document.getElementById('formSubmit').addEventListener('click', function() {
@@ -1535,6 +1557,7 @@ document.getElementById('formSubmit').addEventListener('click', function() {
 
 // Track page view on load
 dbPost('pageview', { page: 'index' });
+track('pageview', { page: 'index' });
 
 // ── AI SELF-HEAL SECURITY ENGINE ───────────────────────────
 // Each check: id, label, detail description, test function, severity, fixable?
@@ -1844,7 +1867,11 @@ Michael is open to full-time roles, contracts, consulting, partnerships, and adv
 
 const panel=document.getElementById('aiPanel'),msgs=document.getElementById('aiMsgs'),inp=document.getElementById('aiInp');
 let hist=[];
-document.getElementById('aiFab').addEventListener('click',()=>panel.classList.toggle('open'));
+document.getElementById('aiFab').addEventListener('click',()=>{
+  const wasOpen=panel.classList.contains('open');
+  panel.classList.toggle('open');
+  if(!wasOpen)track('chat_start');
+});
 document.getElementById('aiX').addEventListener('click',()=>panel.classList.remove('open'));
 document.querySelectorAll('.ai-chip').forEach(b=>b.addEventListener('click',()=>send(b.dataset.q)));
 document.getElementById('aiSend').addEventListener('click',()=>{const v=inp.value.trim();if(v){send(v);inp.value=''}});
@@ -1871,7 +1898,7 @@ async function send(text){
   const now=Date.now();
   if(now-_lastSend<1500){addMsg('Please wait a moment before sending another message.','bot');return;}
   _lastSend=now;_sending=true;
-  addMsg(text,'user');hist.push({role:'user',content:text});
+  addMsg(text,'user');hist.push({role:'user',content:text});track('chat_message');
   if(hist.length>40){hist=hist.slice(-40);}
   const ty=addMsg('<span></span><span></span><span></span>','bot typing');
   try{
@@ -1899,6 +1926,26 @@ async function send(text){
   }catch(e){ty.remove();addMsg('Connection error. '+e.message,'bot')}
   finally{_sending=false;}
 }
+
+// ── CTA + PROJECT CLICK TRACKING ──────────────────────────
+document.querySelectorAll('.proj-featured, .proj-card').forEach(card=>{
+  card.addEventListener('click',e=>{
+    if(e.target.closest('a')){
+      const nameEl=card.querySelector('.proj-name,.proj-card-title,[class*="proj-name"],[class*="proj-card-title"]');
+      track('project_click',{project:nameEl?nameEl.textContent.trim().slice(0,50):'unknown'});
+    }
+  });
+});
+[
+  {sel:'a[href="#contact"]',      cta:'contact_cta'},
+  {sel:'a[href*="github.com"]',   cta:'github'},
+  {sel:'a[href*="linkedin.com"]', cta:'linkedin'},
+  {sel:'a[href*=".pdf"]',         cta:'download_cv'},
+].forEach(({sel,cta})=>
+  document.querySelectorAll(sel).forEach(el=>
+    el.addEventListener('click',()=>track('cta_click',{cta}),{passive:true})
+  )
+);
 
 // Copy contact info to clipboard
 function copyContact(btn, text) {

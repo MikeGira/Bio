@@ -139,6 +139,33 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: true });
     }
 
+    // ── EVENT TRACK ──────────────────────────────────────────────
+    if (action === 'track' && req.method === 'POST') {
+      const { event_type, metadata } = req.body || {};
+      const ALLOWED = new Set([
+        'chat_start', 'chat_message', 'section_view',
+        'project_click', 'cta_click', 'pageview',
+      ]);
+      if (!event_type || !ALLOWED.has(event_type)) {
+        return res.status(400).json({ error: 'Invalid event_type.' });
+      }
+      const meta = (metadata && typeof metadata === 'object' && !Array.isArray(metadata))
+        ? metadata : {};
+      const safeMeta = Object.fromEntries(
+        Object.entries(meta).slice(0, 10).map(([k, v]) => [
+          String(k).slice(0, 40),
+          String(v).slice(0, 100),
+        ])
+      );
+      const result = await supabase('analytics_events', 'POST', {
+        event_type,
+        metadata: safeMeta,
+        created_at: new Date().toISOString(),
+      });
+      if (!result.ok) return res.status(500).json({ error: 'Track insert failed.' });
+      return res.status(200).json({ success: true });
+    }
+
     // ── ANALYTICS ─────────────────────────────────────────────────────
     if (action === 'analytics' && req.method === 'GET') {
       // Auth check — but ALWAYS return real data even if token validation is skipped
