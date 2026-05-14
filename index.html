@@ -132,6 +132,8 @@ header{position:fixed;top:0;left:0;right:0;z-index:200;padding:10px 16px}
 .theme-btn:hover{border-color:var(--line3);color:var(--hi)}
 .i-moon{display:block}.i-sun{display:none}
 [data-theme="light"] .i-moon{display:none}[data-theme="light"] .i-sun{display:block}
+.nav-stats{color:var(--red)!important;display:flex;align-items:center;gap:5px}
+.nav-stats:hover{color:var(--red2)!important;background:rgba(238,0,0,.07)!important}
 .nav-cta{background:var(--red);color:#fff;font-size:.78rem;font-weight:600;padding:7px 16px;border-radius:var(--r-sm);transition:background .15s;white-space:nowrap;flex-shrink:0}
 .nav-cta:hover{background:var(--red2)}
 .mob-btn{display:none;background:none;border:1px solid var(--line2);border-radius:var(--r-sm);color:var(--mid);width:34px;height:34px;cursor:pointer;align-items:center;justify-content:center;flex-shrink:0;font-size:1.1rem;line-height:1}
@@ -695,6 +697,12 @@ footer{border-top:1px solid var(--line2);padding:36px 0;position:relative;z-inde
         </li>
         <li class="nav-item">
           <a href="#contact" class="nav-link">Contact</a>
+        </li>
+        <li class="nav-item">
+          <a href="/stats" class="nav-link nav-stats">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+            Stats
+          </a>
         </li>
       </ul>
 

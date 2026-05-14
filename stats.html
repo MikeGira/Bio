@@ -51,6 +51,16 @@ body{font-family:var(--font);background:#000;color:var(--hi);min-height:100vh}
   display:flex;align-items:center;justify-content:center;
   font-weight:900;font-size:.85rem;color:#fff;flex-shrink:0;
 }
+.nav-back{
+  display:flex;align-items:center;gap:6px;
+  font-family:var(--mono);font-size:.72rem;
+  color:var(--mid);text-decoration:none;
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:50px;padding:5px 14px;
+  transition:all .15s;
+}
+.nav-back:hover{color:var(--hi);border-color:rgba(255,255,255,0.22)}
+.nav-back svg{flex-shrink:0}
 .nav-tag{
   font-family:var(--mono);font-size:.68rem;
   color:var(--lo);
@@ -270,7 +280,13 @@ body{font-family:var(--font);background:#000;color:var(--hi);min-height:100vh}
     <span class="nav-logo">M</span>
     Michael Twagirayezu
   </a>
-  <span class="nav-tag">live stats</span>
+  <div style="display:flex;align-items:center;gap:10px">
+    <span class="nav-tag">live stats</span>
+    <a href="/" class="nav-back" aria-label="Back to portfolio">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 5-7 7 7 7"/></svg>
+      Portfolio
+    </a>
+  </div>
 </nav>
 
 <main class="wrap">
