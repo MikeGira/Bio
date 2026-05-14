@@ -67,7 +67,7 @@ export default async function handler(req, res) {
       supabase(`analytics_events?event_type=eq.chat_message&select=id${tf}&limit=100000`),
       supabase(`analytics_events?event_type=eq.project_click&select=id${tf}&limit=100000`),
       supabase(`analytics_events?event_type=eq.cta_click&select=id${tf}&limit=100000`),
-      supabase(`analytics_events?event_type=eq.pageview&select=created_at${tf}&order=created_at.asc&limit=100000`),
+      supabase(`analytics_events?event_type=eq.pageview&select=created_at,metadata${tf}&order=created_at.asc&limit=100000`),
     ]);
 
     const totalPageViews = Array.isArray(pageViewsData)
@@ -81,7 +81,31 @@ export default async function handler(req, res) {
     const conversionRate = totalPageViews > 0
       ? ((contacts / totalPageViews) * 100).toFixed(2) : '0.00';
 
-    const sparkline = buildSparkline(sparklineData, days || 30);
+    const pageviewEvents = Array.isArray(sparklineData) ? sparklineData : [];
+    const sparkline = buildSparkline(pageviewEvents, days || 30);
+
+    // Aggregate metadata breakdowns from pageview events
+    const countries = {}, cities = {}, browsers = {}, os_map = {}, devices = {}, langs = {};
+    let newV = 0, retV = 0;
+    for (const ev of pageviewEvents) {
+      const m = ev.metadata || {};
+      if (m.country && m.country !== 'Unknown') countries[m.country] = (countries[m.country] || 0) + 1;
+      if (m.city    && m.city    !== 'Unknown') cities[m.city]       = (cities[m.city]       || 0) + 1;
+      if (m.browser && m.browser !== 'Unknown') browsers[m.browser]  = (browsers[m.browser]  || 0) + 1;
+      if (m.os      && m.os      !== 'Unknown') os_map[m.os]         = (os_map[m.os]         || 0) + 1;
+      if (m.device  && m.device  !== 'Unknown') devices[m.device]    = (devices[m.device]    || 0) + 1;
+      const lc = (m.lang || '').slice(0, 2).toLowerCase();
+      if (lc && lc !== 'un') langs[lc] = (langs[lc] || 0) + 1;
+      if (m.new_visitor === 'true')  newV++;
+      if (m.new_visitor === 'false') retV++;
+    }
+
+    function topN(obj, n = 10) {
+      return Object.entries(obj)
+        .sort(([, a], [, b]) => b - a)
+        .slice(0, n)
+        .map(([name, count]) => ({ name, count }));
+    }
 
     const payload = {
       period: periodKey,
@@ -96,8 +120,17 @@ export default async function handler(req, res) {
         cta_clicks:      ctaClicks,
         conversion_rate: conversionRate,
       },
-      top_posts:    Array.isArray(blogPostsData) ? blogPostsData : [],
+      top_posts:  Array.isArray(blogPostsData) ? blogPostsData : [],
       sparkline,
+      breakdowns: {
+        countries: topN(countries, 15),
+        cities:    topN(cities, 10),
+        browsers:  topN(browsers),
+        os:        topN(os_map),
+        devices:   topN(devices),
+        languages: topN(langs, 10),
+        visitors:  { new: newV, returning: retV },
+      },
       generated_at: new Date().toISOString(),
     };
 

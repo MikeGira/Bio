@@ -1581,7 +1581,9 @@ document.getElementById('formSubmit').addEventListener('click', function() {
 
 // Track page view on load
 dbPost('pageview', { page: 'index' });
-track('pageview', { page: 'index' });
+const _isNewVisitor = !localStorage.getItem('mg_v');
+if (_isNewVisitor) localStorage.setItem('mg_v', '1');
+track('pageview', { page: 'index', new_visitor: String(_isNewVisitor) });
 
 // Populate visitor count pill
 fetch('/api/stats?period=all', { cache: 'force-cache' })

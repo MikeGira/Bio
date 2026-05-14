@@ -50,6 +50,34 @@ async function sendEmail({ to, subject, html }) {
   } catch(e) { console.error('Email send failed:', e.message); return false; }
 }
 
+function parseBrowser(ua) {
+  if (!ua) return 'Unknown';
+  if (/Edg\//i.test(ua))          return 'Edge';
+  if (/OPR\//i.test(ua))          return 'Opera';
+  if (/SamsungBrowser/i.test(ua)) return 'Samsung Internet';
+  if (/Chrome\//i.test(ua))       return 'Chrome';
+  if (/Firefox\//i.test(ua))      return 'Firefox';
+  if (/Safari\//i.test(ua))       return 'Safari';
+  return 'Other';
+}
+
+function parseOS(ua) {
+  if (!ua) return 'Unknown';
+  if (/Windows NT/i.test(ua))     return 'Windows';
+  if (/iPhone|iPad/i.test(ua))    return 'iOS';
+  if (/Android/i.test(ua))        return 'Android';
+  if (/Mac OS X/i.test(ua))       return 'macOS';
+  if (/Linux/i.test(ua))          return 'Linux';
+  return 'Other';
+}
+
+function parseDevice(ua) {
+  if (!ua) return 'Unknown';
+  if (/Mobi|Android.*Mobile|iPhone/i.test(ua))     return 'Mobile';
+  if (/iPad|Android(?!.*Mobile)|Tablet/i.test(ua)) return 'Tablet';
+  return 'Desktop';
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -157,6 +185,16 @@ export default async function handler(req, res) {
           String(v).slice(0, 100),
         ])
       );
+      if (event_type === 'pageview') {
+        const ua = req.headers['user-agent'] || '';
+        const rawLang = (req.headers['accept-language'] || '').split(',')[0].split(';')[0].trim();
+        safeMeta.country = String(req.headers['x-vercel-ip-country'] || 'Unknown').slice(0, 5);
+        safeMeta.city    = String(req.headers['x-vercel-ip-city']    || 'Unknown').slice(0, 60);
+        safeMeta.browser = parseBrowser(ua);
+        safeMeta.os      = parseOS(ua);
+        safeMeta.device  = parseDevice(ua);
+        safeMeta.lang    = (rawLang.slice(0, 2) || 'un').toLowerCase();
+      }
       const result = await supabase('analytics_events', 'POST', {
         event_type,
         metadata: safeMeta,
