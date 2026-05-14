@@ -492,7 +492,7 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
           Support on Ko-fi
         </a>
-        <a class="stats-link" href="/analytics" aria-label="Admin analytics dashboard">admin &rarr;</a>
+        <a class="stats-link" id="adminLink" href="/analytics" aria-label="Admin analytics dashboard" style="display:none">admin &rarr;</a>
       </div>
 
     </div><!-- /term-body -->
@@ -825,6 +825,11 @@ fetch('/api/db?action=track', {
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ event_type: 'pageview', metadata: { page: 'stats' } }),
 }).catch(() => {});
+
+// ── Admin link (only visible to owner) ───────────────────────
+if (localStorage.getItem('mg_admin') === '1') {
+  document.getElementById('adminLink').style.display = 'inline';
+}
 
 // ── Boot ──────────────────────────────────────────────────────
 loadStats();
