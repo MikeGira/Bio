@@ -17,16 +17,16 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg0:#0d0d12;--bg1:#13131a;--bg2:#1a1a24;--bg3:#22222e;
+  --bg0:#000000;--bg1:#060606;--bg2:#0d0d0d;--bg3:#151515;
   --red:#ee0000;--red2:#c00000;
   --green:#22c55e;--blue:#3b82f6;--gold:#f0ab00;
   --hi:#f0f0f8;--mid:#c0c0d8;--lo:#8888a8;
-  --line:rgba(255,255,255,0.07);--line2:rgba(255,255,255,0.11);
+  --line:rgba(255,255,255,0.06);--line2:rgba(255,255,255,0.09);
   --font:'Inter',sans-serif;--mono:'JetBrains Mono',monospace;
   --r:16px;--r-sm:10px;--r-lg:22px;
 }
-html{font-size:16px;background:var(--bg0)}
-body{font-family:var(--font);background:var(--bg0);color:var(--hi);min-height:100vh}
+html{font-size:16px;background:#000}
+body{font-family:var(--font);background:#000;color:var(--hi);min-height:100vh}
 
 /* ── NAV ── */
 .stats-nav{
@@ -64,28 +64,30 @@ body{font-family:var(--font);background:var(--bg0);color:var(--hi);min-height:10
 
 /* ── TERMINAL CHROME ── */
 .term-chrome{
-  background:var(--bg1);
-  border:1px solid rgba(238,0,0,.2);
+  background:#000;
+  border:1px solid rgba(238,0,0,.4);
   border-radius:var(--r-lg);
   overflow:hidden;
-  box-shadow:0 0 0 1px rgba(238,0,0,.06),
-             0 32px 80px rgba(0,0,0,.65),
-             0 0 60px rgba(238,0,0,.03);
+  box-shadow:
+    0 0 0 1px rgba(238,0,0,.15),
+    0 0 24px rgba(238,0,0,.35),
+    0 0 60px rgba(238,0,0,.2),
+    0 0 120px rgba(238,0,0,.1),
+    0 40px 100px rgba(0,0,0,.95);
 }
 .term-bar{
   display:flex;align-items:center;gap:8px;
   padding:12px 16px;
-  background:rgba(238,0,0,.05);
-  border-bottom:1px solid rgba(238,0,0,.15);
+  background:rgba(238,0,0,.07);
+  border-bottom:1px solid rgba(238,0,0,.25);
 }
+.term-body{padding:24px 28px 28px;background:#000}
 .dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
 .dot.r{background:#ff5f57}.dot.y{background:#febc2e}.dot.g{background:#28c840}
 .term-title{
   font-family:var(--mono);font-size:.7rem;
   color:var(--lo);margin-left:8px;letter-spacing:.04em;
 }
-.term-body{padding:24px 28px 28px}
-
 /* ── COMMAND PROMPT ── */
 .prompt{
   font-family:var(--mono);font-size:.875rem;
@@ -107,7 +109,7 @@ body{font-family:var(--font);background:var(--bg0);color:var(--hi);min-height:10
 .p-tab{
   font-family:var(--mono);font-size:.75rem;
   padding:5px 14px;border-radius:8px;
-  border:1px solid var(--line2);
+  border:1px solid rgba(255,255,255,0.1);
   background:none;color:var(--lo);
   cursor:pointer;transition:all .15s;
 }
@@ -124,8 +126,8 @@ body{font-family:var(--font);background:var(--bg0);color:var(--hi);min-height:10
   gap:12px;margin-bottom:20px;
 }
 .scard{
-  background:var(--bg2);
-  border:1px solid var(--line2);
+  background:#0a0a0a;
+  border:1px solid rgba(255,255,255,0.08);
   border-radius:14px;padding:18px 16px;
   position:relative;overflow:hidden;
   transition:border-color .2s,transform .2s;
@@ -163,7 +165,7 @@ body{font-family:var(--font);background:var(--bg0);color:var(--hi);min-height:10
 
 /* ── SPARKLINE ── */
 .spark-wrap{
-  background:var(--bg2);border:1px solid var(--line2);
+  background:#0a0a0a;border:1px solid rgba(255,255,255,0.08);
   border-radius:14px;padding:18px;margin-bottom:20px;
 }
 .spark-head{
@@ -180,7 +182,7 @@ body{font-family:var(--font);background:var(--bg0);color:var(--hi);min-height:10
 /* ── TWO-PANEL ROW ── */
 .panels{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
 .panel{
-  background:var(--bg2);border:1px solid var(--line2);
+  background:#0a0a0a;border:1px solid rgba(255,255,255,0.08);
   border-radius:14px;overflow:hidden;
 }
 .panel-head{
@@ -244,7 +246,7 @@ body{font-family:var(--font);background:var(--bg0);color:var(--hi);min-height:10
 
 /* ── SKELETON ── */
 .skel{
-  background:linear-gradient(90deg,var(--bg2) 25%,var(--bg3) 50%,var(--bg2) 75%);
+  background:linear-gradient(90deg,#0d0d0d 25%,#1a1a1a 50%,#0d0d0d 75%);
   background-size:200% 100%;
   animation:shimmer 1.4s infinite;
   border-radius:6px;
