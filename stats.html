@@ -27,6 +27,7 @@
 }
 html{font-size:16px;background:#000}
 body{font-family:var(--font);background:#000;color:var(--hi);min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(circle,hsla(0,0%,100%,.11) 1.5px,transparent 0);background-size:30px 30px;mask-image:linear-gradient(180deg,transparent 0,#000 4%,#000 96%,transparent);-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 4%,#000 96%,transparent);pointer-events:none;z-index:0}
 
 /* ── NAV ── */
 .stats-nav{
