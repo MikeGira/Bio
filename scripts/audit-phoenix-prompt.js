@@ -1,16 +1,18 @@
-const fs = require('fs');
+import { readFileSync, existsSync } from 'fs';
 
 const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
 const GH_TOKEN = process.env.GH_TOKEN;
 const REPO = process.env.REPO;
 
-if (!ANTHROPIC_KEY || !GH_TOKEN || !REPO) {
-  console.error('Missing required env vars: ANTHROPIC_API_KEY, GH_TOKEN, REPO');
-  process.exit(1);
+if (!GH_TOKEN) { console.error('Missing required env var: GH_TOKEN'); process.exit(1); }
+if (!REPO) { console.error('Missing required env var: REPO'); process.exit(1); }
+if (!ANTHROPIC_KEY) {
+  console.warn('ANTHROPIC_API_KEY not configured — skipping audit.');
+  process.exit(0);
 }
 
 function readFile(filePath) {
-  try { return fs.readFileSync(filePath, 'utf8'); } catch { return ''; }
+  try { return readFileSync(filePath, 'utf8'); } catch { return ''; }
 }
 
 function extractFeatures() {
