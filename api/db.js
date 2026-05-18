@@ -9,11 +9,24 @@ const NOTIFY_EMAIL         = process.env.NOTIFY_EMAIL || 'chrismikeparker1@gmail
 const SITE_URL             = process.env.SITE_URL || 'https://bio-two-eta.vercel.app';
 
 function makeUnsubToken(email) {
+  const secret = process.env.UNSUBSCRIBE_SECRET || process.env.ANALYTICS_PASSWORD || 'fallback';
   return crypto
-    .createHmac('sha256', process.env.ANALYTICS_PASSWORD || 'fallback')
+    .createHmac('sha256', secret)
     .update(email.toLowerCase())
     .digest('hex')
     .slice(0, 40);
+}
+
+// In-memory rate limiter (per cold-start instance; good enough for personal portfolio)
+const _rlMap = new Map();
+function checkRateLimit(ip, action, limit, windowMs) {
+  const key = `${ip}:${action}`;
+  const now = Date.now();
+  const entry = _rlMap.get(key) || { count: 0, resetAt: now + windowMs };
+  if (now > entry.resetAt) { entry.count = 0; entry.resetAt = now + windowMs; }
+  entry.count++;
+  _rlMap.set(key, entry);
+  return entry.count <= limit;
 }
 
 async function supabase(path, method = 'GET', body = null) {
@@ -92,6 +105,18 @@ export default async function handler(req, res) {
   if (bodyStr.length > 8000) return res.status(413).json({ error: 'Request too large.' });
 
   const { action } = req.query;
+
+  // Origin + rate-limit guard for state-changing POST actions
+  if (req.method === 'POST' && (action === 'contact' || action === 'subscribe')) {
+    if (SITE_URL && req.headers.origin && req.headers.origin !== SITE_URL) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+    const ip = (req.headers['x-real-ip'] || (req.headers['x-forwarded-for'] || '').split(',')[0] || 'unknown').trim();
+    const limit = action === 'contact' ? 3 : 2;
+    if (!checkRateLimit(ip, action, limit, 60000)) {
+      return res.status(429).json({ error: 'Too many requests. Please try again later.' });
+    }
+  }
 
   try {
 
@@ -215,7 +240,10 @@ export default async function handler(req, res) {
         try {
           const decoded = JSON.parse(Buffer.from(token, 'base64').toString());
           const expired = (Date.now() - decoded.ts) > 8 * 60 * 60 * 1000;
-          if (decoded.sig !== analyticsPassword.slice(0, 4) || expired) {
+          const expectedSig = crypto.createHmac('sha256', analyticsPassword).update(String(decoded.ts)).digest('hex');
+          const sigValid = decoded.sig && decoded.sig.length === expectedSig.length &&
+            crypto.timingSafeEqual(Buffer.from(decoded.sig), Buffer.from(expectedSig));
+          if (!sigValid || expired) {
             return res.status(401).json({ error: 'Session expired. Please log in again.' });
           }
         } catch {

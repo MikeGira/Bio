@@ -42,8 +42,9 @@ async function sendEmail({ to, subject, html }) {
 }
 
 function makeUnsubToken(email) {
+  const secret = process.env.UNSUBSCRIBE_SECRET || process.env.ANALYTICS_PASSWORD || 'fallback';
   return crypto
-    .createHmac('sha256', process.env.ANALYTICS_PASSWORD || 'fallback')
+    .createHmac('sha256', secret)
     .update(email.toLowerCase())
     .digest('hex')
     .slice(0, 40);
@@ -141,7 +142,10 @@ export default async function handler(req, res) {
   try {
     const decoded = JSON.parse(Buffer.from(token, 'base64').toString());
     const expired = (Date.now() - decoded.ts) > 8 * 60 * 60 * 1000;
-    if (decoded.sig !== ANALYTICS_PASSWORD.slice(0, 4) || expired) {
+    const expectedSig = crypto.createHmac('sha256', ANALYTICS_PASSWORD).update(String(decoded.ts)).digest('hex');
+    const sigValid = decoded.sig && decoded.sig.length === expectedSig.length &&
+      crypto.timingSafeEqual(Buffer.from(decoded.sig), Buffer.from(expectedSig));
+    if (!sigValid || expired) {
       return res.status(401).json({ error: 'Session expired. Please log in again.' });
     }
   } catch {

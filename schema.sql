@@ -122,6 +122,100 @@ REVOKE ALL ON public.analytics_events        FROM anon, authenticated;
 REVOKE EXECUTE ON FUNCTION public.rls_auto_enable() FROM PUBLIC;
 
 -- ============================================================
+-- PERFORMANCE FUNCTIONS (replaces O(n) JS aggregation)
+-- Run in Supabase SQL Editor — used by api/stats.js
+-- ============================================================
+
+-- Returns daily pageview counts for the sparkline chart
+CREATE OR REPLACE FUNCTION get_daily_pageviews(days_back INTEGER DEFAULT 30)
+RETURNS TABLE (day DATE, views BIGINT)
+LANGUAGE sql SECURITY DEFINER
+AS $$
+  SELECT
+    DATE_TRUNC('day', created_at AT TIME ZONE 'UTC')::DATE AS day,
+    COUNT(*) AS views
+  FROM analytics_events
+  WHERE event_type = 'pageview'
+    AND created_at >= NOW() - (days_back || ' days')::INTERVAL
+  GROUP BY 1
+  ORDER BY 1;
+$$;
+
+-- Returns aggregated metadata breakdown (country, browser, OS, etc.) from pageview events
+CREATE OR REPLACE FUNCTION get_pageview_meta_breakdown(days_back INTEGER DEFAULT 30)
+RETURNS JSON
+LANGUAGE sql SECURITY DEFINER
+AS $$
+  WITH events AS (
+    SELECT metadata FROM analytics_events
+    WHERE event_type = 'pageview'
+      AND created_at >= NOW() - (days_back || ' days')::INTERVAL
+  ),
+  countries AS (
+    SELECT metadata->>'country' AS name, COUNT(*) AS count FROM events
+    WHERE metadata->>'country' IS NOT NULL AND metadata->>'country' NOT IN ('Unknown', '')
+    GROUP BY 1 ORDER BY 2 DESC LIMIT 15
+  ),
+  cities AS (
+    SELECT metadata->>'city' AS name, COUNT(*) AS count FROM events
+    WHERE metadata->>'city' IS NOT NULL AND metadata->>'city' NOT IN ('Unknown', '')
+    GROUP BY 1 ORDER BY 2 DESC LIMIT 10
+  ),
+  browsers AS (
+    SELECT metadata->>'browser' AS name, COUNT(*) AS count FROM events
+    WHERE metadata->>'browser' IS NOT NULL AND metadata->>'browser' NOT IN ('Unknown', '')
+    GROUP BY 1 ORDER BY 2 DESC LIMIT 10
+  ),
+  os_data AS (
+    SELECT metadata->>'os' AS name, COUNT(*) AS count FROM events
+    WHERE metadata->>'os' IS NOT NULL AND metadata->>'os' NOT IN ('Unknown', '')
+    GROUP BY 1 ORDER BY 2 DESC LIMIT 10
+  ),
+  devices AS (
+    SELECT metadata->>'device' AS name, COUNT(*) AS count FROM events
+    WHERE metadata->>'device' IS NOT NULL AND metadata->>'device' NOT IN ('Unknown', '')
+    GROUP BY 1 ORDER BY 2 DESC LIMIT 10
+  ),
+  languages AS (
+    SELECT metadata->>'lang' AS name, COUNT(*) AS count FROM events
+    WHERE metadata->>'lang' IS NOT NULL AND metadata->>'lang' NOT IN ('un', '')
+    GROUP BY 1 ORDER BY 2 DESC LIMIT 10
+  )
+  SELECT json_build_object(
+    'countries',          (SELECT json_agg(json_build_object('name', name, 'count', count)) FROM countries),
+    'cities',             (SELECT json_agg(json_build_object('name', name, 'count', count)) FROM cities),
+    'browsers',           (SELECT json_agg(json_build_object('name', name, 'count', count)) FROM browsers),
+    'os',                 (SELECT json_agg(json_build_object('name', name, 'count', count)) FROM os_data),
+    'devices',            (SELECT json_agg(json_build_object('name', name, 'count', count)) FROM devices),
+    'languages',          (SELECT json_agg(json_build_object('name', name, 'count', count)) FROM languages),
+    'new_visitors',       (SELECT COUNT(*) FROM events WHERE metadata->>'new_visitor' = 'true'),
+    'returning_visitors', (SELECT COUNT(*) FROM events WHERE metadata->>'new_visitor' = 'false')
+  );
+$$;
+
+-- Grant execute to service_role only
+GRANT EXECUTE ON FUNCTION get_daily_pageviews(INTEGER)          TO service_role;
+GRANT EXECUTE ON FUNCTION get_pageview_meta_breakdown(INTEGER)  TO service_role;
+
+-- ============================================================
+-- ANALYTICS ARCHIVAL (prevents unbounded table growth)
+-- Requires pg_cron enabled in Supabase (Database → Extensions)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS analytics_events_archive (LIKE analytics_events INCLUDING ALL);
+
+-- Archive events older than 90 days every Sunday at 3am UTC
+-- Run in Supabase SQL Editor after enabling pg_cron extension:
+-- SELECT cron.schedule(
+--   'archive-analytics-events',
+--   '0 3 * * 0',
+--   $$
+--     INSERT INTO analytics_events_archive
+--       SELECT * FROM analytics_events WHERE created_at < NOW() - INTERVAL '90 days';
+--     DELETE FROM analytics_events WHERE created_at < NOW() - INTERVAL '90 days';
+--   $$
+-- );
+
+-- ============================================================
 -- VERIFY: Run this to confirm tables were created
 -- ============================================================
 SELECT table_name FROM information_schema.tables

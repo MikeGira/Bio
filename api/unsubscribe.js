@@ -2,12 +2,12 @@ import crypto from 'crypto';
 
 const SUPABASE_URL         = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
-const ANALYTICS_PASSWORD   = process.env.ANALYTICS_PASSWORD;
 const SITE_URL             = process.env.SITE_URL || 'https://bio-two-eta.vercel.app';
 
 function makeUnsubToken(email) {
+  const secret = process.env.UNSUBSCRIBE_SECRET || process.env.ANALYTICS_PASSWORD || 'fallback';
   return crypto
-    .createHmac('sha256', ANALYTICS_PASSWORD || 'fallback')
+    .createHmac('sha256', secret)
     .update(email.toLowerCase())
     .digest('hex')
     .slice(0, 40);
@@ -24,7 +24,7 @@ export default async function handler(req, res) {
 
   const normalised = decodeURIComponent(String(email)).toLowerCase().trim();
 
-  if (!ANALYTICS_PASSWORD) {
+  if (!process.env.UNSUBSCRIBE_SECRET && !process.env.ANALYTICS_PASSWORD) {
     return res.status(500).send(page('Configuration error', 'Unsubscribe is not configured. Please contact Michael directly.', false));
   }
 

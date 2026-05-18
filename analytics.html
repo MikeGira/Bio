@@ -571,7 +571,7 @@ async function openDigestModal() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'claude-sonnet-4-5',
+          model: 'claude-sonnet-4-6',
           max_tokens: 1500,
           messages: [{ role: 'user', content: `Generate exactly 5 blog article summaries for a tech blog called "Stack Signal" by Michael Twagirayezu, an IT Systems Engineer in Toronto specialising in multi-cloud, DevSecOps, cybersecurity, and AI integration.
 
@@ -588,7 +588,11 @@ Only the first item should have "featured": true.` }]
       digestPosts = JSON.parse(clean).slice(0, 5);
       renderDigestPreview(preview, subjectEl);
     } catch (e) {
-      preview.innerHTML = `<div style="color:#ef4444;font-family:var(--mono);font-size:.75rem">Could not fetch articles: ${e.message}. Please visit the blog page first.</div>`;
+      preview.innerHTML = '';
+      const errDiv = document.createElement('div');
+      errDiv.style.cssText = 'color:#ef4444;font-family:var(--mono);font-size:.75rem';
+      errDiv.textContent = 'Could not fetch articles: ' + (e.message || 'network error') + '. Please visit the blog page first.';
+      preview.appendChild(errDiv);
     }
   }
 }
