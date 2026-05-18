@@ -1,0 +1,28 @@
+name: Phoenix AI Audit
+
+on:
+  schedule:
+    - cron: '0 9 * * 0'
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'api/chat.js'
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Run Phoenix AI prompt audit
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: node scripts/audit-phoenix-prompt.js
