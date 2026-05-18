@@ -1979,7 +1979,13 @@ document.querySelectorAll('.ai-chip').forEach(b=>b.addEventListener('click',()=>
   function startFire(){if(!raf)tick();}
   function stopFire(){if(raf){cancelAnimationFrame(raf);raf=null;ctx.clearRect(0,0,W,H);for(let i=0;i<buf.length;i++)buf[i]=0;}}
   const fab=document.getElementById('aiFab');
-  fab.addEventListener('mouseenter',startFire);
+  fab.addEventListener('mouseenter',()=>{
+    startFire();
+    fab.classList.remove('phx-spring');
+    void fab.offsetWidth;
+    fab.classList.add('phx-spring');
+    fab.addEventListener('animationend',(e)=>{if(e.animationName==='phx-spring')fab.classList.remove('phx-spring');},{once:true});
+  });
   fab.addEventListener('mouseleave',()=>{if(!fab.classList.contains('phx-active'))stopFire();});
   window._phxFireStart=startFire;
   window._phxFireStop=stopFire;
