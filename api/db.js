@@ -9,7 +9,8 @@ const NOTIFY_EMAIL         = process.env.NOTIFY_EMAIL || 'chrismikeparker1@gmail
 const SITE_URL             = process.env.SITE_URL || 'https://bio-two-eta.vercel.app';
 
 function makeUnsubToken(email) {
-  const secret = process.env.UNSUBSCRIBE_SECRET || process.env.ANALYTICS_PASSWORD || 'fallback';
+  const secret = process.env.UNSUBSCRIBE_SECRET;
+  if (!secret) throw new Error('UNSUBSCRIBE_SECRET not configured');
   return crypto
     .createHmac('sha256', secret)
     .update(email.toLowerCase())
@@ -111,7 +112,7 @@ export default async function handler(req, res) {
     if (SITE_URL && req.headers.origin && req.headers.origin !== SITE_URL) {
       return res.status(403).json({ error: 'Forbidden' });
     }
-    const ip = (req.headers['x-real-ip'] || (req.headers['x-forwarded-for'] || '').split(',')[0] || 'unknown').trim();
+    const ip = (req.headers['x-real-ip'] || 'unknown').trim();
     const limit = action === 'contact' ? 3 : 2;
     if (!checkRateLimit(ip, action, limit, 60000)) {
       return res.status(429).json({ error: 'Too many requests. Please try again later.' });

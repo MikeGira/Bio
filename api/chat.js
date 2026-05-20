@@ -47,7 +47,7 @@ export default async function handler(req, res) {
   }
 
   // Rate limit: 20 requests per minute per IP
-  const ip = (req.headers['x-real-ip'] || (req.headers['x-forwarded-for'] || '').split(',')[0] || 'unknown').trim();
+  const ip = (req.headers['x-real-ip'] || 'unknown').trim();
   if (!checkRateLimit(ip, 20, 60000)) {
     return res.status(429).json({ error: 'Too many requests. Please slow down.' });
   }
