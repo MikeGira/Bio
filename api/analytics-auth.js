@@ -2,8 +2,8 @@
 // Server-side authentication for the analytics dashboard.
 // The password is stored ONLY in Vercel environment variables — never in client code.
 
-import { createHmac, timingSafeEqual } from 'crypto';
-import { extractIP, checkRateLimit } from './_lib.js';
+import { timingSafeEqual } from 'crypto';
+import { extractIP, checkRateLimit, createAuthToken } from './_lib.js';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin',  process.env.SITE_URL || '*');
@@ -26,15 +26,13 @@ export default async function handler(req, res) {
   }
   const pwBuf = Buffer.from(String(password || ''));
   const correctBuf = Buffer.from(correctPassword);
-  const match = pwBuf.length === correctBuf.length && timingSafeEqual(pwBuf, correctBuf);
+  let match = false;
+  try { match = timingSafeEqual(pwBuf, correctBuf); } catch {}
   if (!password || !match) {
     await new Promise(r => setTimeout(r, 800));
     return res.status(401).json({ error: 'Incorrect password.' });
   }
 
-  const ts = Date.now();
-  const sig = createHmac('sha256', correctPassword).update(String(ts)).digest('hex');
-  const token = Buffer.from(JSON.stringify({ ts, sig })).toString('base64');
-
+  const token = createAuthToken(correctPassword);
   return res.status(200).json({ token });
 }

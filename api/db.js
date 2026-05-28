@@ -1,7 +1,7 @@
 // api/db.js — Supabase Database Proxy + Email via Resend
 
 import crypto from 'crypto';
-import { checkRateLimit, extractIP, EMAIL_RE, escapeHtml } from './_lib.js';
+import { checkRateLimit, extractIP, EMAIL_RE, escapeHtml, verifyAuthToken } from './_lib.js';
 
 const SUPABASE_URL         = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
@@ -83,7 +83,7 @@ function parseDevice(ua) {
 }
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Origin', SITE_URL);
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') return res.status(200).end();
@@ -170,6 +170,7 @@ export default async function handler(req, res) {
       const { post_id, title, category } = req.body;
       if (!post_id || !title) return res.status(400).json({ error: 'Missing post_id or title.' });
       const stableId = String(post_id).trim().slice(0, 50);
+      if (!stableId) return res.status(400).json({ error: 'Invalid post_id.' });
       const existing = await supabase(`blog_post_views?post_id=eq.${encodeURIComponent(stableId)}&select=id,views`);
       if (existing.data && existing.data.length > 0) {
         const row = existing.data[0];
@@ -230,12 +231,7 @@ export default async function handler(req, res) {
 
       if (analyticsPassword && token) {
         try {
-          const decoded = JSON.parse(Buffer.from(token, 'base64').toString());
-          const expired = (Date.now() - decoded.ts) > 8 * 60 * 60 * 1000;
-          const expectedSig = crypto.createHmac('sha256', analyticsPassword).update(String(decoded.ts)).digest('hex');
-          const sigValid = decoded.sig && decoded.sig.length === expectedSig.length &&
-            crypto.timingSafeEqual(Buffer.from(decoded.sig), Buffer.from(expectedSig));
-          if (!sigValid || expired) {
+          if (!verifyAuthToken(token, analyticsPassword)) {
             return res.status(401).json({ error: 'Session expired. Please log in again.' });
           }
         } catch {

@@ -1,5 +1,7 @@
 // api/_lib.js — Shared utilities for all serverless functions
 
+import { createHmac, timingSafeEqual } from 'crypto';
+
 const _rlMap = new Map();
 
 export function checkRateLimit(key, limit, windowMs) {
@@ -32,4 +34,20 @@ export function escapeHtml(str) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#x27;');
+}
+
+export function createAuthToken(password) {
+  const ts = Date.now();
+  const sig = createHmac('sha256', password).update(String(ts)).digest('hex');
+  return Buffer.from(JSON.stringify({ ts, sig })).toString('base64');
+}
+
+// throws if token is malformed (bad base64/JSON); returns false if invalid or expired
+export function verifyAuthToken(token, password, maxAgeMs = 8 * 60 * 60 * 1000) {
+  const decoded = JSON.parse(Buffer.from(token, 'base64').toString());
+  const expired = (Date.now() - decoded.ts) > maxAgeMs;
+  const expectedSig = createHmac('sha256', password).update(String(decoded.ts)).digest('hex');
+  let sigValid = false;
+  try { sigValid = timingSafeEqual(Buffer.from(String(decoded.sig)), Buffer.from(expectedSig)); } catch {}
+  return sigValid && !expired;
 }

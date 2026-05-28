@@ -1,7 +1,8 @@
 // api/send-digest.js — Send blog digest email to all newsletter subscribers
 // Called from the analytics dashboard — requires analytics token auth
 
-import { createHmac, timingSafeEqual } from 'crypto';
+import { createHmac } from 'crypto';
+import { extractIP, checkRateLimit, verifyAuthToken } from './_lib.js';
 
 const SUPABASE_URL         = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
@@ -133,6 +134,12 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
+  // Rate limit: 5 send attempts per hour per IP
+  const ip = extractIP(req);
+  if (!checkRateLimit(`digest:${ip}`, 5, 60 * 60 * 1000)) {
+    return res.status(429).json({ error: 'Too many requests.' });
+  }
+
   // ── AUTH — same token system as analytics ──
   const authHeader = req.headers['authorization'] || '';
   const token = authHeader.replace('Bearer ', '').trim();
@@ -140,12 +147,7 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
   try {
-    const decoded = JSON.parse(Buffer.from(token, 'base64').toString());
-    const expired = (Date.now() - decoded.ts) > 8 * 60 * 60 * 1000;
-    const expectedSig = createHmac('sha256', ANALYTICS_PASSWORD).update(String(decoded.ts)).digest('hex');
-    const sigValid = decoded.sig && decoded.sig.length === expectedSig.length &&
-      timingSafeEqual(Buffer.from(decoded.sig), Buffer.from(expectedSig));
-    if (!sigValid || expired) {
+    if (!verifyAuthToken(token, ANALYTICS_PASSWORD)) {
       return res.status(401).json({ error: 'Session expired. Please log in again.' });
     }
   } catch {
