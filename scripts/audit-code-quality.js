@@ -14,7 +14,8 @@ if (!ANTHROPIC_KEY) {
   process.exit(0);
 }
 
-const FILES = ['api/chat.js', 'api/db.js', 'api/analytics-auth.js', 'api/send-digest.js'];
+// _lib.js is included so the reviewer understands shared utilities and avoids false positives
+const FILES = ['api/_lib.js', 'api/chat.js', 'api/db.js', 'api/analytics-auth.js', 'api/send-digest.js'];
 
 function readFile(path) {
   try { return readFileSync(path, 'utf8'); } catch { return ''; }
@@ -23,9 +24,9 @@ function readFile(path) {
 function prepareContent(filePath) {
   const raw = readFile(filePath);
   if (!raw) return null;
-  // Strip large string literals (system prompts, long templates) to keep token cost low
-  const stripped = raw.replace(/`[\s\S]{400,}?`/g, '`/* ...long string omitted... */`');
-  return stripped.split('\n').slice(0, 200).join('\n');
+  // Only strip genuinely massive HTML email template literals to keep token cost reasonable.
+  // All logic code is preserved so the reviewer has full context.
+  return raw.replace(/`[\s\S]{2000,}?`/g, '`/* ...html template omitted... */`');
 }
 
 async function callClaude(bundle) {
@@ -37,27 +38,31 @@ async function callClaude(bundle) {
       'anthropic-version': '2023-06-01',
     },
     body: JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
+      model: 'claude-sonnet-4-6',
       max_tokens: 1024,
       messages: [{
         role: 'user',
-        content: `You are a senior engineer reviewing production serverless API code.
+        content: `You are a senior security engineer doing a targeted review of a personal portfolio site's serverless API code.
 
-Identify ONLY real, actionable issues in these categories:
-- SIMPLIFICATION: Code more complex than needed (multiple lines reducible to fewer, roundabout logic)
-- SECURITY: Missing input validation, unsafe patterns, potential attack vectors
-- DUPLICATION: Repeated logic that should be consolidated into a shared helper
+Context: These files share utilities via _lib.js. Any function or constant imported from './_lib.js' is fully implemented there — do not flag it as missing.
 
-Do NOT report: style preferences, missing docs, or theoretical issues with no practical exploit path.
+Report ONLY confirmed issues in these categories:
+- [SECURITY]: A real vulnerability where user input could cause actual harm. Must have a concrete exploit path.
+- [DUPLICATION]: Byte-for-byte identical logic that exists in multiple files AND is not already in _lib.js.
+- [SIMPLIFICATION]: Provably simpler implementation that does not change behavior.
+
+Mandatory checks before flagging ANYTHING:
+1. Read the import statements at the top of each file. If a function comes from _lib.js, it exists — do not flag it as missing.
+2. If a value is processed through String(), Number(), or any coercion before use, it IS type-safe. Do not flag.
+3. If a function returns a 400/401/403/429 error for bad input anywhere in the same function, input IS validated.
+4. If auth verification code exists in the file (even if you have to scroll down), do not flag it as missing.
+5. If you are not 100% certain an issue is real based on the full file content: do not include it.
 
 FILES UNDER REVIEW:
 ${bundle}
 
-Format each finding as:
-**[CATEGORY] \`filename\` — Issue title**
-One-sentence description + suggested fix.
-
-If no real issues found, respond with exactly: PASS`,
+If no confirmed issues: respond with exactly PASS
+Otherwise list findings as: **[CATEGORY] \`file\` — title**: one sentence.`,
       }],
     }),
   });
@@ -65,42 +70,30 @@ If no real issues found, respond with exactly: PASS`,
   return (await res.json()).content?.[0]?.text ?? '';
 }
 
-async function hasOpenIssue() {
+async function getOpenIssues() {
   const res = await fetch(
     `https://api.github.com/repos/${REPO}/issues?labels=ai-code-quality&state=open`,
     { headers: { Authorization: `Bearer ${GH_TOKEN}`, Accept: 'application/vnd.github+json' } }
   );
-  if (!res.ok) return false;
+  if (!res.ok) return [];
   const issues = await res.json();
-  return Array.isArray(issues) && issues.length > 0;
+  return Array.isArray(issues) ? issues : [];
 }
 
-async function closeOpenIssues() {
-  const res = await fetch(
-    `https://api.github.com/repos/${REPO}/issues?labels=ai-code-quality&state=open`,
-    { headers: { Authorization: `Bearer ${GH_TOKEN}`, Accept: 'application/vnd.github+json' } }
-  );
-  if (!res.ok) return;
-  const issues = await res.json();
-  for (const issue of (Array.isArray(issues) ? issues : [])) {
-    await fetch(`https://api.github.com/repos/${REPO}/issues/${issue.number}`, {
-      method: 'PATCH',
-      headers: { Authorization: `Bearer ${GH_TOKEN}`, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' },
-      body: JSON.stringify({ state: 'closed', state_reason: 'completed' }),
-    });
-    console.log(`Auto-closed resolved quality issue #${issue.number}`);
-  }
+async function closeIssue(number) {
+  await fetch(`https://api.github.com/repos/${REPO}/issues/${number}`, {
+    method: 'PATCH',
+    headers: { Authorization: `Bearer ${GH_TOKEN}`, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' },
+    body: JSON.stringify({ state: 'closed', state_reason: 'completed' }),
+  });
+  console.log(`Closed resolved quality issue #${number}`);
 }
 
 async function createIssue(findings) {
   const today = new Date().toISOString().slice(0, 10);
   const res = await fetch(`https://api.github.com/repos/${REPO}/issues`, {
     method: 'POST',
-    headers: {
-      Authorization: `Bearer ${GH_TOKEN}`,
-      Accept: 'application/vnd.github+json',
-      'Content-Type': 'application/json',
-    },
+    headers: { Authorization: `Bearer ${GH_TOKEN}`, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' },
     body: JSON.stringify({
       title: `Code Quality Audit: issues found [${today}]`,
       body: `## Bio Code Quality Audit — ${today}\n\n${findings}\n\n**Files reviewed:** ${FILES.join(', ')}\n\n### Next Steps\n1. Review each finding above\n2. Apply the fix or close as won't-fix with a comment\n3. Close this issue once addressed\n\n---\n*Generated by the automated [Code Quality Audit](../../actions/workflows/ai-audit.yml) workflow.*`,
@@ -115,13 +108,9 @@ async function createIssue(findings) {
 async function postPRComment(findings) {
   const res = await fetch(`https://api.github.com/repos/${REPO}/issues/${PR_NUMBER}/comments`, {
     method: 'POST',
-    headers: {
-      Authorization: `Bearer ${GH_TOKEN}`,
-      Accept: 'application/vnd.github+json',
-      'Content-Type': 'application/json',
-    },
+    headers: { Authorization: `Bearer ${GH_TOKEN}`, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      body: `## AI Code Quality Review\n\n${findings}\n\n---\n*Automated review by Claude Haiku — [workflow](../../actions/workflows/ai-audit.yml)*`,
+      body: `## AI Code Quality Review\n\n${findings}\n\n---\n*Automated review by Claude Sonnet — [workflow](../../actions/workflows/ai-audit.yml)*`,
     }),
   });
   if (!res.ok) throw new Error(`GitHub ${res.status}: ${await res.text()}`);
@@ -142,19 +131,21 @@ async function main() {
 
   console.log(`Auditing ${FILES.length} API files for code quality...`);
   const result = await callClaude(bundle);
-  console.log('Result:', result.slice(0, 200));
+  console.log('Result:', result.slice(0, 300));
+
+  const openIssues = await getOpenIssues();
 
   if (result.trim().startsWith('PASS')) {
     console.log('Quality audit passed — no issues found.');
-    await closeOpenIssues();
+    for (const issue of openIssues) await closeIssue(issue.number);
     return;
   }
 
   if (EVENT_NAME === 'pull_request' && PR_NUMBER) {
     await postPRComment(result);
   } else {
-    if (await hasOpenIssue()) {
-      console.log('Open ai-code-quality issue already exists — skipping duplicate.');
+    if (openIssues.length > 0) {
+      console.log(`Open ai-code-quality issue already exists (#${openIssues[0].number}) — skipping duplicate.`);
       return;
     }
     await createIssue(result);

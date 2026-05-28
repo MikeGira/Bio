@@ -45,6 +45,10 @@ export default async function handler(req, res) {
   if (bodyStr.length > 8000) return res.status(413).json({ error: 'Request too large.' });
 
   const { action } = req.query;
+  const VALID_ACTIONS = new Set(['contact', 'subscribe', 'pageview', 'blogview', 'track', 'analytics']);
+  if (!action || !VALID_ACTIONS.has(action)) {
+    return res.status(400).json({ error: 'Unknown action.' });
+  }
 
   // Origin + rate-limit guard for state-changing POST actions
   if (req.method === 'POST' && (action === 'contact' || action === 'subscribe')) {

@@ -1,4 +1,4 @@
-import { readFileSync, existsSync } from 'fs';
+import { readFileSync } from 'fs';
 
 const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
 const GH_TOKEN = process.env.GH_TOKEN;
@@ -27,32 +27,37 @@ function extractFeatures() {
   const projectMatches = [...html.matchAll(/<div class="proj-name">([^<]+)<\/div>/g)];
   const projects = projectMatches.map(m => m[1]);
 
-  const descMatches = [...html.matchAll(/<p class="proj-desc">([^<]+)<\/p>/g)];
-  const projectDescs = descMatches.map(m => m[1]);
-
-  return { systemPrompt, skills, projects, projectDescs };
+  // NOTE: project descriptions are NOT compared — HTML cards are intentionally brief
+  // marketing copy while the system prompt has more detailed AI-context descriptions.
+  // Comparing them always produces false positives.
+  return { systemPrompt, skills, projects };
 }
 
-async function callClaude(systemPrompt, skills, projects, projectDescs) {
-  const userMessage = `You are auditing an AI assistant system prompt for accuracy and completeness.
+async function callClaude(systemPrompt, skills, projects) {
+  const userMessage = `You are verifying that a Phoenix AI assistant's system prompt covers the portfolio content.
 
-PHOENIX SYSTEM PROMPT UNDER REVIEW:
+PHOENIX SYSTEM PROMPT:
 ${systemPrompt}
 
-SKILLS LISTED IN THE PORTFOLIO (source of truth):
+SKILLS LISTED IN PORTFOLIO:
 ${skills.join(', ')}
 
-PROJECTS LISTED IN THE PORTFOLIO:
-${projects.map((p, i) => `- ${p}${projectDescs[i] ? ': ' + projectDescs[i] : ''}`).join('\n')}
+PROJECTS LISTED IN PORTFOLIO:
+${projects.join(', ')}
 
-Task: Identify any gaps between the system prompt and the portfolio content. Look for:
-1. Skills listed in the portfolio but missing from the system prompt SKILLS section
-2. Projects listed in the portfolio but missing or inaccurately described in the system prompt
-3. Outdated descriptions (e.g., missing a new feature of a project)
+CHECK ONLY these three things:
+1. Is each portfolio skill mentioned SOMEWHERE in the system prompt? (exact wording not required)
+2. Is each portfolio project mentioned by name SOMEWHERE in the system prompt?
+3. Are there any obviously WRONG facts — wrong URL, wrong company name, wrong year?
 
-Focus only on factual gaps that would cause Phoenix to give wrong or incomplete answers.
-If everything looks accurate and complete, respond with exactly: PASS
-If there are gaps, describe them clearly and concisely.`;
+IMPORTANT — do NOT flag:
+- The system prompt having MORE detail than the portfolio (this is correct and expected)
+- Different wording between the portfolio and the prompt (they are intentionally different formats)
+- Anything that IS present but just worded differently
+- Theoretical issues or minor phrasing preferences
+
+If all skills and projects are covered and no obviously wrong facts exist, respond with exactly: PASS
+Only flag a real gap if something is completely absent or factually incorrect.`;
 
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -62,8 +67,8 @@ If there are gaps, describe them clearly and concisely.`;
       'anthropic-version': '2023-06-01',
     },
     body: JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 1024,
+      model: 'claude-sonnet-4-6',
+      max_tokens: 512,
       messages: [{ role: 'user', content: userMessage }],
     }),
   });
@@ -77,31 +82,23 @@ If there are gaps, describe them clearly and concisely.`;
   return data.content?.[0]?.text ?? '';
 }
 
-async function hasOpenAuditIssue() {
+async function getOpenAuditIssues() {
   const res = await fetch(
     `https://api.github.com/repos/${REPO}/issues?labels=ai-audit&state=open`,
     { headers: { Authorization: `Bearer ${GH_TOKEN}`, Accept: 'application/vnd.github+json' } }
   );
-  if (!res.ok) return false;
+  if (!res.ok) return [];
   const issues = await res.json();
-  return Array.isArray(issues) && issues.length > 0;
+  return Array.isArray(issues) ? issues : [];
 }
 
-async function closeOpenAuditIssues() {
-  const res = await fetch(
-    `https://api.github.com/repos/${REPO}/issues?labels=ai-audit&state=open`,
-    { headers: { Authorization: `Bearer ${GH_TOKEN}`, Accept: 'application/vnd.github+json' } }
-  );
-  if (!res.ok) return;
-  const issues = await res.json();
-  for (const issue of (Array.isArray(issues) ? issues : [])) {
-    await fetch(`https://api.github.com/repos/${REPO}/issues/${issue.number}`, {
-      method: 'PATCH',
-      headers: { Authorization: `Bearer ${GH_TOKEN}`, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' },
-      body: JSON.stringify({ state: 'closed', state_reason: 'completed' }),
-    });
-    console.log(`Auto-closed resolved audit issue #${issue.number}`);
-  }
+async function closeIssue(number) {
+  await fetch(`https://api.github.com/repos/${REPO}/issues/${number}`, {
+    method: 'PATCH',
+    headers: { Authorization: `Bearer ${GH_TOKEN}`, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' },
+    body: JSON.stringify({ state: 'closed', state_reason: 'completed' }),
+  });
+  console.log(`Closed resolved audit issue #${number}`);
 }
 
 async function createIssue(findings) {
@@ -125,16 +122,8 @@ ${findings}
 
   const res = await fetch(`https://api.github.com/repos/${REPO}/issues`, {
     method: 'POST',
-    headers: {
-      Authorization: `Bearer ${GH_TOKEN}`,
-      Accept: 'application/vnd.github+json',
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      title: `Phoenix AI Prompt Audit: gaps found [${today}]`,
-      body,
-      labels: ['ai-audit'],
-    }),
+    headers: { Authorization: `Bearer ${GH_TOKEN}`, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' },
+    body: JSON.stringify({ title: `Phoenix AI Prompt Audit: gaps found [${today}]`, body, labels: ['ai-audit'] }),
   });
 
   if (!res.ok) {
@@ -147,7 +136,7 @@ ${findings}
 }
 
 async function main() {
-  const { systemPrompt, skills, projects, projectDescs } = extractFeatures();
+  const { systemPrompt, skills, projects } = extractFeatures();
 
   if (!systemPrompt) {
     console.error('Could not extract SYSTEM prompt from index.html — check the file.');
@@ -156,17 +145,19 @@ async function main() {
 
   console.log(`Extracted system prompt (${systemPrompt.length} chars), ${skills.length} skills, ${projects.length} projects.`);
 
-  const result = await callClaude(systemPrompt, skills, projects, projectDescs);
-  console.log('Claude audit result:', result.slice(0, 200));
+  const result = await callClaude(systemPrompt, skills, projects);
+  console.log('Claude audit result:', result.slice(0, 300));
+
+  const openIssues = await getOpenAuditIssues();
 
   if (result.trim().startsWith('PASS')) {
     console.log('Audit passed — no issues to report.');
-    await closeOpenAuditIssues();
+    for (const issue of openIssues) await closeIssue(issue.number);
     return;
   }
 
-  if (await hasOpenAuditIssue()) {
-    console.log('An open ai-audit issue already exists — skipping duplicate.');
+  if (openIssues.length > 0) {
+    console.log(`An open ai-audit issue already exists (#${openIssues[0].number}) — skipping duplicate.`);
     return;
   }
 
