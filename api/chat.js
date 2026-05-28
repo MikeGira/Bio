@@ -1,6 +1,6 @@
 // api/chat.js — Vercel Serverless Proxy
 
-import { checkRateLimit, extractIP } from './_lib.js';
+import { checkRateLimit, extractIP, SITE_URL } from './_lib.js';
 
 const INJECTION_PATTERNS = [
   /ignore\s+(all\s+|previous\s+|above\s+|prior\s+)?instructions/i,
@@ -24,7 +24,7 @@ function detectInjection(messages) {
 }
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Origin', SITE_URL);
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
