@@ -2,61 +2,25 @@
 // Called from the analytics dashboard — requires analytics token auth
 
 import { createHmac } from 'crypto';
-import { extractIP, checkRateLimit, verifyAuthToken } from './_lib.js';
+import {
+  extractIP, checkRateLimit, verifyAuthToken,
+  SITE_URL, NOTIFY_EMAIL, supabase, sendEmail,
+} from './_lib.js';
 
-const SUPABASE_URL         = process.env.SUPABASE_URL;
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
-const RESEND_API_KEY       = process.env.RESEND_API_KEY;
-const ANALYTICS_PASSWORD   = process.env.ANALYTICS_PASSWORD;
-const NOTIFY_EMAIL         = process.env.NOTIFY_EMAIL || 'chrismikeparker1@gmail.com';
-const SITE_URL             = process.env.SITE_URL || 'https://bio-two-eta.vercel.app';
-
-async function supabase(path) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
-    headers: {
-      'apikey':        SUPABASE_SERVICE_KEY,
-      'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
-      'Content-Type':  'application/json',
-    },
-  });
-  const text = await res.text();
-  return text ? JSON.parse(text) : [];
-}
-
-async function sendEmail({ to, subject, html }) {
-  if (!RESEND_API_KEY) return { ok: false, error: 'RESEND_API_KEY not set' };
-  const res = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${RESEND_API_KEY}`,
-      'Content-Type':  'application/json',
-    },
-    body: JSON.stringify({
-      from:    `Stack Signal <hello@blog.h0m3labs.store>`,
-      to:      Array.isArray(to) ? to : [to],
-      subject,
-      html,
-    }),
-  });
-  const data = await res.json();
-  return { ok: res.ok, data, error: data.message };
-}
+const ANALYTICS_PASSWORD = process.env.ANALYTICS_PASSWORD;
 
 function makeUnsubToken(email) {
-  const secret = process.env.UNSUBSCRIBE_SECRET || process.env.ANALYTICS_PASSWORD;
+  const secret = process.env.UNSUBSCRIBE_SECRET || ANALYTICS_PASSWORD;
   if (!secret) throw new Error('UNSUBSCRIBE_SECRET not configured');
-  return createHmac('sha256', secret)
-    .update(email.toLowerCase())
-    .digest('hex')
-    .slice(0, 40);
+  return createHmac('sha256', secret).update(email.toLowerCase()).digest('hex').slice(0, 40);
 }
 
 function buildDigestHtml(posts, subscriberEmail) {
-  const blogUrl   = `${SITE_URL}/blog.html`;
-  const unsubUrl  = `${SITE_URL}/api/unsubscribe?email=${encodeURIComponent(subscriberEmail)}&token=${makeUnsubToken(subscriberEmail)}`;
+  const blogUrl  = `${SITE_URL}/blog.html`;
+  const unsubUrl = `${SITE_URL}/api/unsubscribe?email=${encodeURIComponent(subscriberEmail)}&token=${makeUnsubToken(subscriberEmail)}`;
   const topPosts = posts.slice(0, 5);
 
-  const postRows = topPosts.map((p, i) => `
+  const postRows = topPosts.map(p => `
     <tr>
       <td style="padding:16px 0;border-bottom:1px solid #e5e5e5">
         <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#ee0000;margin-bottom:6px">${p.category || 'Tech'}</div>
@@ -128,7 +92,7 @@ function buildDigestHtml(posts, subscriberEmail) {
 }
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Origin', SITE_URL);
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') return res.status(200).end();
@@ -154,13 +118,8 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: 'Invalid token' });
   }
 
-  if (!RESEND_API_KEY) {
-    return res.status(500).json({ error: 'RESEND_API_KEY is not set in Vercel environment variables.' });
-  }
-
   try {
-    // Get all active subscribers
-    const subscribers = await supabase(
+    const { data: subscribers } = await supabase(
       'newsletter_subscribers?is_active=eq.true&select=email,subscribed_at&order=subscribed_at.desc'
     );
 
@@ -168,26 +127,21 @@ export default async function handler(req, res) {
       return res.status(200).json({ sent: 0, message: 'No subscribers to send to.' });
     }
 
-    // Get the blog posts provided in the request body (sent from the dashboard)
     const { posts = [], subject } = req.body || {};
     if (!posts.length) {
       return res.status(400).json({ error: 'No posts provided. Refresh blog data first.' });
     }
 
-    const emailSubject = subject || `Stack Signal: ${posts[0]?.title || 'Latest from the blog'}`;
+    const emailSubject = (typeof subject === 'string' ? subject.slice(0, 200) : null)
+      || `Stack Signal: ${String(posts[0]?.title || 'Latest from the blog').slice(0, 100)}`;
 
-    // Send to each subscriber individually (personalised unsubscribe link per recipient)
     let sent = 0;
     let failed = 0;
     const errors = [];
 
     for (const sub of subscribers) {
       const html = buildDigestHtml(posts, sub.email);
-      const result = await sendEmail({
-        to:      sub.email,
-        subject: emailSubject,
-        html,
-      });
+      const result = await sendEmail({ to: sub.email, subject: emailSubject, html });
       if (result.ok) {
         sent++;
       } else {
@@ -195,13 +149,9 @@ export default async function handler(req, res) {
         errors.push({ email: sub.email, error: result.error });
         console.error('Failed to send to', sub.email, result.error);
       }
-      // Small delay to respect Resend rate limits (avoid bursting)
-      if (subscribers.length > 10) {
-        await new Promise(r => setTimeout(r, 100));
-      }
+      if (subscribers.length > 10) await new Promise(r => setTimeout(r, 100));
     }
 
-    // Notify Michael of the send
     await sendEmail({
       to:      NOTIFY_EMAIL,
       subject: `Stack Signal digest sent to ${sent} subscriber${sent !== 1 ? 's' : ''}`,
@@ -209,9 +159,7 @@ export default async function handler(req, res) {
     });
 
     return res.status(200).json({
-      sent,
-      failed,
-      total: subscribers.length,
+      sent, failed, total: subscribers.length,
       message: `Digest sent to ${sent} of ${subscribers.length} subscriber${subscribers.length !== 1 ? 's' : ''}.`,
       ...(errors.length ? { errors } : {}),
     });

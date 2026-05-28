@@ -27,7 +27,7 @@ export default async function handler(req, res) {
   const pwBuf = Buffer.from(String(password || ''));
   const correctBuf = Buffer.from(correctPassword);
   let match = false;
-  try { match = timingSafeEqual(pwBuf, correctBuf); } catch {}
+  if (pwBuf.length === correctBuf.length) match = timingSafeEqual(pwBuf, correctBuf);
   if (!password || !match) {
     await new Promise(r => setTimeout(r, 800));
     return res.status(401).json({ error: 'Incorrect password.' });

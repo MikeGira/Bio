@@ -43,7 +43,7 @@ SKILLS LISTED IN THE PORTFOLIO (source of truth):
 ${skills.join(', ')}
 
 PROJECTS LISTED IN THE PORTFOLIO:
-${projects.map((p, i) => `- ${p}${projectDescs[i] ? ': ' + projectDescs[i].slice(0, 120) : ''}`).join('\n')}
+${projects.map((p, i) => `- ${p}${projectDescs[i] ? ': ' + projectDescs[i].slice(0, 300) : ''}`).join('\n')}
 
 Task: Identify any gaps between the system prompt and the portfolio content. Look for:
 1. Skills listed in the portfolio but missing from the system prompt SKILLS section

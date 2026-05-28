@@ -1,57 +1,16 @@
 // api/db.js — Supabase Database Proxy + Email via Resend
 
-import crypto from 'crypto';
-import { checkRateLimit, extractIP, EMAIL_RE, escapeHtml, verifyAuthToken } from './_lib.js';
-
-const SUPABASE_URL         = process.env.SUPABASE_URL;
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
-const RESEND_API_KEY       = process.env.RESEND_API_KEY;
-const NOTIFY_EMAIL         = process.env.NOTIFY_EMAIL || 'chrismikeparker1@gmail.com';
-const SITE_URL             = process.env.SITE_URL || 'https://bio-two-eta.vercel.app';
+import { createHmac } from 'crypto';
+import {
+  checkRateLimit, extractIP, EMAIL_RE, escapeHtml, verifyAuthToken,
+  SUPABASE_URL, SUPABASE_SERVICE_KEY, SITE_URL, NOTIFY_EMAIL,
+  supabase, sendEmail,
+} from './_lib.js';
 
 function makeUnsubToken(email) {
   const secret = process.env.UNSUBSCRIBE_SECRET;
   if (!secret) throw new Error('UNSUBSCRIBE_SECRET not configured');
-  return crypto
-    .createHmac('sha256', secret)
-    .update(email.toLowerCase())
-    .digest('hex')
-    .slice(0, 40);
-}
-
-
-async function supabase(path, method = 'GET', body = null) {
-  const prefer = method === 'POST' ? 'return=representation' : method === 'PATCH' ? 'return=minimal' : '';
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
-    method,
-    headers: {
-      'apikey':        SUPABASE_SERVICE_KEY,
-      'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
-      'Content-Type':  'application/json',
-      ...(prefer ? { 'Prefer': prefer } : {}),
-    },
-    body: body ? JSON.stringify(body) : null,
-  });
-  const text = await res.text();
-  const data = text ? JSON.parse(text) : null;
-  if (!res.ok) {
-    console.error(`Supabase error ${res.status} on ${method} ${path}:`, text);
-  }
-  return { ok: res.ok, status: res.status, data };
-}
-
-async function sendEmail({ to, subject, html }) {
-  if (!RESEND_API_KEY) { console.warn('RESEND_API_KEY not set'); return false; }
-  try {
-    const res = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ from: `Stack Signal <hello@blog.h0m3labs.store>`, to: Array.isArray(to) ? to : [to], subject, html }),
-    });
-    const data = await res.json();
-    if (!res.ok) console.error('Resend error:', data);
-    return res.ok;
-  } catch(e) { console.error('Email send failed:', e.message); return false; }
+  return createHmac('sha256', secret).update(email.toLowerCase()).digest('hex').slice(0, 40);
 }
 
 function parseBrowser(ua) {
@@ -67,11 +26,11 @@ function parseBrowser(ua) {
 
 function parseOS(ua) {
   if (!ua) return 'Unknown';
-  if (/Windows NT/i.test(ua))     return 'Windows';
-  if (/iPhone|iPad/i.test(ua))    return 'iOS';
-  if (/Android/i.test(ua))        return 'Android';
-  if (/Mac OS X/i.test(ua))       return 'macOS';
-  if (/Linux/i.test(ua))          return 'Linux';
+  if (/Windows NT/i.test(ua))  return 'Windows';
+  if (/iPhone|iPad/i.test(ua)) return 'iOS';
+  if (/Android/i.test(ua))     return 'Android';
+  if (/Mac OS X/i.test(ua))    return 'macOS';
+  if (/Linux/i.test(ua))       return 'Linux';
   return 'Other';
 }
 
@@ -81,6 +40,10 @@ function parseDevice(ua) {
   if (/iPad|Android(?!.*Mobile)|Tablet/i.test(ua)) return 'Tablet';
   return 'Desktop';
 }
+
+// Format guards for analytics identifiers (defense in depth alongside encodeURIComponent)
+const PAGE_KEY_RE  = /^[\w\-./]+$/;
+const STABLE_ID_RE = /^[\w\-]+$/;
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', SITE_URL);
@@ -115,18 +78,24 @@ export default async function handler(req, res) {
     if (action === 'contact' && req.method === 'POST') {
       const { name, email, opportunity, message } = req.body;
       if (!name || !email || !message) return res.status(400).json({ error: 'Missing required fields.' });
-      if (typeof name !== 'string' || typeof email !== 'string' || typeof message !== 'string') return res.status(400).json({ error: 'Invalid field types.' });
+      if (typeof name !== 'string' || typeof email !== 'string' || typeof message !== 'string') {
+        return res.status(400).json({ error: 'Invalid field types.' });
+      }
+      if (opportunity !== undefined && typeof opportunity !== 'string') {
+        return res.status(400).json({ error: 'Invalid field types.' });
+      }
       if (!EMAIL_RE.test(email)) return res.status(400).json({ error: 'Invalid email.' });
+      const safeOpp = opportunity ? opportunity.slice(0, 100) : 'Other';
       const result = await supabase('contact_submissions', 'POST', {
         name: name.slice(0,100), email: email.slice(0,200),
-        opportunity: (opportunity||'Other').slice(0,100), message: message.slice(0,5000),
+        opportunity: safeOpp, message: message.slice(0,5000),
         created_at: new Date().toISOString(),
       });
       if (!result.ok) return res.status(500).json({ error: 'DB insert failed.' });
       await sendEmail({
         to: NOTIFY_EMAIL,
-        subject: `New contact from ${name} — ${opportunity||'General'}`,
-        html: `<h2 style="color:#ee0000">New message on Mike's Bio</h2><p><strong>Name:</strong> ${escapeHtml(name)}</p><p><strong>Email:</strong> <a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a></p><p><strong>Opportunity:</strong> ${escapeHtml(opportunity||'Not specified')}</p><p><strong>Message:</strong></p><blockquote style="border-left:3px solid #ee0000;padding-left:12px;color:#444">${escapeHtml(message).replace(/\n/g,'<br>')}</blockquote>`,
+        subject: `New contact from ${name.slice(0,50)} — ${safeOpp.slice(0,30)}`,
+        html: `<h2 style="color:#ee0000">New message on Mike's Bio</h2><p><strong>Name:</strong> ${escapeHtml(name)}</p><p><strong>Email:</strong> <a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a></p><p><strong>Opportunity:</strong> ${escapeHtml(safeOpp)}</p><p><strong>Message:</strong></p><blockquote style="border-left:3px solid #ee0000;padding-left:12px;color:#444">${escapeHtml(message).replace(/\n/g,'<br>')}</blockquote>`,
       });
       return res.status(200).json({ success: true });
     }
@@ -134,7 +103,9 @@ export default async function handler(req, res) {
     // ── NEWSLETTER ────────────────────────────────────────────────────
     if (action === 'subscribe' && req.method === 'POST') {
       const { email } = req.body;
-      if (!email || typeof email !== 'string' || !EMAIL_RE.test(email)) return res.status(400).json({ error: 'Invalid email.' });
+      if (!email || typeof email !== 'string' || !EMAIL_RE.test(email)) {
+        return res.status(400).json({ error: 'Invalid email.' });
+      }
       await supabase('newsletter_subscribers?on_conflict=email', 'POST', {
         email: email.slice(0,200), subscribed_at: new Date().toISOString(),
       });
@@ -145,7 +116,7 @@ export default async function handler(req, res) {
       });
       await sendEmail({
         to: NOTIFY_EMAIL, subject: `New blog subscriber: ${email}`,
-        html: `<p>New subscriber: <strong>${email}</strong></p><p>${new Date().toLocaleString()}</p>`,
+        html: `<p>New subscriber: <strong>${escapeHtml(email)}</strong></p><p>${new Date().toLocaleString()}</p>`,
       });
       return res.status(200).json({ success: true });
     }
@@ -155,6 +126,7 @@ export default async function handler(req, res) {
       const { page } = req.body;
       if (!page) return res.status(400).json({ error: 'Missing page.' });
       const pageKey = String(page).trim().slice(0, 100);
+      if (!pageKey || !PAGE_KEY_RE.test(pageKey)) return res.status(400).json({ error: 'Invalid page format.' });
       const existing = await supabase(`page_views?page=eq.${encodeURIComponent(pageKey)}&select=id,views`);
       if (existing.data && existing.data.length > 0) {
         const row = existing.data[0];
@@ -169,8 +141,9 @@ export default async function handler(req, res) {
     if (action === 'blogview' && req.method === 'POST') {
       const { post_id, title, category } = req.body;
       if (!post_id || !title) return res.status(400).json({ error: 'Missing post_id or title.' });
+      if (typeof title !== 'string') return res.status(400).json({ error: 'Invalid field types.' });
       const stableId = String(post_id).trim().slice(0, 50);
-      if (!stableId) return res.status(400).json({ error: 'Invalid post_id.' });
+      if (!stableId || !STABLE_ID_RE.test(stableId)) return res.status(400).json({ error: 'Invalid post_id format.' });
       const existing = await supabase(`blog_post_views?post_id=eq.${encodeURIComponent(stableId)}&select=id,views`);
       if (existing.data && existing.data.length > 0) {
         const row = existing.data[0];
@@ -178,7 +151,7 @@ export default async function handler(req, res) {
       } else {
         await supabase('blog_post_views', 'POST', {
           post_id: stableId, title: title.slice(0,300),
-          category: (category||'General').slice(0,100),
+          category: (typeof category === 'string' ? category : 'General').slice(0,100),
           views: 1, first_viewed: new Date().toISOString(), last_viewed: new Date().toISOString()
         });
       }
@@ -188,20 +161,13 @@ export default async function handler(req, res) {
     // ── EVENT TRACK ──────────────────────────────────────────────
     if (action === 'track' && req.method === 'POST') {
       const { event_type, metadata } = req.body || {};
-      const ALLOWED = new Set([
-        'chat_start', 'chat_message', 'section_view',
-        'project_click', 'cta_click', 'pageview',
-      ]);
+      const ALLOWED = new Set(['chat_start', 'chat_message', 'section_view', 'project_click', 'cta_click', 'pageview']);
       if (!event_type || !ALLOWED.has(event_type)) {
         return res.status(400).json({ error: 'Invalid event_type.' });
       }
-      const meta = (metadata && typeof metadata === 'object' && !Array.isArray(metadata))
-        ? metadata : {};
+      const meta = (metadata && typeof metadata === 'object' && !Array.isArray(metadata)) ? metadata : {};
       const safeMeta = Object.fromEntries(
-        Object.entries(meta).slice(0, 10).map(([k, v]) => [
-          String(k).slice(0, 40),
-          String(v).slice(0, 100),
-        ])
+        Object.entries(meta).slice(0, 10).map(([k, v]) => [String(k).slice(0, 40), String(v).slice(0, 100)])
       );
       if (event_type === 'pageview') {
         const ua = req.headers['user-agent'] || '';
@@ -214,9 +180,7 @@ export default async function handler(req, res) {
         safeMeta.lang    = (rawLang.slice(0, 2) || 'un').toLowerCase();
       }
       const result = await supabase('analytics_events', 'POST', {
-        event_type,
-        metadata: safeMeta,
-        created_at: new Date().toISOString(),
+        event_type, metadata: safeMeta, created_at: new Date().toISOString(),
       });
       if (!result.ok) return res.status(500).json({ error: 'Track insert failed.' });
       return res.status(200).json({ success: true });
@@ -224,7 +188,6 @@ export default async function handler(req, res) {
 
     // ── ANALYTICS ─────────────────────────────────────────────────────
     if (action === 'analytics' && req.method === 'GET') {
-      // Auth check — but ALWAYS return real data even if token validation is skipped
       const authHeader = req.headers['authorization'] || '';
       const token = authHeader.replace('Bearer ', '').trim();
       const analyticsPassword = process.env.ANALYTICS_PASSWORD;
@@ -241,7 +204,6 @@ export default async function handler(req, res) {
         return res.status(401).json({ error: 'Unauthorized.' });
       }
 
-      // Fetch all four tables in parallel
       const [pages, posts, subscribers, contacts] = await Promise.all([
         supabase('page_views?select=page,views,last_visited&order=views.desc'),
         supabase('blog_post_views?select=post_id,title,category,views,last_viewed&order=views.desc&limit=50'),
@@ -249,7 +211,6 @@ export default async function handler(req, res) {
         supabase('contact_submissions?select=name,email,opportunity,message,created_at&order=created_at.desc&limit=50'),
       ]);
 
-      // Log what we got so Vercel logs show the actual data
       console.log('Analytics query results:', {
         page_views:  pages.data?.length ?? 'error',
         top_posts:   posts.data?.length ?? 'error',
@@ -262,7 +223,7 @@ export default async function handler(req, res) {
         top_posts:   posts.data    || [],
         subscribers: subscribers.data || [],
         contacts:    contacts.data || [],
-        _fetched_at: new Date().toISOString(), // timestamp so frontend can confirm fresh data
+        _fetched_at: new Date().toISOString(),
       });
     }
 
