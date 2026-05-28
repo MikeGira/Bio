@@ -2,7 +2,7 @@
 // Server-side authentication for the analytics dashboard.
 // The password is stored ONLY in Vercel environment variables — never in client code.
 
-import { timingSafeEqual } from 'crypto';
+import { createHash, timingSafeEqual } from 'crypto';
 import { extractIP, checkRateLimit, createAuthToken } from './_lib.js';
 
 export default async function handler(req, res) {
@@ -24,10 +24,12 @@ export default async function handler(req, res) {
   if (!correctPassword) {
     return res.status(500).json({ error: 'ANALYTICS_PASSWORD not configured in Vercel env vars.' });
   }
-  const pwBuf = Buffer.from(String(password || ''));
-  const correctBuf = Buffer.from(correctPassword);
+  // Hash both passwords to identical 32-byte buffers so timingSafeEqual always
+  // runs on equal-length inputs — eliminates the length-based timing oracle.
+  const provided = createHash('sha256').update(String(password || '')).digest();
+  const expected = createHash('sha256').update(correctPassword).digest();
   let match = false;
-  if (pwBuf.length === correctBuf.length) match = timingSafeEqual(pwBuf, correctBuf);
+  try { match = timingSafeEqual(provided, expected); } catch {}
   if (!password || !match) {
     await new Promise(r => setTimeout(r, 800));
     return res.status(401).json({ error: 'Incorrect password.' });
