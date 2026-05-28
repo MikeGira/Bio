@@ -1,14 +1,6 @@
 // api/chat.js — Vercel Serverless Proxy
 
-const _rlMap = new Map();
-function checkRateLimit(ip, limit, windowMs) {
-  const now = Date.now();
-  const entry = _rlMap.get(ip) || { count: 0, resetAt: now + windowMs };
-  if (now > entry.resetAt) { entry.count = 0; entry.resetAt = now + windowMs; }
-  entry.count++;
-  _rlMap.set(ip, entry);
-  return entry.count <= limit;
-}
+import { checkRateLimit, extractIP } from './_lib.js';
 
 const INJECTION_PATTERNS = [
   /ignore\s+(all\s+|previous\s+|above\s+|prior\s+)?instructions/i,
@@ -47,7 +39,7 @@ export default async function handler(req, res) {
   }
 
   // Rate limit: 20 requests per minute per IP
-  const ip = (req.headers['x-real-ip'] || 'unknown').trim();
+  const ip = extractIP(req);
   if (!checkRateLimit(ip, 20, 60000)) {
     return res.status(429).json({ error: 'Too many requests. Please slow down.' });
   }
@@ -58,8 +50,19 @@ export default async function handler(req, res) {
     return res.status(413).json({ error: 'Request too large.' });
   }
 
+  // Validate and whitelist — never forward arbitrary client fields to Anthropic
+  const { messages, system, max_tokens } = req.body || {};
+  if (!Array.isArray(messages) || messages.length === 0) {
+    return res.status(400).json({ error: 'messages must be a non-empty array.' });
+  }
+  for (const msg of messages) {
+    if (!['user', 'assistant'].includes(msg?.role) || typeof msg?.content !== 'string') {
+      return res.status(400).json({ error: 'Invalid message format.' });
+    }
+  }
+
   // Prompt injection detection
-  if (detectInjection(req.body?.messages)) {
+  if (detectInjection(messages)) {
     console.warn('[chat] prompt injection attempt from', ip.slice(0, 8));
     return res.status(200).json({
       id: 'blocked',
@@ -69,8 +72,12 @@ export default async function handler(req, res) {
     });
   }
 
-  // Always use the correct model
-  if (req.body) req.body.model = 'claude-sonnet-4-6';
+  const payload = {
+    model: 'claude-sonnet-4-6',
+    messages,
+    max_tokens: Math.min(Number(max_tokens) || 1024, 4096),
+    ...(system && typeof system === 'string' ? { system: system.slice(0, 10000) } : {}),
+  };
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -80,20 +87,20 @@ export default async function handler(req, res) {
         'x-api-key':         apiKey,
         'anthropic-version': '2023-06-01',
       },
-      body: JSON.stringify(req.body),
+      body: JSON.stringify(payload),
     });
 
     const data = await response.json();
 
     if (!response.ok) {
       console.error('Anthropic error:', response.status, JSON.stringify(data));
-      return res.status(response.status).json({ error: data.error?.message || data.error || 'Anthropic API error ' + response.status });
+      return res.status(response.status).json({ error: data.error?.message || 'AI service error.' });
     }
 
     return res.status(200).json(data);
 
   } catch (err) {
-    console.error('Proxy error:', err);
-    return res.status(500).json({ error: 'Internal server error: ' + err.message });
+    console.error('Proxy error:', err.message);
+    return res.status(500).json({ error: 'Internal server error.' });
   }
 }

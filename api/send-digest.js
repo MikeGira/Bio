@@ -1,7 +1,7 @@
 // api/send-digest.js — Send blog digest email to all newsletter subscribers
 // Called from the analytics dashboard — requires analytics token auth
 
-import crypto from 'crypto';
+import { createHmac, timingSafeEqual } from 'crypto';
 
 const SUPABASE_URL         = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
@@ -42,9 +42,9 @@ async function sendEmail({ to, subject, html }) {
 }
 
 function makeUnsubToken(email) {
-  const secret = process.env.UNSUBSCRIBE_SECRET || process.env.ANALYTICS_PASSWORD || 'fallback';
-  return crypto
-    .createHmac('sha256', secret)
+  const secret = process.env.UNSUBSCRIBE_SECRET || process.env.ANALYTICS_PASSWORD;
+  if (!secret) throw new Error('UNSUBSCRIBE_SECRET not configured');
+  return createHmac('sha256', secret)
     .update(email.toLowerCase())
     .digest('hex')
     .slice(0, 40);
@@ -142,9 +142,9 @@ export default async function handler(req, res) {
   try {
     const decoded = JSON.parse(Buffer.from(token, 'base64').toString());
     const expired = (Date.now() - decoded.ts) > 8 * 60 * 60 * 1000;
-    const expectedSig = crypto.createHmac('sha256', ANALYTICS_PASSWORD).update(String(decoded.ts)).digest('hex');
+    const expectedSig = createHmac('sha256', ANALYTICS_PASSWORD).update(String(decoded.ts)).digest('hex');
     const sigValid = decoded.sig && decoded.sig.length === expectedSig.length &&
-      crypto.timingSafeEqual(Buffer.from(decoded.sig), Buffer.from(expectedSig));
+      timingSafeEqual(Buffer.from(decoded.sig), Buffer.from(expectedSig));
     if (!sigValid || expired) {
       return res.status(401).json({ error: 'Session expired. Please log in again.' });
     }
@@ -215,7 +215,7 @@ export default async function handler(req, res) {
     });
 
   } catch (err) {
-    console.error('send-digest error:', err);
-    return res.status(500).json({ error: 'Send failed: ' + err.message });
+    console.error('send-digest error:', err.message);
+    return res.status(500).json({ error: 'Send failed.' });
   }
 }

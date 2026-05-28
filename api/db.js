@@ -1,6 +1,7 @@
 // api/db.js — Supabase Database Proxy + Email via Resend
 
 import crypto from 'crypto';
+import { checkRateLimit, extractIP, EMAIL_RE, escapeHtml } from './_lib.js';
 
 const SUPABASE_URL         = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
@@ -18,17 +19,6 @@ function makeUnsubToken(email) {
     .slice(0, 40);
 }
 
-// In-memory rate limiter (per cold-start instance; good enough for personal portfolio)
-const _rlMap = new Map();
-function checkRateLimit(ip, action, limit, windowMs) {
-  const key = `${ip}:${action}`;
-  const now = Date.now();
-  const entry = _rlMap.get(key) || { count: 0, resetAt: now + windowMs };
-  if (now > entry.resetAt) { entry.count = 0; entry.resetAt = now + windowMs; }
-  entry.count++;
-  _rlMap.set(key, entry);
-  return entry.count <= limit;
-}
 
 async function supabase(path, method = 'GET', body = null) {
   const prefer = method === 'POST' ? 'return=representation' : method === 'PATCH' ? 'return=minimal' : '';
@@ -112,9 +102,9 @@ export default async function handler(req, res) {
     if (SITE_URL && req.headers.origin && req.headers.origin !== SITE_URL) {
       return res.status(403).json({ error: 'Forbidden' });
     }
-    const ip = (req.headers['x-real-ip'] || 'unknown').trim();
+    const ip = extractIP(req);
     const limit = action === 'contact' ? 3 : 2;
-    if (!checkRateLimit(ip, action, limit, 60000)) {
+    if (!checkRateLimit(`${ip}:${action}`, limit, 60000)) {
       return res.status(429).json({ error: 'Too many requests. Please try again later.' });
     }
   }
@@ -125,7 +115,8 @@ export default async function handler(req, res) {
     if (action === 'contact' && req.method === 'POST') {
       const { name, email, opportunity, message } = req.body;
       if (!name || !email || !message) return res.status(400).json({ error: 'Missing required fields.' });
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: 'Invalid email.' });
+      if (typeof name !== 'string' || typeof email !== 'string' || typeof message !== 'string') return res.status(400).json({ error: 'Invalid field types.' });
+      if (!EMAIL_RE.test(email)) return res.status(400).json({ error: 'Invalid email.' });
       const result = await supabase('contact_submissions', 'POST', {
         name: name.slice(0,100), email: email.slice(0,200),
         opportunity: (opportunity||'Other').slice(0,100), message: message.slice(0,5000),
@@ -135,7 +126,7 @@ export default async function handler(req, res) {
       await sendEmail({
         to: NOTIFY_EMAIL,
         subject: `New contact from ${name} — ${opportunity||'General'}`,
-        html: `<h2 style="color:#ee0000">New message on Mike's Bio</h2><p><strong>Name:</strong> ${name}</p><p><strong>Email:</strong> <a href="mailto:${email}">${email}</a></p><p><strong>Opportunity:</strong> ${opportunity||'Not specified'}</p><p><strong>Message:</strong></p><blockquote style="border-left:3px solid #ee0000;padding-left:12px;color:#444">${message.replace(/\n/g,'<br>')}</blockquote>`,
+        html: `<h2 style="color:#ee0000">New message on Mike's Bio</h2><p><strong>Name:</strong> ${escapeHtml(name)}</p><p><strong>Email:</strong> <a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a></p><p><strong>Opportunity:</strong> ${escapeHtml(opportunity||'Not specified')}</p><p><strong>Message:</strong></p><blockquote style="border-left:3px solid #ee0000;padding-left:12px;color:#444">${escapeHtml(message).replace(/\n/g,'<br>')}</blockquote>`,
       });
       return res.status(200).json({ success: true });
     }
@@ -143,7 +134,7 @@ export default async function handler(req, res) {
     // ── NEWSLETTER ────────────────────────────────────────────────────
     if (action === 'subscribe' && req.method === 'POST') {
       const { email } = req.body;
-      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: 'Invalid email.' });
+      if (!email || typeof email !== 'string' || !EMAIL_RE.test(email)) return res.status(400).json({ error: 'Invalid email.' });
       await supabase('newsletter_subscribers?on_conflict=email', 'POST', {
         email: email.slice(0,200), subscribed_at: new Date().toISOString(),
       });
@@ -282,7 +273,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: `Unknown action: ${action}` });
 
   } catch (err) {
-    console.error('DB error:', err);
-    return res.status(500).json({ error: 'Database error: ' + err.message });
+    console.error('DB error:', err.message);
+    return res.status(500).json({ error: 'Service error.' });
   }
 }

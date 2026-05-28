@@ -3,6 +3,7 @@
 // The password is stored ONLY in Vercel environment variables — never in client code.
 
 import { createHmac, timingSafeEqual } from 'crypto';
+import { extractIP, checkRateLimit } from './_lib.js';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin',  process.env.SITE_URL || '*');
@@ -11,13 +12,22 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
+  // Rate limit: 10 attempts per 15 minutes per IP
+  const ip = extractIP(req);
+  if (!checkRateLimit(`auth:${ip}`, 10, 15 * 60 * 1000)) {
+    return res.status(429).json({ error: 'Too many login attempts.' });
+  }
+
   const { password } = req.body || {};
   const correctPassword = process.env.ANALYTICS_PASSWORD;
 
   if (!correctPassword) {
     return res.status(500).json({ error: 'ANALYTICS_PASSWORD not configured in Vercel env vars.' });
   }
-  if (!password || password !== correctPassword) {
+  const pwBuf = Buffer.from(String(password || ''));
+  const correctBuf = Buffer.from(correctPassword);
+  const match = pwBuf.length === correctBuf.length && timingSafeEqual(pwBuf, correctBuf);
+  if (!password || !match) {
     await new Promise(r => setTimeout(r, 800));
     return res.status(401).json({ error: 'Incorrect password.' });
   }

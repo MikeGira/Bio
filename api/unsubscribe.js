@@ -1,13 +1,13 @@
-import crypto from 'crypto';
+import { createHmac, timingSafeEqual } from 'crypto';
 
 const SUPABASE_URL         = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const SITE_URL             = process.env.SITE_URL || 'https://bio-two-eta.vercel.app';
 
 function makeUnsubToken(email) {
-  const secret = process.env.UNSUBSCRIBE_SECRET || process.env.ANALYTICS_PASSWORD || 'fallback';
-  return crypto
-    .createHmac('sha256', secret)
+  const secret = process.env.UNSUBSCRIBE_SECRET || process.env.ANALYTICS_PASSWORD;
+  if (!secret) throw new Error('UNSUBSCRIBE_SECRET not configured');
+  return createHmac('sha256', secret)
     .update(email.toLowerCase())
     .digest('hex')
     .slice(0, 40);
@@ -31,7 +31,7 @@ export default async function handler(req, res) {
   const expected = makeUnsubToken(normalised);
   const valid =
     token.length === expected.length &&
-    crypto.timingSafeEqual(Buffer.from(token), Buffer.from(expected));
+    timingSafeEqual(Buffer.from(token), Buffer.from(expected));
 
   if (!valid) {
     return res.status(400).send(page('Invalid link', 'This unsubscribe link is invalid or has already been used.', false));
