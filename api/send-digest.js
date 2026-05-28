@@ -1,19 +1,12 @@
 // api/send-digest.js — Send blog digest email to all newsletter subscribers
 // Called from the analytics dashboard — requires analytics token auth
 
-import { createHmac } from 'crypto';
 import {
   extractIP, checkRateLimit, verifyAuthToken,
-  SITE_URL, NOTIFY_EMAIL, supabase, sendEmail,
+  SITE_URL, NOTIFY_EMAIL, supabase, sendEmail, makeUnsubToken,
 } from './_lib.js';
 
 const ANALYTICS_PASSWORD = process.env.ANALYTICS_PASSWORD;
-
-function makeUnsubToken(email) {
-  const secret = process.env.UNSUBSCRIBE_SECRET || ANALYTICS_PASSWORD;
-  if (!secret) throw new Error('UNSUBSCRIBE_SECRET not configured');
-  return createHmac('sha256', secret).update(email.toLowerCase()).digest('hex').slice(0, 40);
-}
 
 function buildDigestHtml(posts, subscriberEmail) {
   const blogUrl  = `${SITE_URL}/blog.html`;
@@ -116,6 +109,10 @@ export default async function handler(req, res) {
     }
   } catch {
     return res.status(401).json({ error: 'Invalid token' });
+  }
+
+  if (!process.env.UNSUBSCRIBE_SECRET) {
+    return res.status(500).json({ error: 'UNSUBSCRIBE_SECRET not configured in Vercel environment variables.' });
   }
 
   try {

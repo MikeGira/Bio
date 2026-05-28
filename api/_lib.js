@@ -79,6 +79,12 @@ export async function supabase(path, method = 'GET', body = null) {
   return { ok: res.ok, status: res.status, data };
 }
 
+export function makeUnsubToken(email) {
+  const secret = process.env.UNSUBSCRIBE_SECRET;
+  if (!secret) throw new Error('UNSUBSCRIBE_SECRET not configured');
+  return createHmac('sha256', secret).update(email.toLowerCase()).digest('hex').slice(0, 40);
+}
+
 export async function sendEmail({ to, subject, html }) {
   if (!RESEND_API_KEY) { console.warn('RESEND_API_KEY not set'); return { ok: false }; }
   try {

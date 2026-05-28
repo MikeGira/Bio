@@ -75,6 +75,23 @@ async function hasOpenIssue() {
   return Array.isArray(issues) && issues.length > 0;
 }
 
+async function closeOpenIssues() {
+  const res = await fetch(
+    `https://api.github.com/repos/${REPO}/issues?labels=ai-code-quality&state=open`,
+    { headers: { Authorization: `Bearer ${GH_TOKEN}`, Accept: 'application/vnd.github+json' } }
+  );
+  if (!res.ok) return;
+  const issues = await res.json();
+  for (const issue of (Array.isArray(issues) ? issues : [])) {
+    await fetch(`https://api.github.com/repos/${REPO}/issues/${issue.number}`, {
+      method: 'PATCH',
+      headers: { Authorization: `Bearer ${GH_TOKEN}`, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ state: 'closed', state_reason: 'completed' }),
+    });
+    console.log(`Auto-closed resolved quality issue #${issue.number}`);
+  }
+}
+
 async function createIssue(findings) {
   const today = new Date().toISOString().slice(0, 10);
   const res = await fetch(`https://api.github.com/repos/${REPO}/issues`, {
@@ -129,6 +146,7 @@ async function main() {
 
   if (result.trim().startsWith('PASS')) {
     console.log('Quality audit passed — no issues found.');
+    await closeOpenIssues();
     return;
   }
 

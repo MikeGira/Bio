@@ -43,7 +43,7 @@ SKILLS LISTED IN THE PORTFOLIO (source of truth):
 ${skills.join(', ')}
 
 PROJECTS LISTED IN THE PORTFOLIO:
-${projects.map((p, i) => `- ${p}${projectDescs[i] ? ': ' + projectDescs[i].slice(0, 300) : ''}`).join('\n')}
+${projects.map((p, i) => `- ${p}${projectDescs[i] ? ': ' + projectDescs[i] : ''}`).join('\n')}
 
 Task: Identify any gaps between the system prompt and the portfolio content. Look for:
 1. Skills listed in the portfolio but missing from the system prompt SKILLS section
@@ -85,6 +85,23 @@ async function hasOpenAuditIssue() {
   if (!res.ok) return false;
   const issues = await res.json();
   return Array.isArray(issues) && issues.length > 0;
+}
+
+async function closeOpenAuditIssues() {
+  const res = await fetch(
+    `https://api.github.com/repos/${REPO}/issues?labels=ai-audit&state=open`,
+    { headers: { Authorization: `Bearer ${GH_TOKEN}`, Accept: 'application/vnd.github+json' } }
+  );
+  if (!res.ok) return;
+  const issues = await res.json();
+  for (const issue of (Array.isArray(issues) ? issues : [])) {
+    await fetch(`https://api.github.com/repos/${REPO}/issues/${issue.number}`, {
+      method: 'PATCH',
+      headers: { Authorization: `Bearer ${GH_TOKEN}`, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ state: 'closed', state_reason: 'completed' }),
+    });
+    console.log(`Auto-closed resolved audit issue #${issue.number}`);
+  }
 }
 
 async function createIssue(findings) {
@@ -144,6 +161,7 @@ async function main() {
 
   if (result.trim().startsWith('PASS')) {
     console.log('Audit passed — no issues to report.');
+    await closeOpenAuditIssues();
     return;
   }
 

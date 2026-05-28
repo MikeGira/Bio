@@ -1,44 +1,30 @@
 // api/db.js — Supabase Database Proxy + Email via Resend
 
-import { createHmac } from 'crypto';
 import {
   checkRateLimit, extractIP, EMAIL_RE, escapeHtml, verifyAuthToken,
   SUPABASE_URL, SUPABASE_SERVICE_KEY, SITE_URL, NOTIFY_EMAIL,
-  supabase, sendEmail,
+  supabase, sendEmail, makeUnsubToken,
 } from './_lib.js';
 
-function makeUnsubToken(email) {
-  const secret = process.env.UNSUBSCRIBE_SECRET;
-  if (!secret) throw new Error('UNSUBSCRIBE_SECRET not configured');
-  return createHmac('sha256', secret).update(email.toLowerCase()).digest('hex').slice(0, 40);
-}
-
-function parseBrowser(ua) {
-  if (!ua) return 'Unknown';
-  if (/Edg\//i.test(ua))          return 'Edge';
-  if (/OPR\//i.test(ua))          return 'Opera';
-  if (/SamsungBrowser/i.test(ua)) return 'Samsung Internet';
-  if (/Chrome\//i.test(ua))       return 'Chrome';
-  if (/Firefox\//i.test(ua))      return 'Firefox';
-  if (/Safari\//i.test(ua))       return 'Safari';
-  return 'Other';
-}
-
-function parseOS(ua) {
-  if (!ua) return 'Unknown';
-  if (/Windows NT/i.test(ua))  return 'Windows';
-  if (/iPhone|iPad/i.test(ua)) return 'iOS';
-  if (/Android/i.test(ua))     return 'Android';
-  if (/Mac OS X/i.test(ua))    return 'macOS';
-  if (/Linux/i.test(ua))       return 'Linux';
-  return 'Other';
-}
-
-function parseDevice(ua) {
-  if (!ua) return 'Unknown';
-  if (/Mobi|Android.*Mobile|iPhone/i.test(ua))     return 'Mobile';
-  if (/iPad|Android(?!.*Mobile)|Tablet/i.test(ua)) return 'Tablet';
-  return 'Desktop';
+function parseUA(ua = '') {
+  return {
+    browser:
+      /Edg\//i.test(ua)          ? 'Edge' :
+      /OPR\//i.test(ua)          ? 'Opera' :
+      /SamsungBrowser/i.test(ua) ? 'Samsung Internet' :
+      /Chrome\//i.test(ua)       ? 'Chrome' :
+      /Firefox\//i.test(ua)      ? 'Firefox' :
+      /Safari\//i.test(ua)       ? 'Safari' : 'Other',
+    os:
+      /Windows NT/i.test(ua)     ? 'Windows' :
+      /iPhone|iPad/i.test(ua)    ? 'iOS' :
+      /Android/i.test(ua)        ? 'Android' :
+      /Mac OS X/i.test(ua)       ? 'macOS' :
+      /Linux/i.test(ua)          ? 'Linux' : 'Other',
+    device:
+      /Mobi|Android.*Mobile|iPhone/i.test(ua)     ? 'Mobile' :
+      /iPad|Android(?!.*Mobile)|Tablet/i.test(ua) ? 'Tablet' : 'Desktop',
+  };
 }
 
 // Format guards for analytics identifiers (defense in depth alongside encodeURIComponent)
@@ -174,9 +160,10 @@ export default async function handler(req, res) {
         const rawLang = (req.headers['accept-language'] || '').split(',')[0].split(';')[0].trim();
         safeMeta.country = String(req.headers['x-vercel-ip-country'] || 'Unknown').slice(0, 5);
         safeMeta.city    = String(req.headers['x-vercel-ip-city']    || 'Unknown').slice(0, 60);
-        safeMeta.browser = parseBrowser(ua);
-        safeMeta.os      = parseOS(ua);
-        safeMeta.device  = parseDevice(ua);
+        const { browser, os, device } = parseUA(ua);
+        safeMeta.browser = browser;
+        safeMeta.os      = os;
+        safeMeta.device  = device;
         safeMeta.lang    = (rawLang.slice(0, 2) || 'un').toLowerCase();
       }
       const result = await supabase('analytics_events', 'POST', {
