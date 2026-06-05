@@ -79,21 +79,36 @@ export default async function handler(req, res) {
     messages,
     max_tokens: Math.min(Number(max_tokens) || 1024, 4096),
     ...(system && typeof system === 'string' ? { system: system.slice(0, 10000) } : {}),
-    ...(useWebSearch ? { tools: [{ type: 'web_search_20260209', name: 'web_search' }] } : {}),
+    ...(useWebSearch ? { tools: [{ type: 'web_search_20260209', name: 'web_search', max_uses: 5 }] } : {}),
+  };
+
+  const anthropicHeaders = {
+    'Content-Type':      'application/json',
+    'x-api-key':         apiKey,
+    'anthropic-version': '2023-06-01',
   };
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    let response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: {
-        'Content-Type':      'application/json',
-        'x-api-key':         apiKey,
-        'anthropic-version': '2023-06-01',
-      },
+      headers: anthropicHeaders,
       body: JSON.stringify(payload),
     });
 
     let data = await response.json();
+
+    // Web search rejected by Anthropic (e.g. not yet enabled in Console → Settings → Privacy).
+    // Degrade gracefully: retry without the tool so articles still generate from training data.
+    if (!response.ok && useWebSearch) {
+      console.warn('[chat] web_search rejected (' + response.status + '), retrying without tool');
+      const { tools: _dropped, ...fallbackPayload } = payload;
+      response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: anthropicHeaders,
+        body: JSON.stringify(fallbackPayload),
+      });
+      data = await response.json();
+    }
 
     if (!response.ok) {
       console.error('Anthropic error:', response.status, JSON.stringify(data));

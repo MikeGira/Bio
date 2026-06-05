@@ -586,6 +586,7 @@ The Tech for Good post must reference real specific use cases in agriculture, he
         model: 'claude-sonnet-4-5',
         max_tokens: 1500,
         enableWebSearch: true,
+        system: 'You have access to a web search tool. You MUST use it to find the latest technology news and announcements from May and June 2026 before generating blog post ideas. Search first, then generate articles based on what you actually find. Do not rely on your training data for current events.',
         messages: [{ role: 'user', content: prompt }]
       })
     });
@@ -815,7 +816,6 @@ async function openArticle(post) {
       body: JSON.stringify({
         model: 'claude-sonnet-4-5',
         max_tokens: 800,
-        enableWebSearch: true,
         messages: [{
           role: 'user',
           content: `Write a concise, insightful blog article for senior IT professionals.
@@ -834,6 +834,7 @@ Do NOT use dashes, em dashes, or hyphens as connectors in sentences. Use plain s
       })
     });
     clearTimeout(artTimeout);
+    if (!res.ok) throw new Error(`API ${res.status}`);
     const data = await res.json();
     const articleHTML = data.content?.[0]?.text || '<p>Article content unavailable.</p>';
 
