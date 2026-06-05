@@ -51,7 +51,7 @@ export default async function handler(req, res) {
   }
 
   // Validate and whitelist — never forward arbitrary client fields to Anthropic
-  const { messages, system, max_tokens, enableWebSearch } = req.body || {};
+  const { messages, system, max_tokens, enableWebSearch, tool_choice } = req.body || {};
   if (!Array.isArray(messages) || messages.length === 0) {
     return res.status(400).json({ error: 'messages must be a non-empty array.' });
   }
@@ -80,6 +80,8 @@ export default async function handler(req, res) {
     max_tokens: Math.min(Number(max_tokens) || 1024, 4096),
     ...(system && typeof system === 'string' ? { system: system.slice(0, 10000) } : {}),
     ...(useWebSearch ? { tools: [{ type: 'web_search_20260209', name: 'web_search', max_uses: 5 }] } : {}),
+    ...(useWebSearch && tool_choice && typeof tool_choice === 'object' && typeof tool_choice.type === 'string'
+        ? { tool_choice } : {}),
   };
 
   const anthropicHeaders = {
@@ -101,7 +103,7 @@ export default async function handler(req, res) {
     // Degrade gracefully: retry without the tool so articles still generate from training data.
     if (!response.ok && useWebSearch) {
       console.warn('[chat] web_search rejected (' + response.status + '), retrying without tool');
-      const { tools: _dropped, ...fallbackPayload } = payload;
+      const { tools: _t, tool_choice: _tc, ...fallbackPayload } = payload;
       response = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: anthropicHeaders,

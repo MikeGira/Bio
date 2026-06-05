@@ -548,12 +548,16 @@ async function generatePosts(forceRefresh = false) {
   document.getElementById('skeletonLoader').style.flexDirection = 'column';
 
   const today = new Date().toLocaleDateString('en-CA',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const thisMonth = new Date().toLocaleDateString('en-CA',{year:'numeric',month:'long'});
+  const lastMonth = new Date(Date.now()-30*24*60*60*1000).toLocaleDateString('en-CA',{year:'numeric',month:'long'});
 
   const prompt = `You are a senior technology journalist and cloud architect writing for a professional tech blog called "Stack Signal" owned by Michael Twagirayezu, an IT Systems Engineer based in Toronto specialising in multi-cloud, DevSecOps, cybersecurity, and AI integration.
 
-Today is ${today}.
+Today is ${today}. You MUST search the web for technology news published in ${lastMonth} or ${thisMonth} only. Do not write about events older than 60 days.
 
-Generate exactly 9 blog post entries covering the LATEST trends and developments as of today in these categories: AI & Machine Learning (2 posts) Cloud Architecture (2 posts) Cybersecurity (1 post) DevSecOps (1 post) Data & Analytics (1 post) Tech for Good (1 post focus on AI/tech helping underserved communities in Africa, Rwanda, Canada) One additional post in whichever category has the hottest news today
+Search for real, specific headlines in each category below, then generate 9 blog post entries based on what you actually find.
+
+Categories: AI & Machine Learning (2 posts) Cloud Architecture (2 posts) Cybersecurity (1 post) DevSecOps (1 post) Data & Analytics (1 post) Tech for Good (1 post focusing on AI or tech helping underserved communities in Africa, Rwanda, or Canada) One additional post in whichever category has the most newsworthy story from the past 30 days.
 
 Return ONLY a valid JSON array (no markdown, no backticks, no extra text) in this exact format:
 [
@@ -570,13 +574,12 @@ Return ONLY a valid JSON array (no markdown, no backticks, no extra text) in thi
 ]
 
 Only the FIRST post should have "featured": true. All others should have "featured": false.
-Make titles punchy, specific, and current. Include real technology names, product names, and version numbers where applicable. Avoid generic titles.
+Make titles punchy and specific. Include real technology names, product names, and version numbers. Every article must be based on something you actually found via web search published in the past 60 days.
 The Tech for Good post must reference real specific use cases in agriculture, healthcare, education, or governance in Africa or Rwanda. Do not use dashes or em dashes in titles or summaries.`;
 
   try {
-    // 25 second timeout abort if API takes too long
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 40000);
+    const timeout = setTimeout(() => controller.abort(), 55000);
 
     const res = await fetch('/api/chat', {
       method: 'POST',
@@ -586,7 +589,8 @@ The Tech for Good post must reference real specific use cases in agriculture, he
         model: 'claude-sonnet-4-5',
         max_tokens: 1500,
         enableWebSearch: true,
-        system: 'You have access to a web search tool. You MUST use it to find the latest technology news and announcements from May and June 2026 before generating blog post ideas. Search first, then generate articles based on what you actually find. Do not rely on your training data for current events.',
+        tool_choice: { type: 'tool', name: 'web_search' },
+        system: 'You have access to a web search tool. Always search the web for recent news before generating blog ideas. Only base articles on things you actually find in search results published in the past 60 days.',
         messages: [{ role: 'user', content: prompt }]
       })
     });
