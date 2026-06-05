@@ -2,8 +2,11 @@
 // Server-side authentication for the analytics dashboard.
 // The password is stored ONLY in Vercel environment variables — never in client code.
 
-import { createHash, timingSafeEqual } from 'crypto';
+import { scryptSync, timingSafeEqual } from 'crypto';
 import { extractIP, checkRateLimit, createAuthToken } from './_lib.js';
+
+// Fixed salt for HMAC-style comparison against the env var (not for storage — the env var is the secret)
+const AUTH_SALT = 'bio-analytics-auth-v1';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin',  process.env.SITE_URL || '*');
@@ -24,10 +27,10 @@ export default async function handler(req, res) {
   if (!correctPassword) {
     return res.status(500).json({ error: 'ANALYTICS_PASSWORD not configured in Vercel env vars.' });
   }
-  // Hash both passwords to identical 32-byte buffers so timingSafeEqual always
-  // runs on equal-length inputs — eliminates the length-based timing oracle.
-  const provided = createHash('sha256').update(String(password || '')).digest();
-  const expected = createHash('sha256').update(correctPassword).digest();
+  // scryptSync adds computational cost (prevents offline brute-force if the hash leaks),
+  // and produces equal-length outputs so timingSafeEqual always runs on equal-length inputs.
+  const provided = scryptSync(String(password || ''), AUTH_SALT, 64);
+  const expected = scryptSync(correctPassword,         AUTH_SALT, 64);
   let match = false;
   try { match = timingSafeEqual(provided, expected); } catch {}
   if (!password || !match) {
