@@ -578,12 +578,13 @@ The Tech for Good post must reference real specific use cases in agriculture, he
       })
     });
     clearTimeout(timeout);
+    if (!res.ok) throw new Error(`API ${res.status}`);
     const data = await res.json();
-    const raw = data.content?.[0]?.text || '[]';
-
-    // Strip any accidental markdown fences
-    const clean = raw.replace(/```json|```/g, '').trim();
-    allPosts = JSON.parse(clean);
+    const raw = data.content?.[0]?.text || '';
+    // Extract the JSON array even if Claude prefixes prose before it
+    const jsonMatch = raw.match(/\[[\s\S]*\]/);
+    if (!jsonMatch) throw new Error('No JSON array in response');
+    allPosts = JSON.parse(jsonMatch[0]);
 
     // Cache it
     localStorage.setItem(CACHE_KEY, JSON.stringify(allPosts));

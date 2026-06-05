@@ -89,7 +89,6 @@ export default async function handler(req, res) {
         'Content-Type':      'application/json',
         'x-api-key':         apiKey,
         'anthropic-version': '2023-06-01',
-        ...(useWebSearch ? { 'anthropic-beta': 'web-search-2026-02-09' } : {}),
       },
       body: JSON.stringify(payload),
     });
