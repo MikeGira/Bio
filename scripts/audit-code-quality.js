@@ -57,12 +57,16 @@ Mandatory checks before flagging ANYTHING:
 3. If a function returns a 400/401/403/429 error for bad input anywhere in the same function, input IS validated.
 4. If auth verification code exists in the file (even if you have to scroll down), do not flag it as missing.
 5. If you are not 100% certain an issue is real based on the full file content: do not include it.
+6. Do not mention anything you considered but decided was not an issue. Only state confirmed findings.
+
+RESPONSE FORMAT — follow exactly:
+- If zero confirmed issues: respond with the single word PASS and nothing else. No bold, no explanation, no preamble.
+- If confirmed issues exist: list them using the format below. Do not include the word PASS anywhere.
 
 FILES UNDER REVIEW:
 ${bundle}
 
-If no confirmed issues: respond with exactly PASS
-Otherwise list findings as: **[CATEGORY] \`file\` — title**: one sentence.`,
+Findings format (only when issues exist): **[CATEGORY] \`file\` — title**: one sentence.`,
       }],
     }),
   });
@@ -135,7 +139,12 @@ async function main() {
 
   const openIssues = await getOpenIssues();
 
-  if (result.trim().startsWith('PASS')) {
+  // Strip markdown formatting (**PASS**, *PASS*, etc.) and check last non-empty line.
+  // Guards against Claude wrapping PASS in bold or writing it after retractions.
+  const stripped = result.replace(/[*_`~]/g, '').trim();
+  const lastLine = stripped.split('\n').map(l => l.trim()).filter(Boolean).at(-1) ?? '';
+  const isPASS = stripped === 'PASS' || lastLine === 'PASS';
+  if (isPASS) {
     console.log('Quality audit passed — no issues found.');
     for (const issue of openIssues) await closeIssue(issue.number);
     return;
