@@ -116,6 +116,28 @@ vercel --prod
 # Vercel Dashboard → your project → Deployments tab
 ```
 
+## POST-PUSH MONITORING — /loop patterns
+
+After any `git push`, use `/loop` to watch until everything is green:
+
+```
+# Full health check (site + CI + CodeQL) — runs every 30s until you stop it
+/loop 30s ! bash scripts/check-deploy.sh
+
+# Lightweight: just watch CI status
+/loop 30s gh run list --repo MikeGira/Bio --limit 1 --json status,conclusion,displayTitle
+
+# Watch code scanning until alerts close after a security fix
+/loop 60s gh api repos/MikeGira/Bio/code-scanning/alerts?state=open | jq length
+```
+
+Stop the loop at any time by typing any message.
+
+`scripts/check-deploy.sh` reports three things per tick in one line:
+- Live site HTTP status + CORS origin header on `/api/chat`
+- Latest GitHub Actions run status (in_progress / success / failure)
+- Open CodeQL code-scanning alert count
+
 ## UPDATING CONTENT
 When adding new skills, projects, or experience to the portfolio:
 1. Edit the relevant section in index.html
