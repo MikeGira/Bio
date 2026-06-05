@@ -308,7 +308,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;backdrop-filter:blur(20px);-
     <div class="blog-hero-inner">
       <div class="blog-hero-eyebrow">
         <span class="ai-blink"></span>
-        AI-Powered · Auto-Updated Daily · Latest Tech Insights
+        Web-Researched · Auto-Updated Daily · Latest Tech Insights
       </div>
       <h1><span>Stack Signal</span><br/>by Michael Twagirayezu</h1>
       <p class="blog-hero-sub">Fresh perspectives on Cloud Architecture, DevSecOps, AI Integration, Cybersecurity, and the technology shaping the future curated and written by AI, filtered through 10+ years of real-world experience.</p>
@@ -564,7 +564,7 @@ The Tech for Good post must reference real specific use cases in agriculture, he
   try {
     // 25 second timeout abort if API takes too long
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 25000);
+    const timeout = setTimeout(() => controller.abort(), 40000);
 
     const res = await fetch('/api/chat', {
       method: 'POST',
@@ -573,6 +573,7 @@ The Tech for Good post must reference real specific use cases in agriculture, he
       body: JSON.stringify({
         model: 'claude-sonnet-4-5',
         max_tokens: 1500,
+        enableWebSearch: true,
         messages: [{ role: 'user', content: prompt }]
       })
     });
@@ -654,7 +655,7 @@ function renderPosts() {
           ${(post.tags||[]).slice(0,3).map(t=>`<span class="card-tag ${cfg.tagClass}">${escTxt(t)}</span>`).join('')}
           <span class="card-date">${todayStr()}</span>
           <span class="card-read">${escTxt(post.readTime||'4 min read')}</span>
-          <span class="card-ai-badge">✦ AI-Written</span>
+          <span class="card-ai-badge">✦ AI-Written · Web-Researched</span>
         </div>`;
       card.addEventListener('click', () => openArticle(post));
       feed.appendChild(card);
@@ -779,7 +780,7 @@ async function openArticle(post) {
   readEl.textContent = post.readTime || '4 min read';
   const aiEl = document.createElement('span');
   aiEl.className = 'card-ai-badge';
-  aiEl.textContent = '✦ AI-Written by Claude';
+  aiEl.textContent = '✦ AI-Written · Web-Researched';
   meta.appendChild(tagEl); meta.appendChild(dateEl); meta.appendChild(readEl); meta.appendChild(aiEl);
 
   // Show loading
@@ -793,7 +794,7 @@ async function openArticle(post) {
   // Generate full article with Claude
   try {
     const artController = new AbortController();
-    const artTimeout = setTimeout(() => artController.abort(), 20000);
+    const artTimeout = setTimeout(() => artController.abort(), 35000);
     const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -801,6 +802,7 @@ async function openArticle(post) {
       body: JSON.stringify({
         model: 'claude-sonnet-4-5',
         max_tokens: 800,
+        enableWebSearch: true,
         messages: [{
           role: 'user',
           content: `Write a concise, insightful blog article for senior IT professionals.
