@@ -77,4 +77,4 @@ Subjects may request access or erasure via byosekumbuga@gmail.com (GDPR Art. 15/
 
 ## 6. Open items (tracked)
 
-- Publish a short **Privacy notice** (what is collected via the contact form / subscribe / assistant, and the erasure contact) as a linked page — recommended since the site collects email and message content.
+- _None._ A short **Privacy notice** (`/privacy.html`, linked from the index and blog footers) is published, covering what the contact form, subscribe form, and Phoenix assistant collect, the subprocessors, and the erasure contact.
