@@ -41,7 +41,7 @@ This is a personal portfolio site. It collects limited personal data through thr
 | Vendor | Service | Data processed | Data location | Attestation |
 |---|---|---|---|---|
 | Vercel | Hosting / CDN / serverless | Request traffic, logs | Global edge (primary US) | SOC 2 Type II |
-| Supabase | Postgres / REST / RLS | Contact + subscriber PII, analytics | *Project region — verify in dashboard* | SOC 2 Type II |
+| Supabase | Postgres / REST / RLS | Contact + subscriber PII, analytics | us-east-1 (AWS, N. Virginia, USA) | SOC 2 Type II |
 | Resend | Transactional email | Recipient + notification email, content | US | SOC 2 |
 | Anthropic | AI inference (Phoenix assistant) | Visitor conversation content (no secrets/PII by design) | US | SOC 2 Type II |
 | Formspree | Contact-form fallback | Name, email, message | US | SOC 2 |
@@ -77,5 +77,4 @@ Subjects may request access or erasure via byosekumbuga@gmail.com (GDPR Art. 15/
 
 ## 6. Open items (tracked)
 
-- Confirm and record the **Supabase project region** in the subprocessor table (data-residency evidence).
 - Publish a short **Privacy notice** (what is collected via the contact form / subscribe / assistant, and the erasure contact) as a linked page — recommended since the site collects email and message content.
