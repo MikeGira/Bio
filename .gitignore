@@ -1,0 +1,18 @@
+# Dependencies
+node_modules/
+
+# Environment / secrets — never commit (Vercel dashboard holds the real values)
+.env
+.env.*
+!.env.example
+
+# Vercel CLI
+.vercel/
+
+# Claude Code — personal/machine-local config (settings.json IS shared/committed)
+.claude/settings.local.json
+
+# OS / editor / logs
+.DS_Store
+Thumbs.db
+*.log
