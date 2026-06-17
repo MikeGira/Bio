@@ -570,7 +570,6 @@ async function openDigestModal() {
     preview.innerHTML = `<div style="color:var(--mid);font-family:var(--mono);font-size:.75rem">Fetching latest articles…</div>`;
     subjectEl.value = 'Stack Signal: Latest from the blog';
     try {
-      const token = sessionStorage.getItem(SESSION_KEY);
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

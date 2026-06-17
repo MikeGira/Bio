@@ -1473,7 +1473,7 @@ type();
 const logs=['▶ Workflow running. All systems nominal','✓ Cloud deploy complete 3 nodes healthy','⚡ Security scan passed zero threats detected','✦ AI analysis: 40% efficiency gain identified','☁ Multi-cloud sync: AWS + Azure + GCP in sync','🔒 Zero trust enforced 120 users protected','📊 Uptime: 99.8% monitoring active'];
 let li=0;
 const logEl=document.getElementById('ncLog');
-if(logEl){logEl.style.transition='opacity .3s';setInterval(()=>{li=(li+1)%logs.length;logEl.style.opacity='0';setTimeout(()=>{logEl.textContent=logs[li];logEl.style.opacity='1'},320)},3200)}
+if(logEl){logEl.style.transition='opacity .3s';setInterval(()=>{li=(li+1)%logs.length;logEl.style.opacity='0';setTimeout(()=>{logEl.textContent=logs[li];logEl.style.opacity='1';},320)},3200)}
 
 // BACK TO TOP
 const btt=document.getElementById('backToTop');
@@ -2034,7 +2034,7 @@ async function send(text){
       _sending=false;return;
     }
     ty.remove();addMsg(rep,'bot');hist.push({role:'assistant',content:rep});
-  }catch(e){ty.remove();addMsg('Connection error. '+e.message,'bot')}
+  }catch(e){ty.remove();addMsg('Connection error. '+e.message,'bot');}
   finally{_sending=false;}
 }
 
