@@ -30,11 +30,32 @@ async function listWorkflows() {
   return data.workflows.filter(w => w.path.startsWith('.github/workflows/'));
 }
 
-async function lastScheduledRun(workflowId) {
-  const res = await gh(`/actions/workflows/${workflowId}/runs?event=schedule&per_page=1`);
-  if (!res.ok) return null;
+async function lastScheduledRuns(workflowId) {
+  const res = await gh(`/actions/workflows/${workflowId}/runs?event=schedule&per_page=2`);
+  if (!res.ok) return [];
   const data = await res.json();
-  return data.workflow_runs?.[0] ?? null;
+  return data.workflow_runs ?? [];
+}
+
+// Coarse cadence estimate from a cron expression: monthly/weekly/daily is all
+// we need to size a staleness threshold — exact next-fire times are overkill.
+function cronIntervalDays(cronExpr) {
+  const fields = cronExpr.trim().split(/\s+/);
+  if (fields.length < 5) return 1;
+  const [, , dom, mon, dow] = fields;
+  if (mon !== '*') return 365;
+  if (dom !== '*') return 31;
+  if (dow !== '*') return 7;
+  return 1;
+}
+
+async function cronIntervalFromFile(workflowPath) {
+  const res = await gh(`/contents/${workflowPath}`, { headers: { Accept: 'application/vnd.github.raw+json' } });
+  if (!res.ok) return 0;
+  const yml = await res.text();
+  const crons = [...yml.matchAll(/cron:\s*['"]([^'"]+)['"]/g)].map(m => m[1]);
+  if (crons.length === 0) return 0;
+  return Math.min(...crons.map(cronIntervalDays));
 }
 
 async function enableWorkflow(workflowId) {
@@ -94,8 +115,17 @@ async function main() {
   const now = Date.now();
 
   for (const w of workflows) {
-    const last = await lastScheduledRun(w.id);
+    const runs = await lastScheduledRuns(w.id);
+    const last = runs[0] ?? null;
     const hasSchedule = last !== null;
+    // Derive the cadence from the workflow's own cron and its recent run gap
+    // (daily/weekly/monthly crons all coexist here), so the staleness
+    // threshold adapts instead of false-flagging slow crons.
+    const gapDays = runs.length === 2
+      ? (Date.parse(runs[0].created_at) - Date.parse(runs[1].created_at)) / 86400000
+      : 0;
+    const cronDays = hasSchedule ? await cronIntervalFromFile(w.path) : 0;
+    const staleAfter = Math.max(STALE_DAYS, 2 * gapDays + 1, 2 * cronDays + 1);
 
     if (w.state === 'disabled_inactivity') {
       const ok = await enableWorkflow(w.id);
@@ -118,8 +148,8 @@ async function main() {
 
     if (hasSchedule) {
       const ageDays = (now - Date.parse(last.created_at)) / 86400000;
-      if (ageDays > STALE_DAYS) {
-        findings.push(`**Stale schedule:** \`${w.name}\` is active but its last scheduled run was ${Math.floor(ageDays)} days ago (threshold ${STALE_DAYS}). Check the workflow's run history and cron.`);
+      if (ageDays > staleAfter) {
+        findings.push(`**Stale schedule:** \`${w.name}\` is active but its last scheduled run was ${Math.floor(ageDays)} days ago (threshold ${Math.round(staleAfter)}, derived from its own cadence). Check the workflow's run history and cron.`);
         console.log(`${w.name}: stale — last scheduled run ${Math.floor(ageDays)}d ago`);
       } else {
         console.log(`${w.name}: healthy (last scheduled run ${ageDays.toFixed(1)}d ago)`);
