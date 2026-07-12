@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+<meta name="theme-color" content="#0f0f13"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; frame-ancestors 'none';"/>
+<meta name="referrer" content="strict-origin-when-cross-origin"/>
+<meta http-equiv="X-Content-Type-Options" content="nosniff"/>
+<meta name="description" content="How Michael Twagirayezu builds production software solo with AI: the workflow, the stack decisions, and a real case study with the pull requests to prove it."/>
+<meta property="og:title" content="How I Build | Michael Twagirayezu"/>
+<meta property="og:type" content="website"/>
+<title>How I Build | Michael Twagirayezu</title>
+<link rel="canonical" href="https://bio-two-eta.vercel.app/how-i-build"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230f0f13'/%3E%3Ctext x='16' y='22' font-size='18' text-anchor='middle' fill='%23EE0000' font-family='monospace' font-weight='bold'%3EM%3C/text%3E%3C/svg%3E"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg0:#0f0f13;--bg1:#16161c;--bg2:#1e1e26;--bg3:#26262f;
+  --red:#ee0000;--red2:#c00000;--red-glow:rgba(238,0,0,0.15);
+  --orange:#f97316;--orange2:#ea6b0a;
+  --line:rgba(255,255,255,0.07);--line2:rgba(255,255,255,0.12);
+  --hi:#f4f4fc;--mid:#c4c4d8;--lo:#8888a8;
+  --green:#22c55e;--amber:#f59e0b;--purple:#a855f7;--teal:#14b8a6;--blue:#3b82f6;
+  --radius:10px;--r-sm:6px;--r-lg:16px;
+  --font:'Inter',sans-serif;--mono:'JetBrains Mono',monospace;
+}
+[data-theme="light"]{
+  --bg0:#f5f5f7;--bg1:#ffffff;--bg2:#f0f0f4;--bg3:#e8e8ef;
+  --line:rgba(0,0,0,0.07);--line2:rgba(0,0,0,0.12);
+  --hi:#0d0d12;--mid:#374151;--lo:#6b7280;
+  --red:#c00000;--red2:#990000;--red-glow:rgba(192,0,0,0.08);
+  --orange:#ea6b0a;--orange2:#c45a08;--blue:#2563eb;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:var(--font);background:var(--bg0);color:var(--hi);line-height:1.6;overflow-x:hidden;transition:background .3s,color .3s}
+a{color:inherit;text-decoration:none}
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-thumb{background:var(--red);border-radius:2px}
+.wrap{max-width:1120px;margin:0 auto;padding:0 32px}
+
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);background:rgba(15,15,19,.88);border-bottom:1px solid var(--line);transition:background .3s}
+[data-theme="light"] nav{background:rgba(245,245,247,.92)}
+.nav-inner{max-width:1120px;margin:0 auto;padding:0 32px;height:62px;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{font-weight:700;font-size:.9375rem;letter-spacing:-.01em;display:flex;align-items:center;gap:8px;color:var(--hi)}
+.nav-logo-dot{width:8px;height:8px;border-radius:50%;background:var(--red);box-shadow:0 0 10px var(--red)}
+.nav-links{display:flex;gap:28px;list-style:none}
+.nav-links a{font-size:.875rem;color:var(--mid);transition:color .15s}
+.nav-links a:hover{color:var(--hi)}
+.nav-links a.active{color:var(--hi);font-weight:600}
+.nav-end{display:flex;align-items:center;gap:10px}
+.theme-btn{width:34px;height:34px;border-radius:var(--r-sm);background:var(--bg2);border:1px solid var(--line2);cursor:pointer;color:var(--mid);font-size:.875rem;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.theme-btn:hover{border-color:var(--red);color:var(--hi)}
+.i-moon{display:block}.i-sun{display:none}
+[data-theme="light"] .i-moon{display:none}[data-theme="light"] .i-sun{display:block}
+.nav-cta{background:var(--red);color:#fff;font-size:.875rem;font-weight:600;padding:8px 20px;border-radius:var(--r-sm);transition:background .15s}
+.nav-cta:hover{background:var(--red2)}
+.mob-btn{display:none;background:none;border:1px solid var(--line2);border-radius:var(--r-sm);color:var(--mid);width:34px;height:34px;cursor:pointer;align-items:center;justify-content:center;font-size:1.05rem;line-height:1}
+@media(max-width:820px){
+  .nav-links{display:none;position:fixed;top:62px;left:0;right:0;background:var(--bg0);border-bottom:1px solid var(--line2);flex-direction:column;gap:0;padding:8px 0}
+  .nav-links.open{display:flex}
+  .nav-links li a{display:block;padding:12px 32px}
+  .mob-btn{display:flex}
+  .nav-cta{display:none}
+}
+
+/* ── HERO ── */
+.hib-hero{padding:132px 0 56px;border-bottom:1px solid var(--line)}
+.hib-eyebrow{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:.72rem;color:var(--mid);border:1px solid var(--line2);border-radius:50px;padding:6px 14px;margin-bottom:22px}
+.hib-eyebrow-dot{width:6px;height:6px;border-radius:50%;background:var(--green)}
+.hib-hero h1{font-size:clamp(2.4rem,6vw,3.6rem);font-weight:800;letter-spacing:-.02em;line-height:1.08;margin-bottom:18px}
+.hib-hero h1 span{color:var(--red)}
+.hib-lede{max-width:640px;font-size:1.05rem;color:var(--mid);margin-bottom:14px}
+.hib-byline{font-family:var(--mono);font-size:.75rem;color:var(--lo)}
+
+/* ── LAYOUT ── */
+.hib-layout{display:grid;grid-template-columns:220px 1fr;gap:56px;padding:56px 0 72px;align-items:start}
+@media(max-width:900px){.hib-layout{grid-template-columns:1fr;gap:36px}}
+
+/* ── TOC ── */
+.hib-toc{position:sticky;top:86px}
+.hib-toc-title{font-family:var(--mono);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--lo);margin-bottom:12px}
+.hib-toc ol{list-style:none;display:flex;flex-direction:column;gap:2px}
+.hib-toc a{display:flex;gap:10px;align-items:baseline;font-size:.82rem;color:var(--mid);padding:6px 10px;border-radius:var(--r-sm);border-left:2px solid transparent;transition:color .15s,background .15s}
+.hib-toc a:hover{color:var(--hi);background:var(--bg1)}
+.hib-toc a.current{color:var(--hi);border-left-color:var(--red);background:var(--bg1)}
+.hib-toc .n{font-family:var(--mono);font-size:.66rem;color:var(--lo)}
+@media(max-width:900px){.hib-toc{position:static;border:1px solid var(--line);border-radius:var(--r-lg);padding:18px}}
+
+/* ── PRINCIPLES ── */
+.hib-section{border:1px solid var(--line);border-radius:var(--r-lg);background:var(--bg1);padding:30px 32px;margin-bottom:20px;scroll-margin-top:86px}
+.hib-sec-head{display:flex;align-items:baseline;gap:14px;margin-bottom:14px}
+.hib-sec-num{font-family:var(--mono);font-size:.72rem;color:var(--red);flex-shrink:0}
+.hib-section h2{font-size:1.3rem;font-weight:700;letter-spacing:-.01em}
+.hib-section p{font-size:.92rem;color:var(--mid);margin-bottom:12px;max-width:64ch}
+.hib-section p:last-of-type{margin-bottom:0}
+.hib-section p strong{color:var(--hi);font-weight:600}
+.hib-evidence{margin-top:16px;padding-top:14px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.hib-evidence-label{font-family:var(--mono);font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;color:var(--lo);margin-right:2px}
+.hib-chip{font-family:var(--mono);font-size:.7rem;color:var(--mid);border:1px solid var(--line2);border-radius:50px;padding:4px 12px;transition:border-color .15s,color .15s}
+.hib-chip:hover{border-color:var(--red);color:var(--hi)}
+.hib-rules{border:1px solid var(--line2);border-left:2px solid var(--red);border-radius:var(--r-sm);background:var(--bg2);padding:14px 18px;margin-top:14px}
+.hib-rules p{font-size:.88rem;color:var(--hi);margin:0;max-width:none}
+
+/* ── CASE STUDY ── */
+.hib-case{border:1px solid var(--line2);border-radius:var(--r-lg);background:var(--bg1);padding:34px 32px;margin-bottom:20px;scroll-margin-top:86px}
+.hib-case-kicker{font-family:var(--mono);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--red);margin-bottom:10px}
+.hib-case h2{font-size:1.55rem;font-weight:800;letter-spacing:-.015em;margin-bottom:6px}
+.hib-case-meta{font-family:var(--mono);font-size:.72rem;color:var(--lo);margin-bottom:24px}
+.hib-block{margin-bottom:22px}
+.hib-block-label{font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;color:var(--lo);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.hib-block-label::after{content:'';flex:1;height:1px;background:var(--line)}
+.hib-block p{font-size:.92rem;color:var(--mid);margin-bottom:10px;max-width:66ch}
+.hib-block p strong{color:var(--hi);font-weight:600}
+.hib-block ul{list-style:none;display:flex;flex-direction:column;gap:8px;margin:4px 0 10px}
+.hib-block li{font-size:.9rem;color:var(--mid);padding-left:18px;position:relative;max-width:66ch}
+.hib-block li::before{content:'';position:absolute;left:2px;top:.62em;width:6px;height:6px;border-radius:50%;background:var(--red);opacity:.75}
+.hib-block li a{color:var(--hi);border-bottom:1px solid var(--line2);transition:border-color .15s}
+.hib-block li a:hover{border-color:var(--red)}
+.hib-block p a{color:var(--hi);border-bottom:1px solid var(--line2);transition:border-color .15s}
+.hib-block p a:hover{border-color:var(--red)}
+
+/* ── AUTHENTICITY + CTA ── */
+.hib-authenticity{font-family:var(--mono);font-size:.74rem;color:var(--lo);border:1px solid var(--line);border-radius:var(--r-sm);padding:14px 18px;margin-bottom:36px;line-height:1.7}
+.hib-cta{border:1px solid var(--line);border-radius:var(--r-lg);background:var(--bg1);padding:32px;text-align:center}
+.hib-cta h3{font-size:1.2rem;font-weight:700;margin-bottom:8px}
+.hib-cta p{font-size:.9rem;color:var(--mid);margin-bottom:18px}
+.hib-cta-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn-solid{background:var(--red);color:#fff;font-size:.875rem;font-weight:600;padding:11px 24px;border-radius:var(--r-sm);transition:background .15s}
+.btn-solid:hover{background:var(--red2)}
+.btn-outline{border:1px solid var(--line2);color:var(--hi);font-size:.875rem;font-weight:600;padding:11px 24px;border-radius:var(--r-sm);transition:border-color .15s}
+.btn-outline:hover{border-color:var(--red)}
+
+/* ── REVEAL ── */
+.reveal{opacity:0;transform:translateY(14px);transition:opacity .5s ease,transform .5s ease}
+.reveal.in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .reveal{opacity:1;transform:none;transition:none}
+}
+
+/* ── BACK TO TOP ── */
+.back-to-top{position:fixed;bottom:24px;right:24px;z-index:78;width:38px;height:38px;border-radius:12px;background:var(--bg2);border:1px solid var(--line2);color:var(--mid);font-size:.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .22s;opacity:0;pointer-events:none}
+.back-to-top.visible{opacity:1;pointer-events:all;background:var(--red);border-color:var(--red);color:#fff}
+.back-to-top:hover{transform:translateY(-3px)}
+@media(max-width:700px){.back-to-top{bottom:16px;right:16px;width:34px;height:34px;font-size:.8rem}.hib-section,.hib-case{padding:22px 20px}.wrap{padding:0 16px}}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo"><span class="nav-logo-dot"></span> Michael Twagirayezu</a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html#about">About</a></li>
+      <li><a href="index.html#skills">Skills</a></li>
+      <li><a href="index.html#experience">Experience</a></li>
+      <li><a href="how-i-build.html" class="active">How I Build</a></li>
+      <li><a href="blog.html">Blog</a></li>
+      <li><a href="index.html#contact">Contact</a></li>
+    </ul>
+    <div class="nav-end">
+      <button class="theme-btn" id="themeBtn" aria-label="Toggle theme">
+        <span class="i-moon">☾</span><span class="i-sun">○</span>
+      </button>
+      <a href="index.html#contact" class="nav-cta">Hire Me</a>
+      <button class="mob-btn" id="mobBtn" aria-label="Menu">☰</button>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="hib-hero">
+  <div class="wrap">
+    <div class="hib-eyebrow"><span class="hib-eyebrow-dot"></span>Workflow, in my own words</div>
+    <h1>How I <span>Build</span></h1>
+    <p class="hib-lede">I build production software solo, working with AI. This page explains how: the workflow, the stack decisions, and one real case study, with the pull requests to prove every claim.</p>
+    <p class="hib-byline">Written by Michael Twagirayezu. Claude edited for structure and typos only.</p>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="hib-layout">
+
+    <!-- TOC -->
+    <aside class="hib-toc" aria-label="Table of contents">
+      <div class="hib-toc-title">On this page</div>
+      <ol>
+        <li><a href="#research-first"><span class="n">01</span>Research first</a></li>
+        <li><a href="#docs-before-code"><span class="n">02</span>Docs before code</a></li>
+        <li><a href="#security"><span class="n">03</span>Security on every line</a></li>
+        <li><a href="#stack"><span class="n">04</span>The stack the problem deserves</a></li>
+        <li><a href="#real-session"><span class="n">05</span>What a real session looks like</a></li>
+        <li><a href="#ai-draft"><span class="n">06</span>AI output is a draft</a></li>
+        <li><a href="#automate"><span class="n">07</span>Automate the review loop</a></li>
+        <li><a href="#case-study"><span class="n">08</span>Case study: the blog rework</a></li>
+      </ol>
+    </aside>
+
+    <!-- CONTENT -->
+    <main>
+
+      <section class="hib-section reveal" id="research-first">
+        <div class="hib-sec-head"><span class="hib-sec-num">01</span><h2>Research first</h2></div>
+        <p>I work research-first so that what I build is grounded in real, up-to-date data from reputable professional and expert sources. That is what lets me build compliant, professional, enterprise-grade solutions instead of guessing.</p>
+        <p>The mistake that taught me the most was starting to build from an idea without doing research first, without even finding out whether it was worth starting. <strong>One search prevents ten wasted sessions.</strong></p>
+        <div class="hib-evidence">
+          <span class="hib-evidence-label">Evidence</span>
+          <a class="hib-chip" href="https://github.com/MikeGira/Bio/pull/27" target="_blank" rel="noopener">PR #27: research decided the blog rework</a>
+        </div>
+      </section>
+
+      <section class="hib-section reveal" id="docs-before-code">
+        <div class="hib-sec-head"><span class="hib-sec-num">02</span><h2>Docs before code</h2></div>
+        <p>Before I adopted this discipline I was burning too many tokens because I was building without a proper plan and structure. That caused too many iteration cycles that an effective plan would have prevented.</p>
+        <p>A structured implementation workflow guides the AI and <strong>serves as a guardrail for it</strong>. No code starts until the requirements and the user flows are written down, reviewed, and approved. This very page had a PRD and an app flow document before a single line of it was written.</p>
+        <div class="hib-evidence">
+          <span class="hib-evidence-label">Evidence</span>
+          <a class="hib-chip" href="https://github.com/MikeGira/Bio/tree/main/docs/how-i-build" target="_blank" rel="noopener">This page's own pre-build docs</a>
+        </div>
+      </section>
+
+      <section class="hib-section reveal" id="security">
+        <div class="hib-sec-head"><span class="hib-sec-num">03</span><h2>Security on every line</h2></div>
+        <p>Security is a constraint on every line, not a final checklist. It is a professional best practice and I treat it as a requirement for everything I build, so that what I ship is robust, safe, secure, compliant, and useful.</p>
+        <p><strong>Security is not an afterthought. It is built into each step.</strong> Secret scanning and static analysis run on every pull request before anything merges. Every page ships security headers. The database enforces row level security. API keys never reach the frontend; every AI call goes through a serverless proxy that hides the key and forces the model.</p>
+        <div class="hib-evidence">
+          <span class="hib-evidence-label">Evidence</span>
+          <a class="hib-chip" href="https://github.com/MikeGira/Bio/blob/main/.github/workflows/deploy.yml" target="_blank" rel="noopener">Gitleaks + CodeQL on every PR</a>
+          <a class="hib-chip" href="https://github.com/MikeGira/Bio/blob/main/api/chat.js" target="_blank" rel="noopener">The serverless AI proxy</a>
+        </div>
+      </section>
+
+      <section class="hib-section reveal" id="stack">
+        <div class="hib-sec-head"><span class="hib-sec-num">04</span><h2>The stack the problem deserves</h2></div>
+        <p>This site is zero-dependency vanilla JavaScript because that is what its nature deserves: a light app that serves information about an IT professional's work and expertise, with a few complementary features. Nothing to break, nothing to audit, no supply chain to worry about.</p>
+        <p>TaskPilot is Next.js and TypeScript because it is more demanding. It is not an app that serves information; it is a SaaS that generates scripts and n8n workflows for sysadmins and IT professionals to automate their tasks. <strong>For simple, less demanding apps, zero-dependency vanilla JS is more suitable. For complex, more demanding apps, Next.js and TypeScript.</strong></p>
+        <p>I learned this the hard way. I did not have a good experience building and deploying with Replit and Firebase; they are a much steeper learning curve compared to Vercel with Supabase. Replit is fine for MVP frontends but gets complicated for backend configuration and deployment. Firebase has many hurdles that Supabase simply does not.</p>
+        <div class="hib-evidence">
+          <span class="hib-evidence-label">Evidence</span>
+          <a class="hib-chip" href="https://github.com/MikeGira/Bio" target="_blank" rel="noopener">This site: 0 npm dependencies</a>
+          <a class="hib-chip" href="https://taskpilot-umber.vercel.app" target="_blank" rel="noopener">TaskPilot: Next.js + TypeScript SaaS</a>
+        </div>
+      </section>
+
+      <section class="hib-section reveal" id="real-session">
+        <div class="hib-sec-head"><span class="hib-sec-num">05</span><h2>What a real session looks like</h2></div>
+        <p>A real session starts with me sharing what I am thinking. I ask Claude to advise and make a plan. I review the plan and approve it. Then Claude does the implementation. I review the output critically and give feedback, and Claude applies it. We iterate multiple times to fix bugs, improve functionality, and do security hardening.</p>
+        <p>Claude does the heavy lifting on research, implementation, security scans, and proposing fixes and refinements. <strong>We co-plan. I approve and review.</strong></p>
+        <div class="hib-rules">
+          <p>The hard rules: the AI never commits, pushes, deletes, or makes irreversible changes without my permission. It never touches personal data without my explicit consent.</p>
+        </div>
+      </section>
+
+      <section class="hib-section reveal" id="ai-draft">
+        <div class="hib-sec-head"><span class="hib-sec-num">06</span><h2>AI output is a draft</h2></div>
+        <p>AI makes mistakes. I treat its output as a draft and keep iterating to catch the issues and fix them together. The same AI is also very good at finding issues, researching solutions, proposing remediation, and implementing it. <strong>The back-and-forth is the method.</strong></p>
+        <p>Working this way, we have caught and fixed real production bugs, hardened security, refactored the codebase, and kept improving through many pull requests. It is useful, motivating, and it genuinely augments my productivity.</p>
+        <div class="hib-evidence">
+          <span class="hib-evidence-label">Evidence</span>
+          <a class="hib-chip" href="https://github.com/MikeGira/Bio/pull/28" target="_blank" rel="noopener">PR #28: production timeout caught</a>
+          <a class="hib-chip" href="https://github.com/MikeGira/Bio/pull/29" target="_blank" rel="noopener">PR #29: timezone bug caught</a>
+        </div>
+      </section>
+
+      <section class="hib-section reveal" id="automate">
+        <div class="hib-sec-head"><span class="hib-sec-num">07</span><h2>Automate the review loop</h2></div>
+        <p>The back-and-forth with AI has turned into skills, memories, routines, and triggers that automate the way I work. I get automatic email notifications and alerts on critical matters: weekly security monitors, dependency audits, and a scheduled workflow that audits Phoenix's own system prompt against the site content and files an issue when they drift.</p>
+        <p>Working with many agents this way has been genuinely useful and productive. The point is not to remove the human review; it is to make sure the review happens even when I am not looking.</p>
+        <div class="hib-evidence">
+          <span class="hib-evidence-label">Evidence</span>
+          <a class="hib-chip" href="https://github.com/MikeGira/Bio/blob/main/.github/workflows/ai-audit.yml" target="_blank" rel="noopener">The Phoenix prompt-audit workflow</a>
+        </div>
+      </section>
+
+      <!-- CASE STUDY -->
+      <article class="hib-case reveal" id="case-study">
+        <div class="hib-case-kicker">Case study</div>
+        <h2>Replacing my own AI-generated blog</h2>
+        <div class="hib-case-meta">July 2026 · Pull requests #27 to #33 · bio-two-eta.vercel.app/blog.html</div>
+
+        <div class="hib-block">
+          <div class="hib-block-label">Problem</div>
+          <p>The AI-generated blog was stale and did not refresh properly, while consuming a lot of tokens. It kept generating the same articles even after refreshing the page. It did not deliver what I asked or expected. As a user of my own blog, I felt that AI-generated posts are hype and not reliable.</p>
+        </div>
+
+        <div class="hib-block">
+          <div class="hib-block-label">Decision</div>
+          <p>I decided on a curated feed instead, after doing thorough research online with Claude's help: real headlines from trusted sources, fetched daily, with <strong>one Claude call per day</strong> to add context, cached in Supabase (<a href="https://github.com/MikeGira/Bio/pull/27" target="_blank" rel="noopener">PR #27</a>). The frontend stayed zero-dependency and the whole thing runs on the serverless free tier.</p>
+        </div>
+
+        <div class="hib-block">
+          <div class="hib-block-label">What iteration caught</div>
+          <ul>
+            <li>The curation call timed out in production at 50 seconds. Caught and fixed in <a href="https://github.com/MikeGira/Bio/pull/28" target="_blank" rel="noopener">PR #28</a>.</li>
+            <li>The feed date shifted by a day for readers in negative UTC offsets. Caught and fixed in <a href="https://github.com/MikeGira/Bio/pull/29" target="_blank" rel="noopener">PR #29</a>.</li>
+            <li>A sweep removed AI tells like em dashes from all page copy (<a href="https://github.com/MikeGira/Bio/pull/30" target="_blank" rel="noopener">PR #30</a>, <a href="https://github.com/MikeGira/Bio/pull/31" target="_blank" rel="noopener">PR #31</a>).</li>
+          </ul>
+        </div>
+
+        <div class="hib-block">
+          <div class="hib-block-label">Retrospective</div>
+          <p>The cleanup itself caused a new bug. The dash-removal sweep also stripped the minus signs out of CSS calc() expressions, silently invalidating three layout rules. Nothing crashed; the styles just stopped applying. We only caught it weeks later, during a refactor (<a href="https://github.com/MikeGira/Bio/pull/32" target="_blank" rel="noopener">PR #32</a>), and the fix broke a CI audit that had to be repointed too (<a href="https://github.com/MikeGira/Bio/pull/33" target="_blank" rel="noopener">PR #33</a>).</p>
+          <p><strong>The lesson: run text sweeps on copy, never on code, and audit afterward.</strong> That lesson is now encoded in my workflow as a durable rule so the same class of mistake cannot happen again.</p>
+        </div>
+
+        <div class="hib-block">
+          <div class="hib-block-label">Outcome</div>
+          <p>One Claude call per day instead of generation on every visit. Real sources readers can actually click. Two production bugs found and fixed through iteration, not luck. And a permanent guard against the mistake the cleanup introduced.</p>
+        </div>
+      </article>
+
+      <div class="hib-authenticity reveal">
+        Every claim on this page links to a public commit or pull request in <a href="https://github.com/MikeGira/Bio" target="_blank" rel="noopener" style="color:var(--hi)">github.com/MikeGira/Bio</a>. Written by Michael Twagirayezu. Claude edited for structure and typos only. Format inspired by <a href="https://www.howborisusesclaudecode.com" target="_blank" rel="noopener" style="color:var(--hi)">howborisusesclaudecode.com</a>.
+      </div>
+
+      <div class="hib-cta reveal">
+        <h3>Want to talk about how I would build for you?</h3>
+        <p>I am open to full-time roles, contracts, consulting, and partnerships.</p>
+        <div class="hib-cta-row">
+          <a href="index.html#contact" class="btn-solid">Get in Touch</a>
+          <a href="https://github.com/MikeGira" target="_blank" rel="noopener" class="btn-outline">GitHub</a>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer style="border-top:1px solid var(--line);padding:36px 0">
+  <div class="wrap">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
+      <div style="font-family:var(--mono);font-size:.75rem;color:var(--mid)"><strong style="color:var(--mid)">MikeGira · How I Build</strong> Workflow, decisions, and evidence.</div>
+      <div style="display:flex;gap:20px">
+        <a href="index.html" style="font-family:var(--mono);font-size:.72rem;color:var(--mid);transition:color .15s" onmouseover="this.style.color='var(--hi)'" onmouseout="this.style.color='var(--lo)'">← Portfolio</a>
+        <a href="blog.html" style="font-family:var(--mono);font-size:.72rem;color:var(--mid);transition:color .15s" onmouseover="this.style.color='var(--hi)'" onmouseout="this.style.color='var(--lo)'">Blog</a>
+        <a href="index.html#contact" style="font-family:var(--mono);font-size:.72rem;color:var(--mid);transition:color .15s" onmouseover="this.style.color='var(--hi)'" onmouseout="this.style.color='var(--lo)'">Contact</a>
+        <a href="privacy.html" style="font-family:var(--mono);font-size:.72rem;color:var(--mid);transition:color .15s" onmouseover="this.style.color='var(--hi)'" onmouseout="this.style.color='var(--lo)'">Privacy</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>window.PHOENIX_CONFIG={fabBottom:'80px',panelBottom:'156px',fabBottomMobile:'70px',fabRightMobile:'12px',panelBottomMobile:'136px'};</script>
+<script src="/phoenix.js" defer></script>
+
+<button class="back-to-top" id="backToTop" aria-label="Back to top">↑</button>
+
+<script>
+// ── THEME ──
+const H=document.documentElement;
+H.setAttribute('data-theme',localStorage.getItem('mg-theme')||'dark');
+document.getElementById('themeBtn').addEventListener('click',()=>{
+  const n=H.getAttribute('data-theme')==='dark'?'light':'dark';
+  H.setAttribute('data-theme',n);localStorage.setItem('mg-theme',n);
+});
+
+// ── MOBILE NAV ──
+document.getElementById('mobBtn').addEventListener('click',()=>document.getElementById('navLinks').classList.toggle('open'));
+
+// ── BACK TO TOP ──
+const btt=document.getElementById('backToTop');
+window.addEventListener('scroll',()=>btt.classList.toggle('visible',window.scrollY>400),{passive:true});
+btt.addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
+
+// ── SCROLL REVEAL ──
+const ro=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting){x.target.classList.add('in');ro.unobserve(x.target)}})},{threshold:.08});
+document.querySelectorAll('.reveal').forEach(el=>ro.observe(el));
+
+// ── TOC ACTIVE STATE ──
+const tocLinks=[...document.querySelectorAll('.hib-toc a')];
+const sections=tocLinks.map(a=>document.querySelector(a.getAttribute('href')));
+const so=new IntersectionObserver(entries=>{
+  entries.forEach(en=>{
+    if(en.isIntersecting){
+      const i=sections.indexOf(en.target);
+      tocLinks.forEach(l=>l.classList.remove('current'));
+      if(i>-1)tocLinks[i].classList.add('current');
+    }
+  });
+},{rootMargin:'-30% 0px -60% 0px'});
+sections.forEach(s=>s&&so.observe(s));
+
+// ── PAGE VIEW (Supabase via /api/db proxy; silent on failure) ──
+(async()=>{
+  try{
+    await fetch('/api/db?action=pageview',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({page:'how-i-build'})});
+  }catch(e){}
+})();
+</script>
+</body>
+</html>
