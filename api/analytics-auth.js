@@ -3,13 +3,13 @@
 // The password is stored ONLY in Vercel environment variables — never in client code.
 
 import { scryptSync, timingSafeEqual } from 'crypto';
-import { extractIP, checkRateLimit, createAuthToken } from './_lib.js';
+import { extractIP, checkRateLimit, createAuthToken, SITE_URL } from './_lib.js';
 
 // Fixed salt for HMAC-style comparison against the env var (not for storage — the env var is the secret)
 const AUTH_SALT = 'bio-analytics-auth-v1';
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin',  process.env.SITE_URL || '*');
+  res.setHeader('Access-Control-Allow-Origin',  SITE_URL);
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
