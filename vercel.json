@@ -1,7 +1,7 @@
 {
   "functions": {
     "api/chat.js":           { "maxDuration": 60 },
-    "api/blog-feed.js":      { "maxDuration": 60 },
+    "api/blog-feed.js":      { "maxDuration": 300 },
     "api/db.js":             { "maxDuration": 30 },
     "api/analytics-auth.js": { "maxDuration": 10 },
     "api/send-digest.js":    { "maxDuration": 60 },
