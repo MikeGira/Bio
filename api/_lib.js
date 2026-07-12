@@ -59,7 +59,9 @@ export const SUPABASE_URL         = process.env.SUPABASE_URL;
 export const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 export const RESEND_API_KEY       = process.env.RESEND_API_KEY;
 export const NOTIFY_EMAIL         = process.env.NOTIFY_EMAIL || 'chrismikeparker1@gmail.com';
-export const SITE_URL             = process.env.SITE_URL || 'https://bio-two-eta.vercel.app';
+// Trailing slashes stripped: browser Origin headers never have one, and db.js
+// compares Origin === SITE_URL verbatim — a slash in the env var 403s all POSTs.
+export const SITE_URL             = (process.env.SITE_URL || 'https://bio-two-eta.vercel.app').replace(/\/+$/, '');
 
 export async function supabase(path, method = 'GET', body = null) {
   const prefer = method === 'POST' ? 'return=representation' : method === 'PATCH' ? 'return=minimal' : '';
