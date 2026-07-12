@@ -216,6 +216,21 @@ CREATE TABLE IF NOT EXISTS analytics_events_archive (LIKE analytics_events INCLU
 -- );
 
 -- ============================================================
+-- BLOG FEED CACHE (curated RSS feed, one row per UTC day)
+-- Written/read ONLY by api/blog-feed.js via the service role key.
+-- Applied to production 2026-07-12 (migration: create_blog_feed_cache)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS blog_feed_cache (
+  feed_date  DATE PRIMARY KEY,
+  payload    JSONB NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Deny-by-default: RLS on with no policies; only service_role (bypasses RLS) can access.
+ALTER TABLE blog_feed_cache ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON blog_feed_cache FROM anon, authenticated;
+
+-- ============================================================
 -- VERIFY: Run this to confirm tables were created
 -- ============================================================
 SELECT table_name FROM information_schema.tables
