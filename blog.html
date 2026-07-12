@@ -320,14 +320,14 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;backdrop-filter:blur(20px);-
     <div class="blog-hero-inner">
       <div class="blog-hero-eyebrow">
         <span class="ai-blink"></span>
-        Web-Researched · Auto-Updated Daily · Latest Tech Insights
+        Curated Daily · Real Sources · AI Summaries
       </div>
       <h1><span>Stack Signal</span><br/>by Michael Twagirayezu</h1>
-      <p class="blog-hero-sub">Fresh perspectives on Cloud Architecture, DevSecOps, AI Integration, Cybersecurity, and the technology shaping the future curated and written by AI, filtered through 10+ years of real-world experience.</p>
+      <p class="blog-hero-sub">The stories shaping Cloud Architecture, DevSecOps, AI Integration, and Cybersecurity. Real headlines from trusted sources, curated daily with AI-written context and filtered through 10+ years of real-world experience.</p>
       <div class="blog-hero-meta">
         <button class="refresh-btn" id="refreshBtn">
           <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13.5 8A5.5 5.5 0 1 1 8 2.5V1M8 1L10 3M8 1L6 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          Refresh with AI
+          Refresh feed
         </button>
         <div class="blog-hero-stat"><strong id="postCount">—</strong> articles</div>
         <div class="blog-hero-stat">Updated: <strong id="lastUpdated">—</strong></div>
@@ -430,7 +430,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;backdrop-filter:blur(20px);-
     <div id="artBody">
       <div class="art-loading">
         <div class="art-loading-dots"><span></span><span></span><span></span></div>
-        <span>Claude AI is writing this article…</span>
+        <span>Loading…</span>
       </div>
     </div>
     <div class="art-modal-foot">
@@ -445,7 +445,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;backdrop-filter:blur(20px);-
 <footer style="border-top:1px solid var(--line);padding:36px 0;margin-top:0">
   <div class="wrap">
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
-      <div style="font-family:var(--mono);font-size:.75rem;color:var(--mid)"><strong style="color:var(--mid)">MikeGira · Tech Blog</strong> AI-powered insights, updated daily.</div>
+      <div style="font-family:var(--mono);font-size:.75rem;color:var(--mid)"><strong style="color:var(--mid)">MikeGira · Tech Blog</strong> Curated tech signal, updated daily.</div>
       <div style="display:flex;gap:20px">
         <a href="index.html" style="font-family:var(--mono);font-size:.72rem;color:var(--mid);transition:color .15s" onmouseover="this.style.color='var(--hi)'" onmouseout="this.style.color='var(--lo)'">← Portfolio</a>
         <a href="index.html#contact" style="font-family:var(--mono);font-size:.72rem;color:var(--mid);transition:color .15s" onmouseover="this.style.color='var(--hi)'" onmouseout="this.style.color='var(--lo)'">Contact</a>
@@ -518,28 +518,34 @@ let currentPost = null;
 let generating = false;
 
 // ── CACHE KEY ──────────────────────────────────────────────
-const CACHE_KEY = 'mg-blog-posts';
-const CACHE_DATE_KEY = 'mg-blog-date';
-const DIGEST_KEY = 'mg-blog-digest';
+const CACHE_KEY = 'mg-blog-feed';
+const CACHE_DATE_KEY = 'mg-blog-feed-date';
+let feedDigest = '';
+let feedDate = '';
 
 function todayStr() {
   return new Date().toISOString().split('T')[0];
 }
 
-// ── AI: GENERATE POSTS ─────────────────────────────────────
+function fmtDate(iso) {
+  const d = new Date(iso);
+  return isNaN(d.getTime()) ? '' : d.toLocaleDateString('en-CA', { month: 'short', day: 'numeric' });
+}
+
+// ── FEED: LOAD CURATED POSTS ───────────────────────────────
+// Posts are curated server-side (api/blog-feed.js): real RSS headlines with
+// real dates and source links, plus AI-written context. One generation per
+// day, shared by all visitors.
 async function generatePosts(forceRefresh = false) {
   if (generating) return;
 
-  // Check cache only regenerate if new day or forced
   const cachedDate = localStorage.getItem(CACHE_DATE_KEY);
-  const cachedPosts = localStorage.getItem(CACHE_KEY);
-  if (!forceRefresh && cachedDate === todayStr() && cachedPosts) {
+  const cachedPayload = localStorage.getItem(CACHE_KEY);
+  if (!forceRefresh && cachedDate === todayStr() && cachedPayload) {
     try {
-      allPosts = JSON.parse(cachedPosts);
-      renderPosts();
-      generateDigest(false);
+      applyPayload(JSON.parse(cachedPayload));
       return;
-    } catch(e) { /* fall through to generate */ }
+    } catch(e) { /* fall through to fetch */ }
   }
 
   generating = true;
@@ -548,89 +554,45 @@ async function generatePosts(forceRefresh = false) {
   document.getElementById('skeletonLoader').style.display = 'flex';
   document.getElementById('skeletonLoader').style.flexDirection = 'column';
 
-  const today = new Date().toLocaleDateString('en-CA',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-  const thisMonth = new Date().toLocaleDateString('en-CA',{year:'numeric',month:'long'});
-  const lastMonth = new Date(Date.now()-30*24*60*60*1000).toLocaleDateString('en-CA',{year:'numeric',month:'long'});
-
-  const prompt = `You are a senior technology journalist and cloud architect writing for a professional tech blog called "Stack Signal" owned by Michael Twagirayezu, an IT Systems Engineer based in Toronto specialising in multi-cloud, DevSecOps, cybersecurity, and AI integration.
-
-Today is ${today}. You MUST search the web for technology news published in ${lastMonth} or ${thisMonth} only. Do not write about events older than 60 days.
-
-Search for real, specific headlines in each category below, then generate 9 blog post entries based on what you actually find.
-
-Categories: AI & Machine Learning (2 posts) Cloud Architecture (2 posts) Cybersecurity (1 post) DevSecOps (1 post) Data & Analytics (1 post) Tech for Good (1 post focusing on AI or tech helping underserved communities in Africa, Rwanda, or Canada) One additional post in whichever category has the most newsworthy story from the past 30 days.
-
-Return ONLY a valid JSON array (no markdown, no backticks, no extra text) in this exact format:
-[
-  {
-    "id": 1,
-    "title": "Article title here",
-    "category": "AI & Machine Learning",
-    "excerpt": "2-3 sentence compelling summary of the article that makes the reader want to read more.",
-    "readTime": "5 min read",
-    "tags": ["Tag1","Tag2","Tag3"],
-    "featured": true
-  },
-  ...
-]
-
-Only the FIRST post should have "featured": true. All others should have "featured": false.
-Make titles punchy and specific. Include real technology names, product names, and version numbers. Every article must be based on something you actually found via web search published in the past 60 days.
-The Tech for Good post must reference real specific use cases in agriculture, healthcare, education, or governance in Africa or Rwanda. Do not use dashes or em dashes in titles or summaries.`;
-
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 55000);
-
-    const res = await fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      signal: controller.signal,
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-5',
-        max_tokens: 1500,
-        enableWebSearch: true,
-        tool_choice: { type: 'tool', name: 'web_search' },
-        system: 'You have access to a web search tool. Always search the web for recent news before generating blog ideas. Only base articles on things you actually find in search results published in the past 60 days.',
-        messages: [{ role: 'user', content: prompt }]
-      })
-    });
+    // First request of the day generates the feed server-side (~60s); all
+    // later requests hit the shared cache and return instantly.
+    const timeout = setTimeout(() => controller.abort(), 70000);
+    const res = await fetch('/api/blog-feed', { signal: controller.signal });
     clearTimeout(timeout);
     if (!res.ok) throw new Error(`API ${res.status}`);
-    const data = await res.json();
-    const raw = data.content?.[0]?.text || '';
-    // Extract the JSON array even if Claude prefixes prose before it
-    const jsonMatch = raw.match(/\[[\s\S]*\]/);
-    if (!jsonMatch) throw new Error('No JSON array in response');
-    allPosts = JSON.parse(jsonMatch[0]);
+    const payload = await res.json();
+    if (!Array.isArray(payload.posts) || payload.posts.length === 0) throw new Error('Empty feed');
 
-    // Cache it
-    localStorage.setItem(CACHE_KEY, JSON.stringify(allPosts));
+    localStorage.setItem(CACHE_KEY, JSON.stringify(payload));
     localStorage.setItem(CACHE_DATE_KEY, todayStr());
-
-    renderPosts();
-    generateDigest(true);
+    applyPayload(payload);
 
   } catch(e) {
-    // Fallback: show hardcoded seed posts if AI fails
-    // Show a notice if Anthropic is overloaded
-    const isOverload = (e.message||'').toLowerCase().includes('overload') || (e.message||'').includes('529');
-    if (isOverload || true) {
-      // Show banner notice briefly
-      const banner = document.createElement('div');
-      banner.style.cssText = 'position:fixed;top:72px;left:50%;transform:translateX(-50%);background:var(--bg2);border:1px solid var(--line2);border-radius:12px;padding:10px 18px;font-family:var(--mono);font-size:.75rem;color:var(--mid);z-index:99;white-space:nowrap';
-      banner.textContent = '⏳ AI busy — showing cached articles. Try refreshing in a few minutes.';
-      document.body.appendChild(banner);
-      setTimeout(() => banner.remove(), 6000);
-    }
+    const banner = document.createElement('div');
+    banner.style.cssText = 'position:fixed;top:72px;left:50%;transform:translateX(-50%);background:var(--bg2);border:1px solid var(--line2);border-radius:12px;padding:10px 18px;font-family:var(--mono);font-size:.75rem;color:var(--mid);z-index:99;white-space:nowrap';
+    banner.textContent = '⏳ Feed unavailable — showing sample articles. Try refreshing in a minute.';
+    document.body.appendChild(banner);
+    setTimeout(() => banner.remove(), 6000);
     allPosts = getFallbackPosts();
+    feedDigest = '';
+    feedDate = '';
     renderPosts();
-    generateDigest(false);
+    renderDigest();
   }
 
   generating = false;
   btn.disabled = false;
   btn.classList.remove('spinning');
+}
+
+function applyPayload(payload) {
+  allPosts = payload.posts;
+  feedDigest = payload.digest || '';
+  feedDate = payload.date || todayStr();
+  renderPosts();
+  renderDigest();
 }
 
 // ── RENDER POSTS ───────────────────────────────────────────
@@ -644,7 +606,7 @@ function renderPosts() {
     : allPosts.filter(p => p.category === activeFilter);
 
   document.getElementById('postCount').textContent = allPosts.length;
-  document.getElementById('lastUpdated').textContent = new Date().toLocaleDateString('en-CA',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+  document.getElementById('lastUpdated').textContent = feedDate ? fmtDate(feedDate) : new Date().toLocaleDateString('en-CA',{month:'short',day:'numeric'});
   document.getElementById('filterCount').textContent = filtered.length + ' article' + (filtered.length !== 1 ? 's' : '');
 
   if (filtered.length === 0) {
@@ -672,9 +634,9 @@ function renderPosts() {
         <p class="excerpt">${escTxt(post.excerpt)}</p>
         <div class="card-meta">
           ${(post.tags||[]).slice(0,3).map(t=>`<span class="card-tag ${cfg.tagClass}">${escTxt(t)}</span>`).join('')}
-          <span class="card-date">${todayStr()}</span>
-          <span class="card-read">${escTxt(post.readTime||'4 min read')}</span>
-          <span class="card-ai-badge">✦ AI-Written · Web-Researched</span>
+          <span class="card-date">${post.pubDate ? fmtDate(post.pubDate) : todayStr()}</span>
+          <span class="card-read">${escTxt(post.source||'Stack Signal')}</span>
+          <span class="card-ai-badge">✦ Curated · AI summary</span>
         </div>`;
       card.addEventListener('click', () => openArticle(post));
       feed.appendChild(card);
@@ -691,8 +653,8 @@ function renderPosts() {
             <p>${escTxt(post.excerpt)}</p>
             <div class="card-footer">
               <span class="card-tag ${cfg.tagClass}" style="border-color:${cfg.color};color:${cfg.color}">${escTxt(post.category)}</span>
-              <span class="card-date">${todayStr()}</span>
-              <span class="card-read">${escTxt(post.readTime||'4 min read')}</span>
+              <span class="card-date">${post.pubDate ? fmtDate(post.pubDate) : todayStr()}</span>
+              <span class="card-read">${escTxt(post.source||'Stack Signal')}</span>
             </div>
           </div>
           <span class="card-arrow">→</span>
@@ -793,78 +755,43 @@ async function openArticle(post) {
   tagEl.textContent = post.category;
   const dateEl = document.createElement('span');
   dateEl.className = 'card-date';
-  dateEl.textContent = todayStr();
-  const readEl = document.createElement('span');
-  readEl.className = 'card-read';
-  readEl.textContent = post.readTime || '4 min read';
+  dateEl.textContent = post.pubDate ? fmtDate(post.pubDate) : todayStr();
+  const srcEl = document.createElement('span');
+  srcEl.className = 'card-read';
+  srcEl.textContent = post.source || 'Stack Signal';
   const aiEl = document.createElement('span');
   aiEl.className = 'card-ai-badge';
-  aiEl.textContent = '✦ AI-Written · Web-Researched';
-  meta.appendChild(tagEl); meta.appendChild(dateEl); meta.appendChild(readEl); meta.appendChild(aiEl);
+  aiEl.textContent = '✦ AI summary of a real story';
+  meta.appendChild(tagEl); meta.appendChild(dateEl); meta.appendChild(srcEl); meta.appendChild(aiEl);
 
-  // Show loading
+  // Render the curated brief instantly (written server-side from the real
+  // headline) — no API call, no generated "article".
   const body = document.getElementById('artBody');
-  body.className = '';
-  body.innerHTML = '<div class="art-loading"><div class="art-loading-dots"><span></span><span></span><span></span></div><span>Claude AI is writing this article…</span></div>';
+  body.innerHTML = '';
+  body.className = 'art-modal-body';
+
+  const briefText = post.brief || post.excerpt || 'Summary unavailable.';
+  for (const para of briefText.split(/\n{2,}/)) {
+    const p = document.createElement('p');
+    p.textContent = para.trim();
+    if (p.textContent) body.appendChild(p);
+  }
+
+  if (post.url && /^https:\/\//.test(post.url)) {
+    const linkP = document.createElement('p');
+    linkP.style.marginTop = '20px';
+    const link = document.createElement('a');
+    link.href = post.url;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.style.cssText = 'color:var(--blue);font-weight:600;text-decoration:none';
+    link.textContent = `Read the original at ${post.source || 'the source'} →`;
+    linkP.appendChild(link);
+    body.appendChild(linkP);
+  }
 
   modal.classList.add('open');
   document.body.style.overflow = 'hidden';
-
-  // Generate full article with Claude
-  try {
-    const artController = new AbortController();
-    const artTimeout = setTimeout(() => artController.abort(), 35000);
-    const res = await fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      signal: artController.signal,
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-5',
-        max_tokens: 800,
-        messages: [{
-          role: 'user',
-          content: `Write a concise, insightful blog article for senior IT professionals.
-
-Title: ${post.title}
-Category: ${post.category}
-Tags: ${(post.tags||[]).join(', ')}
-Summary: ${post.excerpt}
-
-STRICT requirements: MAXIMUM 350 words total stop writing at 350 words Professional but engaging tone Structure: one intro paragraph, two h3 subheadings with 2-3 sentences each, one short conclusion paragraph Include specific technical details and product names NO lengthy lists, NO "Key Takeaway" section, NO filler
-
-Format as HTML using ONLY: <p>, <h3>, <ul>, <li>, <strong>
-Do NOT include any outer wrapper tags.
-Do NOT use dashes, em dashes, or hyphens as connectors in sentences. Use plain sentences instead.`
-        }]
-      })
-    });
-    clearTimeout(artTimeout);
-    if (!res.ok) throw new Error(`API ${res.status}`);
-    const data = await res.json();
-    const articleHTML = data.content?.[0]?.text || '<p>Article content unavailable.</p>';
-
-    // Sanitise strict allowlist
-    const ALLOWED_TAGS  = new Set(['P','H3','H4','UL','OL','LI','STRONG','EM','BR','BLOCKQUOTE']);
-    const tmp = document.createElement('div');
-    tmp.innerHTML = articleHTML;
-    tmp.querySelectorAll('*').forEach(el => {
-      if (!ALLOWED_TAGS.has(el.tagName)) {
-        el.replaceWith(document.createTextNode(el.textContent));
-        return;
-      }
-      [...el.attributes].forEach(attr => el.removeAttribute(attr.name));
-    });
-
-    // Always clear loading state before showing content
-    body.innerHTML = '';
-    body.className = 'art-modal-body';
-    body.appendChild(tmp);
-
-  } catch(e) {
-    body.innerHTML = '';
-    body.className = 'art-modal-body';
-    body.innerHTML = '<p style="color:var(--mid)">Unable to load article. Please try again.</p>';
-  }
 }
 
 function closeArticle() {
@@ -911,37 +838,19 @@ document.getElementById('artShare').addEventListener('click', () => {
   }
 });
 
-// ── AI DAILY DIGEST ────────────────────────────────────────
-async function generateDigest(forceRefresh) {
-  const cached = localStorage.getItem(DIGEST_KEY + todayStr());
-  if (!forceRefresh && cached) {
-    document.getElementById('digestText').textContent = cached;
-    document.getElementById('digestFooter').textContent = 'Generated ' + new Date().toLocaleDateString();
-    document.querySelector('.ai-digest-label').textContent = 'Live · Updated today';
-    return;
-  }
-
-  try {
-    const res = await fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-5',
-        max_tokens: 200,
-        messages: [{
-          role: 'user',
-          content: `Write a 2-sentence "Today in Tech" digest for ${new Date().toLocaleDateString('en-CA',{weekday:'long',month:'long',day:'numeric'})}. Focus on the most significant AI, cloud, or security development happening right now. Be specific and name real products, companies, or events. Start directly with the insight no intro phrases like "Today" or "In tech today".`
-        }]
-      })
-    });
-    const data = await res.json();
-    const digest = data.content?.[0]?.text || 'Tech trends are evolving rapidly across AI, cloud, and security domains.';
-    document.getElementById('digestText').textContent = digest;
-    document.getElementById('digestFooter').textContent = 'Generated ' + new Date().toLocaleTimeString();
-    document.querySelector('.ai-digest-label').textContent = 'Live · Just now';
-    localStorage.setItem(DIGEST_KEY + todayStr(), digest);
-  } catch(e) {
-    document.getElementById('digestText').textContent = 'Connect to see today\'s AI-generated tech digest.';
+// ── DAILY DIGEST (from the curated feed — no extra API call) ──
+function renderDigest() {
+  const text = document.getElementById('digestText');
+  const footer = document.getElementById('digestFooter');
+  const label = document.querySelector('.ai-digest-label');
+  if (feedDigest) {
+    text.textContent = feedDigest;
+    footer.textContent = 'From today\'s curated stories · ' + (feedDate ? fmtDate(feedDate) : new Date().toLocaleDateString());
+    label.textContent = 'Live · Updated daily';
+  } else {
+    text.textContent = 'Digest unavailable right now. Browse today\'s curated stories below.';
+    footer.textContent = '';
+    label.textContent = 'Curated feed';
   }
 }
 
@@ -1007,7 +916,6 @@ document.getElementById('nlBtn').addEventListener('click', async () => {
 document.getElementById('refreshBtn').addEventListener('click', () => {
   localStorage.removeItem(CACHE_KEY);
   localStorage.removeItem(CACHE_DATE_KEY);
-  localStorage.removeItem(DIGEST_KEY + todayStr());
   generatePosts(true);
 });
 

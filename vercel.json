@@ -1,12 +1,16 @@
 {
   "functions": {
     "api/chat.js":           { "maxDuration": 60 },
+    "api/blog-feed.js":      { "maxDuration": 60 },
     "api/db.js":             { "maxDuration": 30 },
     "api/analytics-auth.js": { "maxDuration": 10 },
     "api/send-digest.js":    { "maxDuration": 60 },
     "api/stats.js":          { "maxDuration": 15 },
     "api/visitors.js":       { "maxDuration": 10 }
   },
+  "crons": [
+    { "path": "/api/blog-feed", "schedule": "5 6 * * *" }
+  ],
   "rewrites": [
     { "source": "/stats",     "destination": "/stats.html" },
     { "source": "/analytics", "destination": "/analytics.html" }
