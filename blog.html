@@ -528,7 +528,9 @@ function todayStr() {
 }
 
 function fmtDate(iso) {
-  const d = new Date(iso);
+  // Date-only strings parse as UTC midnight and shift back a day in negative
+  // UTC offsets (Toronto) — anchor them to midday instead.
+  const d = new Date(/^\d{4}-\d{2}-\d{2}$/.test(iso) ? iso + 'T12:00:00' : iso);
   return isNaN(d.getTime()) ? '' : d.toLocaleDateString('en-CA', { month: 'short', day: 'numeric' });
 }
 
