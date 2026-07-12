@@ -36,6 +36,7 @@ Bio/
 ├── sw.js                    # Service Worker (offline caching)
 ├── api/
 │   ├── chat.js              # Anthropic API proxy — model forced, key hidden
+│   ├── blog-feed.js         # Curated blog feed — real RSS headlines + 1 Claude call/day, cached in Supabase (blog_feed_cache)
 │   ├── db.js                # Supabase proxy + Resend email
 │   ├── analytics-auth.js    # Server-side analytics password verification
 │   └── send-digest.js       # Email digest sender (cron/manual trigger)
