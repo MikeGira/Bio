@@ -18,7 +18,9 @@ function readFile(filePath) {
 function extractFeatures() {
   const html = readFile('index.html');
 
-  const systemMatch = html.match(/const SYSTEM\s*=\s*`([\s\S]*?)`;/);
+  // SYSTEM prompt lives in the shared widget since the phoenix.js extraction (PR #32)
+  const widget = readFile('phoenix.js');
+  const systemMatch = widget.match(/const SYSTEM\s*=\s*`([\s\S]*?)`;/);
   const systemPrompt = systemMatch ? systemMatch[1].trim() : '';
 
   const skillMatches = [...html.matchAll(/<span class="tag">([^<]+)<\/span>/g)];
@@ -114,7 +116,7 @@ ${findings}
 ### Next Steps
 
 1. Review the findings above
-2. Update the \`const SYSTEM\` template literal in \`index.html\` (~line 1874)
+2. Update the \`const SYSTEM\` template literal in \`phoenix.js\` (shared widget, top of file)
 3. Close this issue once the prompt is updated
 
 ---
@@ -139,7 +141,7 @@ async function main() {
   const { systemPrompt, skills, projects } = extractFeatures();
 
   if (!systemPrompt) {
-    console.error('Could not extract SYSTEM prompt from index.html — check the file.');
+    console.error('Could not extract SYSTEM prompt from phoenix.js — check the file.');
     process.exit(1);
   }
 
