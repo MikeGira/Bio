@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; frame-ancestors 'none';"/>
 <meta name="referrer" content="strict-origin-when-cross-origin"/>
 <meta http-equiv="X-Content-Type-Options" content="nosniff"/>
-<meta name="description" content="Michael Twagirayezu's Tech Blog — AI-powered insights on cloud, DevSecOps, cybersecurity, and the future of technology."/>
+<meta name="description" content="Michael Twagirayezu's Tech Blog: the stories shaping cloud, DevSecOps, cybersecurity, and AI, curated daily from trusted sources."/>
 <meta property="og:title" content="Stack Signal | Michael Twagirayezu"/>
 <meta property="og:type" content="website"/>
 <title>Stack Signal | Michael Twagirayezu</title>
@@ -574,7 +574,7 @@ async function generatePosts(forceRefresh = false) {
   } catch(e) {
     const banner = document.createElement('div');
     banner.style.cssText = 'position:fixed;top:72px;left:50%;transform:translateX(-50%);background:var(--bg2);border:1px solid var(--line2);border-radius:12px;padding:10px 18px;font-family:var(--mono);font-size:.75rem;color:var(--mid);z-index:99;white-space:nowrap';
-    banner.textContent = '⏳ Feed unavailable — showing sample articles. Try refreshing in a minute.';
+    banner.textContent = 'Feed unavailable. Showing sample articles; try refreshing in a minute.';
     document.body.appendChild(banner);
     setTimeout(() => banner.remove(), 6000);
     allPosts = getFallbackPosts();

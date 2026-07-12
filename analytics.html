@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <meta name="robots" content="noindex,nofollow"/>
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; frame-ancestors 'none';"/>
-<title>Analytics — Stack Signal</title>
+<title>Analytics | Stack Signal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
@@ -390,10 +390,10 @@ async function loadData(token) {
     const banner = document.getElementById('errBanner');
     const is401 = err.message.includes('401');
     banner.textContent = is401
-      ? 'Session expired — please sign out and log in again.'
+      ? 'Session expired. Please sign out and log in again.'
       : 'Could not load data: ' + err.message;
     banner.classList.add('visible');
-    document.getElementById('lastRefresh').textContent = 'Error — data not loaded';
+    document.getElementById('lastRefresh').textContent = 'Error: data not loaded';
     // Do NOT fall back to demo data — it masks real failures
   } finally {
     const btn2 = document.getElementById('refreshBtn');
@@ -549,7 +549,7 @@ async function openDigestModal() {
   document.getElementById('digestRecipientCount').textContent =
     digestSubCount > 0
       ? `Will be sent to ${digestSubCount} subscriber${digestSubCount !== 1 ? 's' : ''}`
-      : 'No subscribers yet — add some first';
+      : 'No subscribers yet. Add some first.';
 
   const preview = document.getElementById('digestPostPreview');
   const subjectEl = document.getElementById('digestSubject');
