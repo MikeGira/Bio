@@ -3,6 +3,8 @@ name: MikeGira — Security Scan & Deploy
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -60,6 +62,8 @@ jobs:
   confirm-deploy:
     name: Confirm Vercel Deployment
     needs: [secret-scan, code-scan]
+    # Production smoke test only makes sense after a push to main has deployed.
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - name: Security gate passed
