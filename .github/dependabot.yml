@@ -5,3 +5,11 @@ updates:
     schedule:
       interval: monthly
     open-pull-requests-limit: 3
+
+  # Keeps SHA-pinned actions current (Dependabot updates the pin and the
+  # version comment together), so pinning never goes stale.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
