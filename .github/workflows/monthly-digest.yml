@@ -1,0 +1,82 @@
+name: Monthly Digest
+
+# Triggers the Stack Signal subscriber digest on the 1st of each month.
+# This replaces the bio-monthly-digest cloud routine's direct POST, which
+# was double-broken: the sandbox egress proxy blocks *.vercel.app, and
+# /api/send-digest requires an analytics Bearer token plus a posts payload.
+# Requires the ANALYTICS_PASSWORD repo secret (same value as the Vercel
+# env var): gh secret set ANALYTICS_PASSWORD -R MikeGira/Bio
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '7 10 1 * *'
+
+permissions:
+  contents: read
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    env:
+      SITE: https://bio-two-eta.vercel.app
+    steps:
+      - name: Send digest
+        env:
+          ANALYTICS_PASSWORD: ${{ secrets.ANALYTICS_PASSWORD }}
+        run: |
+          if [ -z "$ANALYTICS_PASSWORD" ]; then
+            echo "::error::ANALYTICS_PASSWORD secret is not set. One-time setup: gh secret set ANALYTICS_PASSWORD -R MikeGira/Bio (use the same value as the Vercel env var)."
+            exit 1
+          fi
+
+          TOKEN=$(jq -n --arg p "$ANALYTICS_PASSWORD" '{password: $p}' \
+            | curl -fsS -X POST "$SITE/api/analytics-auth" \
+                -H 'Content-Type: application/json' -d @- \
+            | jq -r '.token')
+          if [ -z "$TOKEN" ] || [ "$TOKEN" = "null" ]; then
+            echo "::error::Failed to obtain analytics auth token."
+            exit 1
+          fi
+          echo "::add-mask::$TOKEN"
+
+          PAYLOAD=$(curl -fsS "$SITE/api/blog-feed" | jq '{posts: .posts}')
+          COUNT=$(echo "$PAYLOAD" | jq '.posts | length')
+          if [ "$COUNT" -lt 1 ]; then
+            echo "::error::Blog feed returned no posts — nothing to send."
+            exit 1
+          fi
+          echo "Sending digest with $COUNT posts..."
+
+          RESPONSE=$(echo "$PAYLOAD" | curl -fsS -X POST "$SITE/api/send-digest" \
+            -H "Authorization: Bearer $TOKEN" \
+            -H 'Content-Type: application/json' -d @-)
+          echo "$RESPONSE" | jq .
+          SENT=$(echo "$RESPONSE" | jq -r '.sent // 0')
+          FAILED=$(echo "$RESPONSE" | jq -r '.failed // 0')
+          echo "Digest result: sent=$SENT failed=$FAILED"
+          if [ "$FAILED" -gt 0 ] && [ "$SENT" -eq 0 ]; then
+            echo "::error::Digest failed for every subscriber."
+            exit 1
+          fi
+
+      - name: Open issue on failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh label create digest --color d93f0b --description "Automated digest delivery findings" -R "$REPO" 2>/dev/null || true
+          TODAY=$(date -u +%F)
+          BODY="The monthly subscriber digest failed to send on $TODAY. See the run log: $RUN_URL
+
+          Most common cause: the ANALYTICS_PASSWORD repo secret is missing or no longer matches the Vercel env var. Fix: gh secret set ANALYTICS_PASSWORD -R $REPO then re-run the workflow (workflow_dispatch)."
+          EXISTING=$(gh issue list -R "$REPO" --label digest --state open --json number --jq '.[0].number')
+          if [ -n "$EXISTING" ]; then
+            gh issue comment "$EXISTING" -R "$REPO" --body "$BODY"
+          else
+            gh issue create -R "$REPO" --label digest --title "Monthly digest failed to send [$TODAY]" --body "$BODY"
+          fi

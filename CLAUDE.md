@@ -42,7 +42,12 @@ Bio/
 │   └── send-digest.js       # Email digest sender (cron/manual trigger)
 ├── schema.sql               # PostgreSQL schema — RLS, indexes
 ├── .github/workflows/
-│   └── deploy.yml           # CI/CD: Gitleaks + CodeQL + Vercel smoke test
+│   ├── deploy.yml           # CI/CD: Gitleaks + CodeQL + Vercel smoke test
+│   ├── site-health.yml      # Scheduled prod probes (6h) — uptime, headers, API; deduped issue on failure
+│   ├── monthly-digest.yml   # Sends subscriber digest on the 1st (needs ANALYTICS_PASSWORD repo secret)
+│   ├── workflow-health.yml  # Auto-heals disabled/stale scheduled workflows daily
+│   ├── workflow-lint.yml    # zizmor gate on workflow changes
+│   └── ai-audit.yml         # Phoenix prompt audit + code quality + Semgrep
 ├── vercel.json              # Vercel config — routes, security headers
 ├── DEPLOY.md                # Step-by-step deployment guide
 └── README.md
