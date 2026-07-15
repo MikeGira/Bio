@@ -1,4 +1,4 @@
-# MikeGira.dev — Michael Twagirayezu
+# bio.makinyx.com — Michael Twagirayezu
 
 > **IT Systems Engineer · Multi-Cloud Architect · AI Solutions Innovator · Toronto, ON**
 
