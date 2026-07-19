@@ -1404,7 +1404,7 @@ resize();initStars();drawStars();
 window.addEventListener('resize',()=>{resize();initStars()});
 
 // TYPED TEXT
-const roles=['IT Systems Engineer','Multi-Cloud Architect','DevSecOps Practitioner','AI Solutions Innovator','Cybersecurity Specialist','Automation Engineer'];
+const roles=['IT Systems Engineer','Microsoft 365 & Intune Specialist','Multi-Cloud Architect','DevSecOps Practitioner','AI Solutions Innovator','Cybersecurity Specialist','Automation Engineer'];
 let ri=0,ci=0,del=false;
 const tel=document.getElementById('typedText');
 function type(){const r=roles[ri];if(!del){tel.textContent=r.slice(0,++ci);if(ci===r.length){del=true;setTimeout(type,2000);return}}else{tel.textContent=r.slice(0,--ci);if(ci===0){del=false;ri=(ri+1)%roles.length}}setTimeout(type,del?38:68)}
