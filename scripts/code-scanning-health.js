@@ -35,8 +35,10 @@ async function gh(path, options = {}) {
   });
 }
 
-// Newest-first. Group by tool: newest/oldest timestamps, the newest analysis id
-// (delete entry point), and whether any analysis on the default branch errored.
+// Group tools by their default-branch (refs/heads/main) state only — PR-ref
+// analyses are ephemeral and never drive the security overview's config status.
+// `errored` reflects the tool's *newest* analysis, not any historical one: a
+// long-fixed transient error must not keep flagging a now-healthy tool.
 async function collectTools() {
   const tools = new Map();
   for (let page = 1; page <= MAX_PAGES; page++) {
@@ -46,12 +48,16 @@ async function collectTools() {
     const rows = await res.json();
     if (rows.length === 0) break;
     for (const a of rows) {
+      if (a.ref !== 'refs/heads/main') continue;
       const name = a.tool?.name ?? 'unknown';
       const t = tools.get(name) ?? { name, newest: 0, newestId: null, count: 0, errored: false };
-      const ts = Date.parse(a.created_at);
-      if (ts > t.newest) { t.newest = ts; t.newestId = a.id; }
       t.count++;
-      if (a.error && a.error.trim() && a.ref === 'refs/heads/main') t.errored = true;
+      const ts = Date.parse(a.created_at);
+      if (ts > t.newest) {
+        t.newest = ts;
+        t.newestId = a.id;
+        t.errored = !!(a.error && a.error.trim());
+      }
       tools.set(name, t);
     }
     if (rows.length < 100) break;
