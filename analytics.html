@@ -194,7 +194,7 @@ body{font-family:var(--font);background:var(--bg0);color:var(--hi);min-height:10
         <div class="stat-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ee0000" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
         </div>
-        <div class="stat-num" id="totalContacts">—</div>
+        <div class="stat-num" id="totalContacts">…</div>
         <div class="stat-label">Contact Submissions</div>
         <div class="stat-sub">All time</div>
       </div>
@@ -202,7 +202,7 @@ body{font-family:var(--font);background:var(--bg0);color:var(--hi);min-height:10
         <div class="stat-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.43 19.79 19.79 0 01.22 5a2 2 0 012-2.18h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8 9.91a16 16 0 006 6l.46-.46a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 17.68z"/></svg>
         </div>
-        <div class="stat-num" id="totalSubs">—</div>
+        <div class="stat-num" id="totalSubs">…</div>
         <div class="stat-label">Newsletter Subscribers</div>
         <div class="stat-sub">Active</div>
       </div>
@@ -210,7 +210,7 @@ body{font-family:var(--font);background:var(--bg0);color:var(--hi);min-height:10
         <div class="stat-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
         </div>
-        <div class="stat-num" id="totalPageViews">—</div>
+        <div class="stat-num" id="totalPageViews">…</div>
         <div class="stat-label">Total Page Views</div>
         <div class="stat-sub">Index + Blog</div>
       </div>
@@ -218,7 +218,7 @@ body{font-family:var(--font);background:var(--bg0);color:var(--hi);min-height:10
         <div class="stat-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
         </div>
-        <div class="stat-num" id="totalBlogViews">—</div>
+        <div class="stat-num" id="totalBlogViews">…</div>
         <div class="stat-label">Blog Article Reads</div>
         <div class="stat-sub">All articles</div>
       </div>
@@ -229,7 +229,7 @@ body{font-family:var(--font);background:var(--bg0);color:var(--hi);min-height:10
       <div class="panel">
         <div class="panel-head">
           <h2>Page Views</h2>
-          <span class="panel-badge" id="pageViewsBadge">—</span>
+          <span class="panel-badge" id="pageViewsBadge">…</span>
         </div>
         <div class="panel-body" id="pageViewsBody">
           <div class="empty">Loading…</div>
@@ -238,7 +238,7 @@ body{font-family:var(--font);background:var(--bg0);color:var(--hi);min-height:10
       <div class="panel">
         <div class="panel-head">
           <h2>Top Blog Articles</h2>
-          <span class="panel-badge" id="blogBadge">—</span>
+          <span class="panel-badge" id="blogBadge">…</span>
         </div>
         <div class="panel-body" id="blogBody">
           <div class="empty">Loading…</div>
@@ -251,7 +251,7 @@ body{font-family:var(--font);background:var(--bg0);color:var(--hi);min-height:10
       <div class="panel panel-full">
         <div class="panel-head">
           <h2>Contact Submissions</h2>
-          <span class="panel-badge" id="contactBadge">—</span>
+          <span class="panel-badge" id="contactBadge">…</span>
         </div>
         <div class="panel-body" id="contactBody">
           <div class="empty">Loading…</div>
@@ -265,7 +265,7 @@ body{font-family:var(--font);background:var(--bg0);color:var(--hi);min-height:10
         <div class="panel-head">
           <h2>Newsletter Subscribers</h2>
           <div style="display:flex;align-items:center;gap:8px">
-            <span class="panel-badge" id="subsBadge">—</span>
+            <span class="panel-badge" id="subsBadge">…</span>
             <button class="refresh-btn" id="sendDigestBtn" style="background:var(--red);color:#fff;border-color:var(--red);gap:6px" title="Send digest email to all subscribers">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
               Send Digest
@@ -312,7 +312,7 @@ body{font-family:var(--font);background:var(--bg0);color:var(--hi);min-height:10
 </div><!-- /dash -->
 
 <script>
-// ── AUTH — password verified server-side only ───────────────
+// ── AUTH - password verified server-side only ───────────────
 // No password is stored in this file. It lives in Vercel env vars as ANALYTICS_PASSWORD.
 const loginScreen = document.getElementById('loginScreen');
 const dashboard   = document.getElementById('dashboard');
@@ -394,7 +394,7 @@ async function loadData(token) {
       : 'Could not load data: ' + err.message;
     banner.classList.add('visible');
     document.getElementById('lastRefresh').textContent = 'Error: data not loaded';
-    // Do NOT fall back to demo data — it masks real failures
+    // Do NOT fall back to demo data - it masks real failures
   } finally {
     const btn2 = document.getElementById('refreshBtn');
     if (btn2) { btn2.classList.remove('spinning'); btn2.disabled = false; }
@@ -494,12 +494,12 @@ function escHtml(str) {
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 function fmtDate(iso) {
-  if (!iso) return '—';
+  if (!iso) return '…';
   const d = new Date(iso);
   return d.toLocaleDateString('en-CA', { month:'short', day:'numeric', year:'numeric', hour:'2-digit', minute:'2-digit' });
 }
 function animateNum(id, target) {
-  // Set directly — no animation so it's clear the number changed
+  // Set directly - no animation so it's clear the number changed
   const el = document.getElementById(id);
   if (el) el.textContent = (target || 0).toLocaleString();
 }
@@ -566,7 +566,7 @@ async function openDigestModal() {
   if (digestPosts.length) {
     renderDigestPreview(preview, subjectEl);
   } else {
-    // Cache not available (different domain or first visit) — fetch fresh from API
+    // Cache not available (different domain or first visit) - fetch fresh from API
     preview.innerHTML = `<div style="color:var(--mid);font-family:var(--mono);font-size:.75rem">Fetching latest articles…</div>`;
     subjectEl.value = 'Stack Signal: Latest from the blog';
     try {

@@ -286,8 +286,8 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;backdrop-filter:blur(20px);-
           <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13.5 8A5.5 5.5 0 1 1 8 2.5V1M8 1L10 3M8 1L6 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           Refresh feed
         </button>
-        <div class="blog-hero-stat"><strong id="postCount">—</strong> articles</div>
-        <div class="blog-hero-stat">Updated: <strong id="lastUpdated">—</strong></div>
+        <div class="blog-hero-stat"><strong id="postCount">…</strong> articles</div>
+        <div class="blog-hero-stat">Updated: <strong id="lastUpdated">…</strong></div>
       </div>
     </div>
   </div>
@@ -465,7 +465,7 @@ function todayStr() {
 
 function fmtDate(iso) {
   // Date-only strings parse as UTC midnight and shift back a day in negative
-  // UTC offsets (Toronto) — anchor them to midday instead.
+  // UTC offsets (Toronto) - anchor them to midday instead.
   const d = new Date(/^\d{4}-\d{2}-\d{2}$/.test(iso) ? iso + 'T12:00:00' : iso);
   return isNaN(d.getTime()) ? '' : d.toLocaleDateString('en-CA', { month: 'short', day: 'numeric' });
 }
@@ -630,7 +630,7 @@ window.addEventListener('hashchange', () => {
   checkHashAndOpen();
 });
 
-// ── TRENDING TOPICS — click opens Phoenix asking about that topic ──
+// ── TRENDING TOPICS - click opens Phoenix asking about that topic ──
 document.getElementById('trendList').addEventListener('click', e => {
   const item = e.target.closest('.trend-item[data-topic]');
   if (!item) return;
@@ -662,7 +662,7 @@ async function openArticle(post) {
   const modal = document.getElementById('artModal');
   const cfg = CAT_CONFIG[post.category] || {tagClass:'tag-cloud'};
 
-  // Write article ID into URL hash — makes the link shareable
+  // Write article ID into URL hash - makes the link shareable
   history.replaceState(null, '', '#article-' + post.id);
 
   // Use a stable slug from the title as post_id (not fragile 1-9 number)
@@ -697,7 +697,7 @@ async function openArticle(post) {
   meta.appendChild(tagEl); meta.appendChild(dateEl); meta.appendChild(srcEl); meta.appendChild(aiEl);
 
   // Render the curated brief instantly (written server-side from the real
-  // headline) — no API call, no generated "article".
+  // headline) - no API call, no generated "article".
   const body = document.getElementById('artBody');
   body.innerHTML = '';
   body.className = 'art-modal-body';
@@ -763,14 +763,14 @@ document.getElementById('artShare').addEventListener('click', () => {
   if (navigator.share) {
     navigator.share({ title: currentPost.title, text: currentPost.excerpt, url });
   } else {
-    // Fallback — copy the share URL
+    // Fallback - copy the share URL
     navigator.clipboard.writeText(url).catch(() => {});
     document.getElementById('artShare').textContent = 'Link Copied!';
     setTimeout(() => document.getElementById('artShare').textContent = 'Share', 2000);
   }
 });
 
-// ── DAILY DIGEST (from the curated feed — no extra API call) ──
+// ── DAILY DIGEST (from the curated feed - no extra API call) ──
 function renderDigest() {
   const text = document.getElementById('digestText');
   const footer = document.getElementById('digestFooter');
