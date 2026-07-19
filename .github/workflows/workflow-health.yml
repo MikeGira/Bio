@@ -4,6 +4,7 @@ name: Workflow Health Guard
 # - re-enables workflows GitHub disabled for 60-day repo inactivity
 # - keepalive-pings scheduled workflows so the 60-day clock never expires
 # - flags manually disabled or stale-scheduled workflows via a deduped issue
+# - clears orphaned code-scanning tools that trigger "configuration error"
 on:
   workflow_dispatch:
   schedule:
@@ -19,6 +20,7 @@ jobs:
       contents: read
       actions: write
       issues: write
+      security-events: write # delete orphaned code-scanning analyses
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
@@ -33,3 +35,9 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
         run: node scripts/workflow-health.js
+      - name: Check code-scanning configuration health
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: node scripts/code-scanning-health.js
