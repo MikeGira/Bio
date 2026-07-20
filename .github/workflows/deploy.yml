@@ -10,6 +10,14 @@ on:
 permissions:
   contents: read
 
+# Serialize runs per ref so two overlapping runs never upload CodeQL SARIF for
+# the same commit concurrently. Racing uploads are what produced the benign
+# "unsuccessful execution, exit code: 0" errored analyses that GitHub then
+# surfaces on the security overview as "CodeQL is reporting errors".
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   # ── 1. SECRET DETECTION ──────────────────────────────────────────────
   secret-scan:

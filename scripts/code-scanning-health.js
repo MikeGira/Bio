@@ -42,8 +42,10 @@ async function gh(path, options = {}) {
 
 // Group default-branch (refs/heads/main) analyses by configuration - the
 // (tool, category) tuple GitHub's tool-status page keys on. PR-ref analyses are
-// ephemeral and never drive the overview. `errored` reflects each config's
-// *newest* analysis only, so a long-fixed transient error stops flagging.
+// ephemeral and never drive the overview. `anyErrored` tracks whether *any*
+// analysis in the config errored: GitHub's overview aggregates errors across a
+// config's whole history, so a clean latest scan does not clear an old errored
+// one - it must be surfaced (and, at the source, prevented via `concurrency`).
 async function collectConfigs() {
   const configs = new Map();
   for (let page = 1; page <= MAX_PAGES; page++) {
@@ -57,13 +59,13 @@ async function collectConfigs() {
       const tool = a.tool?.name ?? 'unknown';
       const category = a.category ?? a.analysis_key ?? '(default)';
       const key = `${tool}::${category}`;
-      const c = configs.get(key) ?? { tool, category, newest: 0, newestId: null, count: 0, errored: false };
+      const c = configs.get(key) ?? { tool, category, newest: 0, newestId: null, count: 0, anyErrored: false };
       c.count++;
+      if (a.error && a.error.trim()) c.anyErrored = true;
       const ts = Date.parse(a.created_at);
       if (ts > c.newest) {
         c.newest = ts;
         c.newestId = a.id;
-        c.errored = !!(a.error && a.error.trim());
       }
       configs.set(key, c);
     }
@@ -173,9 +175,9 @@ async function main() {
       const deleted = await deleteConfigAnalyses(c.newestId);
       findings.push(`**Auto-remediated:** \`${label}\` was an orphaned configuration - its newest analysis lagged the active scan by ${Math.floor(lagDays)} days (threshold ${STALE_DAYS}). Deleted ${deleted} stale ${deleted === 1 ? 'analysis' : 'analyses'}, clearing the "out of date"/"configuration error" flag.`);
       console.log(`${label}: orphaned (lag ${Math.floor(lagDays)}d) -> deleted ${deleted}`);
-    } else if (c.errored) {
-      findings.push(`**Live configuration erroring:** \`${label}\` is still updating but its newest analysis reported an error. Fix the scanner's workflow or remove it - not auto-deleted (it may still be wanted).`);
-      console.log(`${label}: live but erroring - flagged`);
+    } else if (c.anyErrored) {
+      findings.push(`**Errored analyses in a live configuration:** \`${label}\` has one or more errored analyses in its history (GitHub aggregates these into the overview's "reporting errors" banner even when the latest scan is clean). Usually a benign "exit code: 0" upload race - confirm \`concurrency\` is set on the scanning workflow, then delete the errored analyses newest-first down through them (\`gh api -X DELETE .../code-scanning/analyses/<id>?confirm_delete=true\`). Not auto-deleted: removing mid-history analyses also drops newer ones.`);
+      console.log(`${label}: has errored analyses in history - flagged`);
       needsHuman = true;
     } else {
       console.log(`${label}: healthy (${c.count} analyses, newest lag ${lagDays.toFixed(1)}d)`);
