@@ -78,7 +78,9 @@ export default async function handler(req, res) {
     model: 'claude-sonnet-4-6',
     messages,
     max_tokens: Math.min(Number(max_tokens) || 1024, 4096),
-    ...(system && typeof system === 'string' ? { system: system.slice(0, 10000) } : {}),
+    // 16k, not 10k: the Phoenix prompt carries accuracy constraints that must never be silently
+    // truncated away. Raised Jul 28 2026 after the prompt outgrew the old cap.
+    ...(system && typeof system === 'string' ? { system: system.slice(0, 16000) } : {}),
     ...(useWebSearch ? { tools: [{ type: 'web_search_20260209', name: 'web_search', max_uses: 5 }] } : {}),
     ...(useWebSearch && tool_choice && typeof tool_choice === 'object' && typeof tool_choice.type === 'string'
         ? { tool_choice } : {}),
