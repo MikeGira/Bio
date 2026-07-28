@@ -13,3 +13,11 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    # One PR for all actions, not one per action. Ungrouped, codeql-action/init and
+    # codeql-action/analyze get separate PRs, and each branch then carries the two at
+    # DIFFERENT versions — which CodeQL rejects outright. Both PRs fail their own SAST
+    # check and sit open indefinitely, which is what happened to #40 and #44 between
+    # 2026-07-20 and 2026-07-27. Matches the grouping taskpilot already uses.
+    groups:
+      actions:
+        patterns: ["*"]
