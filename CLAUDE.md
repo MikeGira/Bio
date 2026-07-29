@@ -1,6 +1,23 @@
 # MikeGira Portfolio (Bio) — Project CLAUDE.md
-# File location: /path/to/Bio/CLAUDE.md
 # GitHub repo: https://github.com/MikeGira/Bio
+
+## ⚠ CANONICAL WORKING COPY — read before touching this project
+
+**The one and only working copy is `D:\Projects\mike_gira bio\Final_V`.** That is this directory. It is
+the git repo (remote `MikeGira/Bio`), it holds the `.vercel` project link and `.env.local`, and it is
+where Mike always starts Bio sessions.
+
+**Never clone a second copy elsewhere.** On 2026-07-28 a session ran `git rev-parse` in the *parent*
+folder `D:\Projects\mike_gira bio`, saw it fail, concluded this subfolder was "an old scratch workspace
+not connected to git or Vercel", and cloned a duplicate to `D:\Projects\Bio`. Fixes were then pushed from
+the duplicate, leaving this copy stranded on a stale branch and one edit away from reverting a live
+integrity fix. The duplicate has since been deleted.
+
+**The rule that prevents it: a failed check in a parent directory says nothing about a child.** Verify
+the exact path (`Test-Path "<path>\.git"`, or `git -C "<path>" rev-parse --show-toplevel`) before
+concluding where a repo lives. The sibling folders here (`V1`, `V2_RH_MKNZ`, `V3_n8n`, `V4_n8n`) really
+are old scratch versions and are not git repos — which is exactly why the parent folder is not one, and
+why the parent's failure is misleading rather than informative.
 # This is Mike's ONLY fully working, deployed, production project.
 # Treat it as the gold standard reference for ALL other projects.
 
