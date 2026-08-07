@@ -1,0 +1,45 @@
+name: Dependabot auto-merge
+
+# Auto-merges safe Dependabot PRs (patch + minor) once all required CI checks pass.
+# Without this, green Dependabot PRs sit open indefinitely waiting for a human — which
+# is how #3 stayed open from 2026-07-23. Major updates are excluded and get a deliberate
+# manual review. Uses pull_request_target so the job runs with a write token (Dependabot
+# PRs otherwise get a read-only token); safe because it never checks out or executes PR
+# code — it only reads metadata and enables GitHub's native auto-merge.
+# zizmor flags pull_request_target as fundamentally dangerous, and normally it is: it runs
+# with a write token in the context of the BASE repo. It is safe here, and only here, because
+# this workflow never checks out, builds, or executes PR code — it reads PR metadata and asks
+# GitHub to enable native auto-merge. There is no step an attacker's branch content can reach.
+# The trigger is required: Dependabot PRs receive a read-only GITHUB_TOKEN under plain
+# `pull_request`, so `gh pr merge --auto` cannot work there. This is GitHub's own documented
+# pattern for Dependabot auto-merge.
+on: pull_request_target # zizmor: ignore[dangerous-triggers]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    name: Auto-merge safe Dependabot updates
+    runs-on: ubuntu-latest
+    # NOT `github.actor`: that is the LAST actor to touch the PR, so an attacker can push a
+    # branch whose head commit appears Dependabot-authored and pass the check. This reads the
+    # PR's creator instead. The second clause rejects fork PRs outright, so no external branch
+    # can ever reach this job. (zizmor bot-conditions, HIGH.)
+    if: >
+      github.event.pull_request.user.login == 'dependabot[bot]' &&
+      github.repository == github.event.pull_request.head.repo.full_name
+    steps:
+      - name: Fetch Dependabot metadata
+        id: meta
+        uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3.1.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Enable auto-merge for patch and minor updates
+        if: steps.meta.outputs.update-type == 'version-update:semver-patch' || steps.meta.outputs.update-type == 'version-update:semver-minor'
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh pr merge --auto --squash "$PR_URL"
