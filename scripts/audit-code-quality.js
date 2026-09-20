@@ -1,3 +1,5 @@
+import { isProviderUnavailable, exitProviderUnavailable } from './ai-availability.js';
+
 import { readFileSync } from 'fs';
 import { basename } from 'path';
 
@@ -70,7 +72,11 @@ Findings format (only when issues exist): **[CATEGORY] \`file\` — title**: one
       }],
     }),
   });
-  if (!res.ok) throw new Error(`Anthropic ${res.status}: ${await res.text()}`);
+  if (!res.ok) {
+    const err = await res.text();
+    if (isProviderUnavailable(res.status, err)) exitProviderUnavailable(res.status, err, 'The code quality audit');
+    throw new Error(`Anthropic ${res.status}`);
+  }
   return (await res.json()).content?.[0]?.text ?? '';
 }
 

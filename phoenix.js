@@ -252,6 +252,8 @@ Michael is open to full-time roles, contracts, consulting, partnerships, and adv
     }
 
     let _lastSend = 0, _sending = false;
+    const OFFLINE_MSG = "Phoenix is offline at the moment. Mike's full background is on this page, and the contact form reaches him directly.";
+
     async function send(text) {
       if (_sending) { return; }
       const now = Date.now();
@@ -266,11 +268,16 @@ Michael is open to full-time roles, contracts, consulting, partnerships, and adv
         const d = await r.json();
         if (!r.ok) {
           ty.remove();
-          // Show a friendly message for overload errors
-          const isOverload = r.status === 529 || (d.error || '').toLowerCase().includes('overload');
-          const errMsg = isOverload
-            ? 'Anthropic\'s servers are busy right now. Please try again in a minute.'
-            : (d.error || d.message || ('API error ' + r.status));
+          // Copy is chosen from the status code, never echoed from the response body. The server
+          // is the only place provider-side detail may exist; on Sep 20 2026 an upstream billing
+          // message reached this bubble verbatim and every visitor who asked a question saw it.
+          const errMsg = r.status === 503
+            ? 'Phoenix is busy right now. Please try again in a minute.'
+            : r.status === 504
+            ? 'That took too long to answer. Please try again.'
+            : r.status === 429
+            ? 'Too many questions at once. Give it a moment, then try again.'
+            : OFFLINE_MSG;
           addMsg(errMsg, 'bot');
           _sending = false; return;
         }
@@ -283,7 +290,7 @@ Michael is open to full-time roles, contracts, consulting, partnerships, and adv
           _sending = false; return;
         }
         ty.remove(); addMsg(rep, 'bot'); hist.push({ role: 'assistant', content: rep });
-      } catch (e) { ty.remove(); addMsg('Connection error. ' + e.message, 'bot'); }
+      } catch (e) { ty.remove(); addMsg(OFFLINE_MSG, 'bot'); }
       finally { _sending = false; }
     }
 
