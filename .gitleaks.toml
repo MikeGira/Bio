@@ -1,0 +1,31 @@
+# Gitleaks configuration for MikeGira/Bio.
+#
+# Extends the bundled ruleset rather than replacing it, so every default rule still applies.
+[extend]
+useDefault = true
+
+# GitHub is rolling out a stateless installation-token format, ghs_<appid>_<jwt>, roughly 520
+# characters and containing dots and underscores. The bundled github-app-token rule is
+# ghs_[0-9a-zA-Z]{36}, so the underscore straight after the app ID stops it matching and a
+# leaked token in the new format walks through this gate in silence.
+#
+# Verified 2026-09-20 with a positive control: a seeded 493-character stateless token was
+# missed by the default config while a 40-character legacy token in the same commit was caught,
+# so the miss was the rule and not the harness. With this rule both are caught and the two
+# documented placeholder shapes stay clean.
+#
+# Regex is GitHub's own published recommendation.
+# https://github.blog/changelog/2026-04-24-notice-about-upcoming-new-format-for-github-app-installation-tokens/
+[[rules]]
+id = "github-app-token-stateless"
+description = "GitHub App installation token (stateless ghs_<appid>_<jwt> format)"
+regex = '''(?:ghu|ghs)_[A-Za-z0-9._-]{36,}'''
+keywords = ["ghu_", "ghs_"]
+entropy = 3.5
+
+  [rules.allowlist]
+  regexTarget = "match"
+  regexes = [
+    '''(?:ghu|ghs)_[xX]+''',
+    '''(?:ghu|ghs)_(?:APPID|appid|example|EXAMPLE|placeholder)''',
+  ]

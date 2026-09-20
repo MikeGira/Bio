@@ -45,7 +45,8 @@ jobs:
           curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/${tarball}" -o "$tarball"
           echo "${GITLEAKS_SHA256}  ${tarball}" | sha256sum -c -
           tar -xzf "$tarball" gitleaks
-          ./gitleaks git --log-opts="--all" --no-banner --redact --exit-code 1 .
+          # --config is explicit: a security gate should never depend on file discovery.
+          ./gitleaks git --log-opts="--all" --no-banner --redact --exit-code 1 --config .gitleaks.toml .
 
   # ── 2. STATIC CODE ANALYSIS ──────────────────────────────────────────
   code-scan:

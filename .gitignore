@@ -13,6 +13,7 @@ node_modules/
 .claude/settings.local.json
 
 # OS / editor / logs
+.obsidian/
 .DS_Store
 Thumbs.db
 *.log
