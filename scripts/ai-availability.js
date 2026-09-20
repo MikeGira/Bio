@@ -28,8 +28,9 @@ export function exitProviderUnavailable(status, bodyText, jobName) {
         : `the Anthropic API returned ${status}`;
   console.log(
     `::error title=AI auditor unavailable::${jobName} did not run because ${reason}. ` +
-    'This is not a finding about the code. Top up or fix the key at ' +
-    'https://console.anthropic.com/settings/billing, then re-run this workflow.'
+    'This is not a finding about the code. Check the credit balance at ' +
+    'https://billing.anthropic.com/ (Console > Settings > Billing, Admin or Billing role), ' +
+    'or the ANTHROPIC_API_KEY secret, then re-run this workflow.'
   );
   console.error(`Upstream detail (${status}):`, String(bodyText || '').slice(0, 500));
   process.exit(78);
