@@ -29,3 +29,25 @@ jobs:
           inputs: .github/workflows/
           advanced-security: false
           annotations: true
+
+  # actionlint checks that a workflow is VALID; zizmor checks that it is SAFE. This repo had
+  # only the second. The gap matters: bad indentation or an unknown `on:` event produces a
+  # 0-second startup failure where the workflow never runs at all, not even on schedule, and
+  # the friendly name shows as the raw file path. Nothing here would have caught that.
+  # TaskPilot already gates on actionlint; this brings Bio in line.
+  actionlint:
+    name: actionlint - workflow syntax and schema
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Run actionlint
+        env:
+          ACTIONLINT_VERSION: '1.7.12'
+        run: |
+          set -euo pipefail
+          curl -fsSL "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz" -o actionlint.tar.gz
+          tar -xzf actionlint.tar.gz actionlint
+          # shellcheck disabled to scope this gate to workflow syntax/schema validation.
+          ./actionlint -color -shellcheck=
