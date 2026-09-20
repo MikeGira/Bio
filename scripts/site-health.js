@@ -3,7 +3,11 @@
 // 403-blocks non-allowlisted domains like *.vercel.app), so the probes live
 // here and routines read the results via the GitHub API instead.
 //
-// Checks: homepage 200 + response time, security headers, /api/db not 5xx.
+// Checks: homepage 200 + response time, security headers, /api/db not 5xx, and a live
+// round trip through /api/chat. The chat probe exists because on Sep 20 2026 the Anthropic
+// credit balance ran out, Phoenix answered every visitor with the provider's billing error,
+// and nothing here noticed: a page that returns 200 says nothing about whether the AI behind
+// it still works. Probe the effect, not the page.
 // On failure: deduped issue (label: site-health) + non-zero exit so the
 // scheduled-run failure email fires. On recovery: auto-closes open issues.
 
@@ -115,6 +119,27 @@ async function closeOpenIssues() {
   }
 }
 
+// Functional probe of the AI proxy: a page returning 200 proves nothing about the model
+// behind it. Sixteen output tokens four times a day is a rounding error against the cost of
+// an unnoticed outage on the portfolio Mike sends to employers.
+async function probeChat() {
+  const started = Date.now();
+  try {
+    const res = await fetch(`${SITE}/api/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'User-Agent': UA },
+      body: JSON.stringify({ max_tokens: 16, messages: [{ role: 'user', content: 'ping' }] }),
+      signal: AbortSignal.timeout(60000),
+    });
+    const ms = Date.now() - started;
+    let body = null;
+    try { body = await res.json(); } catch { /* non-JSON body is itself a failure signal */ }
+    return { status: res.status, ms, body };
+  } catch (err) {
+    return { status: 0, ms: Date.now() - started, error: err.message };
+  }
+}
+
 async function main() {
   const failures = [];
   const warnings = [];
@@ -143,6 +168,24 @@ async function main() {
   console.log(`API /api/db: HTTP ${api.status} in ${api.ms}ms`);
   if (api.status >= 500 || api.status === 0) {
     failures.push(`**API failing:** /api/db returned ${api.status || `0 (${api.error})`}.`);
+  }
+
+  const chat = await probeChat();
+  const chatText = chat.body?.content?.[0]?.text;
+  console.log(`AI /api/chat: HTTP ${chat.status} in ${chat.ms}ms`);
+  if (chat.status === 200 && typeof chatText === 'string' && chatText.trim().length > 0) {
+    console.log('Phoenix AI: answering');
+  } else if (chat.status === 403) {
+    // Same edge-block caveat as the homepage: a datacenter IP can be mitigated, which is
+    // inconclusive rather than an outage.
+    warnings.push('**Phoenix inconclusive:** /api/chat returned 403 — probe likely edge-blocked, verify manually.');
+  } else if (chat.status === 503 || chat.status === 429) {
+    warnings.push(`**Phoenix busy:** /api/chat returned ${chat.status} (transient overload or rate limit).`);
+  } else if (chat.status === 200) {
+    failures.push('**Phoenix returning empty answers:** /api/chat returned 200 with no text content.');
+  } else {
+    // 502 is what the proxy returns for any upstream failure, exhausted API credits included.
+    failures.push(`**Phoenix DOWN:** /api/chat returned ${chat.status || `0 (${chat.error})`}. Check the Anthropic credit balance and ANTHROPIC_API_KEY in Vercel.`);
   }
 
   if (failures.length === 0 && warnings.length === 0) {

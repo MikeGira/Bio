@@ -1,3 +1,5 @@
+import { isProviderUnavailable, exitProviderUnavailable } from './ai-availability.js';
+
 import { readFileSync } from 'fs';
 
 const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
@@ -77,7 +79,8 @@ Only flag a real gap if something is completely absent or factually incorrect.`;
 
   if (!res.ok) {
     const err = await res.text();
-    throw new Error(`Anthropic API error ${res.status}: ${err}`);
+    if (isProviderUnavailable(res.status, err)) exitProviderUnavailable(res.status, err, 'The Phoenix prompt audit');
+    throw new Error(`Anthropic API error ${res.status}`);
   }
 
   const data = await res.json();
